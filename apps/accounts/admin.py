@@ -29,6 +29,10 @@ class ReadOnlyAdmin(admin.ModelAdmin):
     def has_change_permission(self, request, obj=None):
         return False
 
+    def has_delete_permission(self, request, obj=None):
+        # Read-only also means no object delete or admin bulk delete, even for superusers.
+        return False
+
 
 @admin.register(ChildProfile)
 class ChildProfileAdmin(ReadOnlyAdmin):
