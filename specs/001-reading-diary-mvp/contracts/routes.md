@@ -6,7 +6,7 @@ Common rules for every mutating route:
 
 - CSRF required; HTMX sends the token via `hx-headers` on `<body>`.
 - Authorization through `accounts/authz.py` only (see [authorization.md](./authorization.md)). A foreign or unknown `public_id` → **404** with no hint of existence.
-- Validation errors → **422** + the same partial re-rendered with messages (HTMX swaps it). Full-page POSTs re-render the page with errors.
+- Validation errors → **422** + the same partial re-rendered with messages. **HTMX 2.x does not swap 4xx responses by default**: `static/js/app.js` MUST handle `htmx:beforeSwap` for status **422 only**, setting `event.detail.shouldSwap = true` and `event.detail.isError = false`, so inline validation errors appear. Full-page POSTs re-render the page with errors. **Do not enable swapping for 401/403/404/409/429/503**; those remain rejected/unsaved with the existing error or redirect handling.
 - Server or network errors → HTMX `htmx:responseError` / `htmx:sendError` handler shows the "Nu s-a salvat" toast. The UI switches to the saved state only on a 2xx response that carries `HX-Trigger: saved` (set by the view after commit).
 - Not signed in / session expired: normal requests → 302 to `login`; **HTMX requests → 401 + `HX-Redirect`, never a followed 302**. Refused in child mode: normal → 302 `pin_gate`; HTMX → 403. Details: [authorization.md § Session expiry and HTMX](./authorization.md#session-expiry-and-htmx).
 - `request_id` = hidden UUID input generated at render time; regenerated **only** after a 2xx save. After an error the same ID is resent, so a retry is replay-safe.
