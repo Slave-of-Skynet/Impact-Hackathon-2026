@@ -29,6 +29,13 @@ This is an isolated synthetic Django probe in `experiments/host-proof/`, not the
 | H6 Free-tier resource constraints | **PARTIAL** | Free web + free DB in Frankfurt; DB expires 2026-11-29; one web instance and default web concurrency 1. CPU, request limits, cold starts and forwarded IP header still unverified |
 | H7 Demo fallback rehearsal | **NOT RUN** | Source supports local SQLite in non-Render mode; a laptop + phone LAN demonstration has not been observed |
 
+## Cross-device value overwrite investigation (2026-10-30, 12:36 UTC)
+
+- Render Gunicorn access logs show `POST /value/` with HTTP **200** from Android at **12:36:14 UTC**, followed by two `POST /value/` HTTP **200** from Windows at **12:36:19 UTC** and **12:36:24 UTC**. The server logs contain request paths and statuses, **not posted numeric values**.
+- The original `value()` handler wrote on POST then returned HTML **200** rather than a redirect. Browser refresh on a POST result can resend the previous form. This is a strong explanation for the user reporting that the PC did not show the phone's value `35`: the PC appears to have sent subsequent writes; exact numeric overwrite remains **unverified**.
+- **Fix pushed in** `1e4f6fb` and `a0383f9`: successful save returns **HTTP 303 `Location: /value/`**; successful login also returns 303 to the read page; GET value responses set **Cache-Control: no-store**. No domain contracts or unrelated services changed. A deployment was initiated for commit `a0383f9` (deploy `dep-dbi8vu6gekts7397eblg`). Runtime outcome and repeat H4 scenario remain **NOT YET VERIFIED**.
+- Regression test after deploy: first browser save 17 → must navigate via GET and show 17; second device save 35 → first device **refreshes GET** and shows 35; no second POST from the first device on refresh. Then validate persistence across restart/redeploy.
+
 ## Recovery steps (do not put credentials into GitHub, logs, screenshots, or chat)
 
 1. **DONE (user reported, operationally corroborated):** test database's **Internal Database URL** was configured as `DATABASE_URL` on the isolated test web service; the redeploy now runs migrations and Gunicorn. Both resources are in Frankfurt. Do not open the connection to the public internet.
