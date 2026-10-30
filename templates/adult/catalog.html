@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% translate "Catalog de Cărți — Gustul Cărților" %}{% endblock %}
+
+{% block content %}
+<div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: var(--space-4); margin-bottom: var(--space-6);">
+  <div>
+    <h1>{% translate "Catalog de Cărți" %}</h1>
+    <p>{% translate "Explorează cărțile disponibile și adaugă-le pe raftul tău de lectură." %}</p>
+  </div>
+  <div>
+    <a href="/raft/" class="btn btn-outline">
+      <span aria-hidden="true">📚</span> {% translate "Vezi raftul meu" %}
+    </a>
+  </div>
+</div>
+
+<!-- Filters bar -->
+<form method="get" action="/carti/" class="filter-bar">
+  <div class="filter-item">
+    <label for="filter-age" style="font-size: var(--text-sm); font-weight: var(--font-semibold);">{% translate "Vârstă:" %}</label>
+    <select name="age_band" id="filter-age" class="filter-select" onchange="this.form.submit()">
+      <option value="">{% translate "Toate vârstele" %}</option>
+      <option value="3-5" {% if filters.age_band == '3-5' %}selected{% endif %}>3–5 ani</option>
+      <option value="6-8" {% if filters.age_band == '6-8' %}selected{% endif %}>6–8 ani</option>
+      <option value="7-8" {% if filters.age_band == '7-8' %}selected{% endif %}>7–8 ani</option>
+      <option value="9-11" {% if filters.age_band == '9-11' %}selected{% endif %}>9–11 ani</option>
+      <option value="12+" {% if filters.age_band == '12+' %}selected{% endif %}>12+ ani</option>
+    </select>
+  </div>
+
+  <div class="filter-item">
+    <label for="filter-genre" style="font-size: var(--text-sm); font-weight: var(--font-semibold);">{% translate "Gen:" %}</label>
+    <select name="genre" id="filter-genre" class="filter-select" onchange="this.form.submit()">
+      <option value="">{% translate "Toate genurile" %}</option>
+      <option value="fairy_tale" {% if filters.genre == 'fairy_tale' %}selected{% endif %}>{% translate "Povești și basme" %}</option>
+      <option value="adventure" {% if filters.genre == 'adventure' %}selected{% endif %}>{% translate "Aventură" %}</option>
+      <option value="nature" {% if filters.genre == 'nature' %}selected{% endif %}>{% translate "Natură și animale" %}</option>
+      <option value="fantasy" {% if filters.genre == 'fantasy' %}selected{% endif %}>{% translate "Fantezie" %}</option>
+      <option value="classic" {% if filters.genre == 'classic' %}selected{% endif %}>{% translate "Clasice" %}</option>
+    </select>
+  </div>
+
+  {% if filters.age_band or filters.genre %}
+    <a href="/carti/" class="btn btn-outline btn-sm" style="margin-left: auto;">
+      ✕ {% translate "Resetează filtrele" %}
+    </a>
+  {% endif %}
+</form>
+
+<!-- Book Grid -->
+{% if books %}
+  <div class="grid-cards">
+    {% for b in books %}
+      <div class="book-card">
+        <a href="/carti/{{ b.public_id }}/" style="text-decoration: none;" aria-label="{{ b.title }} - {{ b.author }}">
+          <div class="book-cover" style="background-color: {{ b.cover_color|default:'#F4A261' }};">
+            <div class="book-cover-title">{{ b.title }}</div>
+            <div class="book-cover-emoji" aria-hidden="true">{{ b.cover_emoji|default:'📖' }}</div>
+            <div class="book-cover-author">{{ b.author }}</div>
+          </div>
+        </a>
+        <div class="book-body">
+          <div class="book-meta">
+            {% if b.age_band %}
+              <span class="badge badge-accent">{{ b.age_band }} {% translate "ani" %}</span>
+            {% endif %}
+            <span class="badge">{{ b.page_count }} {% translate "pag." %}</span>
+          </div>
+
+          <div style="margin-top: var(--space-3);">
+            {% if b.public_id in shelf_book_ids %}
+              <a href="/raft/" class="btn btn-outline btn-sm btn-block" style="border-color: var(--color-success); color: var(--color-success);">
+                ✓ {% translate "Pe raftul tău" %}
+              </a>
+            {% else %}
+              <form method="post" action="/carti/{{ b.public_id }}/adauga/">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-primary btn-sm btn-block">
+                  + {% translate "Adaugă pe raft" %}
+                </button>
+              </form>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+{% else %}
+  <div class="empty-state">
+    <span class="empty-icon" aria-hidden="true">🔍</span>
+    <h2 class="empty-title">{% translate "Nicio carte găsită" %}</h2>
+    <p class="empty-desc">{% translate "Nu există cărți care să corespundă filtrelor selectate. Încearcă să resetezi opțiunile." %}</p>
+    <a href="/carti/" class="btn btn-outline">{% translate "Vezi toate cărțile" %}</a>
+  </div>
+{% endif %}
+{% endblock %}
