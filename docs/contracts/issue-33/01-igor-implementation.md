@@ -91,3 +91,8 @@ Produce docs/issue-33-e2e-report.md with:
 - IMPORTANT: do not mark #34 (real deployment) or #35 (phone/browser/pitch) done because #33 passes.
 
 At the end of your response, report concise DONE / PARTIAL / BLOCKED, GitHub branch/PR link, commits, tests and any needed owner handoffs. Do not spend time on new recommendations/social feed/leaderboards, nonessential redesign or a second UI framework.
+
+
+### 7. Non-negotiable pytest-django transaction setup
+
+The real club.services.redeem_code explicitly rejects an enclosing transaction and uses atomic(durable=True). Tests covering code redemption **must use pytest.mark.django_db(transaction=True) or transactional_db**, as the existing tests/test_club_views.py and tests/test_club_redemption.py do. Default pytest.mark.django_db / db fixtures can add an outer transaction and fail even when product code is correct. Do not weaken or remove the production durable-transaction guard to make a faulty test harness pass. Clearly note this harness choice in the report.
