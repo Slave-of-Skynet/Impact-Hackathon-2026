@@ -90,13 +90,17 @@ def _get_entry(reader, public_id):
     return import_module("apps.accounts.authz").get_entry_for_reader(reader, public_id)
 
 
+def _shelf_book_ids(reader):
+    if reader is None:
+        return set()
+    # Public UUIDs match BookVM.public_id; database integer IDs never enter
+    # this template contract. Always scope even the public book markers.
+    return set(ShelfEntry.objects.filter(reader=reader).values_list("book__public_id", flat=True))
+
+
 def _catalog_context(reader, books, filters):
-    shelf_ids = set()
-    if reader is not None:
-        # Public UUIDs match BookVM.public_id; database integer IDs never enter
-        # this template contract.
-        shelf_ids = set(ShelfEntry.objects.filter(reader=reader).values_list("book__public_id", flat=True))
-    return {"books": [_book_vm(book) for book in books], "filters": filters, "shelf_book_ids": shelf_ids}
+    return {"books": [_book_vm(book) for book in books], "filters": filters,
+            "shelf_book_ids": _shelf_book_ids(reader)}
 
 
 @require_GET
@@ -114,11 +118,10 @@ def catalog(request, reader):
 @_with_reader(optional=True)
 def book_detail(request, reader, book):
     metadata = get_object_or_404(Book, public_id=book, is_active=True)
-    # The shared contract defines a catalog context but no book-detail context.
-    # Reuse that agreed template with a single book until the UI owners agree
-    # a dedicated detail template; never invent fields on the frozen BookVM.
-    context = _catalog_context(reader, [metadata], {"age_band": "", "genre": ""})
-    return render(request, f"{_mode(request)}/catalog.html", context)
+    # Context matches the owner-provided adult/child book_detail templates;
+    # no additional fields are introduced on the shared BookVM.
+    context = {"book": _book_vm(metadata), "shelf_book_ids": _shelf_book_ids(reader)}
+    return render(request, f"{_mode(request)}/book_detail.html", context)
 
 
 @require_GET
@@ -175,13 +178,18 @@ def _saved_response(request, result):
 @_with_reader()
 def add_to_shelf(request, reader, book):
     active_book = get_object_or_404(Book, public_id=book, is_active=True)
+    if _htmx(request):
+        # HTMX add = PENDING UI CONTRACT (#17/#18). Until the UI owner supplies
+        # an agreed partial/target, refuse without writing or announcing saved.
+        # Normal POST remains available; never swap a progress screen here.
+        return _unsaved(503)
     try:
         entry, _created = services.add_to_shelf(reader, active_book)
     except Book.DoesNotExist:
         raise Http404 from None
     except services.LockTimeout:
         return _unsaved(503)
-    return _saved_response(request, services.ProgressResult(entry, [], replayed=False))
+    return redirect("shelf_entry", entry=entry.public_id)
 
 
 def _write_progress(request, reader, public_id, *, finish):
