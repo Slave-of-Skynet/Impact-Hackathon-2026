@@ -4,7 +4,7 @@
 
 **Input**: Feature specification from `/specs/001-reading-diary-mvp/spec.md`
 
-**Status**: Architecture proposal for independent review (Issue #7). No application code exists yet.
+**Status**: Team-approved technical direction (G7 ratified 2026-10-30 following PR #8 review). This is a plan, not evidence of implemented code or partner-approved product rules.
 
 ## Summary
 
@@ -45,7 +45,7 @@ One Django 5.2 LTS monolith serving a mobile-first, installable PWA with two pre
 | VII. Pragmatic SDD | `tasks.md` intentionally not generated before review (see below) | Pass |
 | VIII. Security & compliance | No secrets/PII committed; synthetic seeds; env-based credentials | Pass |
 
-Note: `AGENTS.md`/`CLAUDE.md`/`README.md` still say the stack is "TBD". They are left unchanged in this PR. Django is the technically recommended direction; final stack sign-off by the team lead is decision gate **G7** ([spec.md](./spec.md#decision-gates-blocking-items-need-answers-before-freezing)). After sign-off, a follow-up PR updates them (constitution §VI says stack decisions remain deferred until accepted).
+Note: `AGENTS.md`/`CLAUDE.md`/`README.md` still say the stack is "TBD". They are left unchanged in this PR. Django 5.2 LTS + HTMX + PWA was **approved** by the team lead at gate **G7** on 2026-10-30 ([spec.md](./spec.md#decision-gates-blocking-items-need-answers-before-freezing)). This documentation update aligns them (constitution §VI says stack decisions remain deferred until accepted).
 
 ## Architecture
 
