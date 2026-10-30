@@ -171,7 +171,8 @@ def test_is_member_is_current_entitlement_not_history(adult_client, child, kind,
     assert response.context["is_member"] is expected
     assert len(response.context["memberships"]) == (2 if kind in window else 1)
     assert set(response.context["memberships"][0]) == {"valid_until", "status"}
-    assert ("Membru al clubului acum" in response.content.decode()) is expected
+    assert any(t.name == "adult/child_report.html" for t in response.templates)
+    assert ("Membru Club activ" in response.content.decode()) is expected
 
 
 def test_report_never_shows_adult_self_reader_entries(adult_client, guardian, child):
