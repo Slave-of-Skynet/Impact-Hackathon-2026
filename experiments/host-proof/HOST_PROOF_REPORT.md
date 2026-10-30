@@ -21,8 +21,8 @@ This is an isolated synthetic Django probe in `experiments/host-proof/`, not the
 
 | Check | Status | Evidence or remaining requirement |
 |---|---|---|
-| H1 HTTPS accessible on phone + laptop | **NOT RUN on devices** | Render reports `live` and provides an HTTPS URL; external HTTPS requests from the review environment could not resolve hostname, so a laptop + mobile-data check is still required |
-| H2 Manifest, service worker, Android install | **NOT RUN** | Endpoints exist in source; actual HTTPS installation, icons and offline page must be tested on device |
+| H1 HTTPS accessible on phone + laptop | **PARTIAL** | Gunicorn logs show successful browser requests from Windows Chrome and Android Chrome to HTTPS-hosted URLs; phone's actual mobile-data connection/certificate warning status not independently observed |
+| H2 Manifest, service worker, Android install | **PARTIAL** | Browser requests to `/sw.js`, `/manifest.webmanifest` and `/icon-192.png` returned HTTP 200 on Windows; Android installability, standalone launch and offline behavior NOT RUN |
 | H3 Persist a database value through restart **and redeploy** | **NOT RUN remotely** | Django migrations and Gunicorn startup succeeded against the configured DB; test writes and readbacks after restart and redeploy are still needed. Handoff reports local two-session values 17 and 35 and local server restart preserved 35; not independently reproduced |
 | H4 Cross-device login / save / read | **NOT RUN** | Requires phone on mobile data, laptop in a separate session, and working public service |
 | H5 Latency / cold-start / failure behavior | **NOT RUN** | Record actual phone load time and POST round-trip and first hit after idle |
@@ -33,7 +33,7 @@ This is an isolated synthetic Django probe in `experiments/host-proof/`, not the
 
 - Render Gunicorn access logs show `POST /value/` with HTTP **200** from Android at **12:36:14 UTC**, followed by two `POST /value/` HTTP **200** from Windows at **12:36:19 UTC** and **12:36:24 UTC**. The server logs contain request paths and statuses, **not posted numeric values**.
 - The original `value()` handler wrote on POST then returned HTML **200** rather than a redirect. Browser refresh on a POST result can resend the previous form. This is a strong explanation for the user reporting that the PC did not show the phone's value `35`: the PC appears to have sent subsequent writes; exact numeric overwrite remains **unverified**.
-- **Fix pushed in** `1e4f6fb` and `a0383f9`: successful save returns **HTTP 303 `Location: /value/`**; successful login also returns 303 to the read page; GET value responses set **Cache-Control: no-store**. No domain contracts or unrelated services changed. A deployment was initiated for commit `a0383f9` (deploy `dep-dbi8vu6gekts7397eblg`). Runtime outcome and repeat H4 scenario remain **NOT YET VERIFIED**.
+- **Fix pushed in** `1e4f6fb` and `a0383f9`: successful save returns **HTTP 303 `Location: /value/`**; successful login also returns 303 to the read page; GET value responses set **Cache-Control: no-store**. No domain contracts or unrelated services changed. A deployment was initiated for commit `a0383f9` (deploy `dep-dbi8vu6gekts7397eblg`). Render deployment **became live** at **12:40:32 UTC** for commit `a0383f9` (build and deploy succeeded). Repeat H4 scenario / 303 response behavior are **NOT YET OBSERVED** after rollout.
 - Regression test after deploy: first browser save 17 → must navigate via GET and show 17; second device save 35 → first device **refreshes GET** and shows 35; no second POST from the first device on refresh. Then validate persistence across restart/redeploy.
 
 ## Recovery steps (do not put credentials into GitHub, logs, screenshots, or chat)
