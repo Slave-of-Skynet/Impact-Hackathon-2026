@@ -31,8 +31,7 @@ erDiagram
 | password | hash | Django hasher |
 | display_name | str ≤ 40 | shown only to the account holder |
 | ui_language | enum `ro`/`ru` | default `ro` |
-| pin_hash | str, nullable | set before first child mode (FR-004) |
-| pin_failed_count, pin_locked_until | int, datetime nullable | lockout (FR-006) |
+| pin_hash | str, nullable | set before first child mode (FR-004); PIN attempts are counted in `accounts.Throttle` (scope `pin`) |
 | is_staff | bool | club admin; **not** a reader role |
 | date_joined | datetime | |
 
@@ -62,6 +61,19 @@ Invariant: max 6 children per guardian (abuse limit) `[ASSUMPTION]`.
 DB check constraint: exactly one of `account`, `child` is non-null and matches `kind`. Created automatically with the account (lazily on first shelf action) or with the child.
 
 **Ownership rule (single function, `accounts/authz.py`)**: an authenticated adult `A` may act on reader `R` iff `R.account == A` or `R.child.guardian == A`. In child mode the only permitted reader is `session.active_child_reader`.
+
+### `accounts.Throttle` (failed-attempt counters for login, PIN and code redemption)
+
+| Field | Type | Rules |
+|---|---|---|
+| id | PK | |
+| scope | enum `login`/`pin`/`redeem` | three independent limits (see [authorization.md](./contracts/authorization.md#brute-force-limits-three-separate-throttles)) |
+| key_hash | str | SHA-256 of the scope key: normalized email for `login` (also for unknown emails, so responses do not reveal which accounts exist); account id for `pin` and `redeem` |
+| failures | int ≥ 0 | failures in the current window |
+| window_started_at | datetime | start of the counting window |
+| locked_until | datetime, nullable | while `now < locked_until` every attempt is refused, even a correct one |
+
+`UNIQUE (scope, key_hash)`. Read and updated only through `accounts/throttle.py` (`check(scope, key)`, `record_failure(scope, key)`, `reset(scope, key)`), inside the same short write transaction as the attempt. Stored in the database (not in a per-process cache), so counters survive a worker restart and are shared by every process.
 
 ### `library.Book`
 
@@ -102,7 +114,7 @@ DB check constraint: exactly one of `account`, `child` is non-null and matches `
 | request_id | UUID | client-generated per submit |
 | created_at | datetime | |
 
-`UNIQUE (reader, request_id)` → idempotency (FR-014). Never updated or deleted except by cascade.
+`UNIQUE (reader, request_id)` → idempotency (FR-014). Never updated or deleted except by cascade. `from_page` is the value the server read inside the write transaction, never a client value. The stored `(entry, kind, to_page)` is the fingerprint used to tell a true replay from a reused `request_id` with different data (see *Concurrency and idempotency*).
 
 ### `club.ClubMembership`
 
@@ -172,11 +184,48 @@ Visible only on the members-only page.
 | Service | Module | Writes | Transaction | Notes |
 |---|---|---|---|---|
 | `add_to_shelf(reader, book)` | `library/services.py` | ShelfEntry | atomic, `get_or_create` | idempotent |
-| `record_progress(reader, entry, page, request_id)` | `library/services.py` | ShelfEntry, ProgressEvent, then calls `evaluate_achievements` | atomic, `select_for_update` on entry | returns `ProgressResult(entry, new_grants, replayed: bool)` |
-| `finish_book(reader, entry, request_id)` | `library/services.py` | same | atomic | sets `current_page = page_count` |
+| `record_progress(reader, entry, page, request_id)` | `library/services.py` | ShelfEntry, ProgressEvent, then calls `evaluate_achievements` | one short write transaction (see below) | returns `ProgressResult(entry, new_grants, replayed: bool)`; raises `RequestIdConflict` (→ 409) or `LockTimeout` (→ 503) |
+| `finish_book(reader, entry, request_id)` | `library/services.py` | same | same | sets `current_page = page_count` |
 | `reader_stats(reader)` | `library/stats.py` | — | read | books_on_shelf, books_finished, pages_total (= Σ current_page), pages_7d (Σ positive deltas in events, last 7 days) |
 | `redeem_code(actor, reader, raw_code)` | `club/services.py` | MembershipCode, ClubMembership, then `evaluate_achievements` | atomic, conditional update | generic error on any failure |
 | `evaluate_achievements(reader)` | `club/services.py` | AchievementGrant | inside caller's transaction | `is_member` checked at evaluation time; `get_or_create` under unique key |
+
+## Concurrency and idempotency (P0 policy)
+
+**What the database really guarantees**
+
+| Guarantee | SQLite (demo) | PostgreSQL (if chosen) |
+|---|---|---|
+| `UNIQUE` / `CHECK` constraints | ✅ enforced | ✅ enforced |
+| A transaction commits completely or not at all | ✅ | ✅ |
+| `select_for_update()` row locks | ❌ **no effect** on SQLite ([Django docs](https://docs.djangoproject.com/en/5.2/ref/models/querysets/#select-for-update)) | ✅ row lock |
+| Only one write transaction at a time | ✅ whole-database write lock (one writer, readers continue) | ❌ not needed: row locks instead |
+| High write throughput / many simultaneous writers | ❌ not claimed | not measured; not claimed |
+
+**Chosen policy (one design, no queues, workers or distributed locks)**
+
+1. SQLite settings: `OPTIONS = {"transaction_mode": "IMMEDIATE", "timeout": 5}` (Django ≥ 5.1). `IMMEDIATE` takes the database write lock at `BEGIN`, so the read-check-write sequence inside one service call cannot interleave with another writer. A waiting writer blocks up to 5 s; after that SQLite raises "database is locked". `ATOMIC_REQUESTS` stays off: only the service functions open transactions, and they hold no network I/O or template rendering.
+2. `record_progress` / `finish_book` run in one `transaction.atomic()`:
+   1. look up `ProgressEvent(reader, request_id)`;
+      - **same `request_id`, same `(entry, kind, to_page)`** → return the stored result with `replayed=True`; nothing is written and no grant is created;
+      - **same `request_id`, different data** → raise `RequestIdConflict`; the view answers **409** and nothing changes;
+   2. re-read the entry by `(public_id, reader)`. In code this is `select_for_update()`, which locks the row on PostgreSQL and has no effect on SQLite, where step 1 (IMMEDIATE) already serializes writers;
+   3. validate the range and the `reading` status against the re-read row; set `from_page` from that row;
+   4. insert the event (the unique key is the last line of defence: an `IntegrityError` there is handled like a replay), update the entry, call `evaluate_achievements`;
+   5. commit. The success partial is rendered only after commit.
+3. **Two different `request_id`s on the same entry** (two tabs or devices): both are accepted in **commit order** (last committed wins for `current_page`). The order in which the client sent them is not preserved and is not promised. Each event stores the `from_page` it actually replaced, so the log and `pages_7d` stay consistent. `finished` is terminal: after one request finishes the book, a later progress or finish request with another ID gets **422 "already finished"**, so "books finished" grows exactly once. No stale-write detection (`expected_page`) in P0. If the demo shows lost updates are a real problem, it is the first thing to add.
+4. **Lock timeout**: "database is locked" after the busy timeout → the transaction rolls back → the view answers **503** with the "Nu s-a salvat — încearcă din nou" message. There is no automatic server retry. The user retries manually with the **same** `request_id` (it is only regenerated after a 2xx), so a retry after an unknown outcome can never double-apply.
+5. `redeem_code` and `accounts/throttle.py` use the same short IMMEDIATE transactions. Single use of a code is still enforced by the conditional `UPDATE … WHERE redeemed_at IS NULL`.
+
+**Planned tests (all NOT RUN; need a file-based SQLite test DB, because the in-memory test DB cannot be shared between threads)**
+
+| Case | Test | Expected |
+|---|---|---|
+| (a) same-ID replay | `test_concurrency.py::test_replay_same_request_id_returns_prior_result` | 2nd call `replayed=True`; one event; stats and grants unchanged |
+| (a') same ID, different data | `::test_reused_request_id_with_other_page_is_409` | 409; stored page and events unchanged |
+| (b) concurrent different IDs | `::test_two_request_ids_same_entry_commit_order` (`TransactionTestCase`, 2 threads) | both commit; `current_page` = the later commit; each `from_page` equals the previous committed value; a finish counted once |
+| (b') finish race | `::test_finish_race_counts_once` | one finish event, the other request gets 422, `books_finished` = 1 |
+| (c) lock contention | `::test_lock_timeout_returns_503_and_stores_nothing` (another connection holds `BEGIN IMMEDIATE`; timeout lowered for the test) | 503 within the bounded wait; no event; retry with the same ID then succeeds once |
 
 ## Seed / demo data (`manage.py seed_demo`, idempotent)
 

@@ -16,19 +16,19 @@ One Django 5.2 LTS monolith serving a mobile-first, installable PWA with two pre
 
 **Primary Dependencies**: Django 5.2 LTS; HTMX 2.x (vendored static file); `whitenoise` for static files; `gunicorn` for production serving; `dj-database-url` (only if a Postgres host is chosen). Dependency management with `uv` (`pyproject.toml` + `uv.lock`).
 
-**Storage**: SQLite (WAL) for dev and demo on a persistent disk; PostgreSQL-compatible schema; switch via `DATABASE_URL`.
+**Storage**: SQLite for dev and demo on a persistent disk, with `transaction_mode="IMMEDIATE"` and a 5 s busy timeout. The default rollback journal is used; WAL is enabled only if the host proof shows a local (non-network) disk, because SQLite WAL does not work over network filesystems. PostgreSQL-compatible schema; switch via `DATABASE_URL`. Concurrency policy: [data-model.md](./data-model.md#concurrency-and-idempotency-p0-policy).
 
 **Testing**: Django test runner via `pytest` + `pytest-django`; Django test client for end-to-end server flows; manual phone checklist in [quickstart.md](./quickstart.md).
 
-**Target Platform**: Linux host (PythonAnywhere free as the primary proposal; Render + Postgres or laptop as fallbacks); clients are mobile Chrome/Safari and desktop browsers.
+**Target Platform**: Linux host, **not chosen yet**: the first candidate to try is PythonAnywhere free (1 web app, **1 web worker**, 100 CPU seconds, 512 MiB disk, 1-month expiry ✅ [help page](https://help.pythonanywhere.com/pages/FreeAccountsFeatures/), checked 2026-10-30); then Render + Postgres; the laptop is the fallback. A host is adopted only after the host proof in [execution-plan.md](./execution-plan.md#host-proof-separate-critical-path-activity) passes. Clients are mobile Chrome/Safari and desktop browsers.
 
 **Project Type**: Web application (server-rendered PWA).
 
-**Performance Goals**: Page TTFB < 500 ms on the demo host for ≤ 100 concurrent users; progress save round trip < 1 s on 4G.
+**Performance Goals**: Desired benchmarks only, **not guarantees**: page TTFB around 500 ms and a progress save under ~1 s on a phone over mobile data. They are measured during the host proof and at M3 and recorded as observed numbers. Nothing is reported as PASS without a measurement. No concurrent-user capacity, cold-start or uptime figure is claimed: a single free-tier worker serves one request at a time, and SQLite allows one writer at a time.
 
 **Constraints**: No offline writes; no external service required at runtime; no PII in logs; Romanian UI strings via gettext; 360 px minimum width; tap targets ≥ 48 px in child mode.
 
-**Scale/Scope**: Demo scale (~70 families reported by the club); ~18 routes, 11 tables, 2 template sets.
+**Scale/Scope**: Demo scale (~70 families reported by the club; no load is claimed); ~18 routes, 12 tables, 2 template sets.
 
 ## Constitution Check
 
@@ -45,7 +45,7 @@ One Django 5.2 LTS monolith serving a mobile-first, installable PWA with two pre
 | VII. Pragmatic SDD | `tasks.md` intentionally not generated before review (see below) | Pass |
 | VIII. Security & compliance | No secrets/PII committed; synthetic seeds; env-based credentials | Pass |
 
-Note: `AGENTS.md`/`CLAUDE.md`/`README.md` still say the stack is "TBD". They are left unchanged in this PR; after review approves the stack, a follow-up PR updates them (constitution §VI says stack decisions remain deferred until accepted).
+Note: `AGENTS.md`/`CLAUDE.md`/`README.md` still say the stack is "TBD". They are left unchanged in this PR. Django is the technically recommended direction; final stack sign-off by the team lead is decision gate **G7** ([spec.md](./spec.md#decision-gates-blocking-items-need-answers-before-freezing)). After sign-off, a follow-up PR updates them (constitution §VI says stack decisions remain deferred until accepted).
 
 ## Architecture
 
@@ -85,13 +85,21 @@ sequenceDiagram
     C->>S: POST /raft/{entry}/progres/ page=35, request_id=U1 (CSRF)
     S->>S: ChildModeMiddleware: route allowed
     S->>S: authz.current_reader = active child (re-validated vs guardian)
-    S->>D: BEGIN; SELECT entry FOR UPDATE WHERE public_id & reader
-    S->>D: INSERT ProgressEvent(reader, U1) — unique; on conflict → replay
-    S->>D: UPDATE entry current_page=35
-    S->>D: evaluate_achievements(reader) — is_member(now), INSERT grants (unique)
-    S->>D: COMMIT
-    S-->>C: 200 partial: bar 29%, mascot "progress_saved", new grants
-    Note over C: Only now does the UI show "saved"
+    S->>D: BEGIN IMMEDIATE (SQLite: takes the DB write lock, waits ≤ 5 s)
+    S->>D: SELECT ProgressEvent(reader, U1)
+    alt U1 already stored with same data
+        S-->>C: 200 replay (stored result, no new grants)
+    else U1 stored with different data
+        S-->>C: 409, nothing changed
+    else new request_id
+        S->>D: re-read entry WHERE public_id & reader (FOR UPDATE on Postgres only)
+        S->>D: INSERT ProgressEvent(from_page = re-read value) — unique key
+        S->>D: UPDATE entry current_page=35
+        S->>D: evaluate_achievements(reader) — is_member(now), INSERT grants (unique)
+        S->>D: COMMIT
+        S-->>C: 200 partial + HX-Trigger: saved — bar 29%, mascot "progress_saved", new grants
+    end
+    Note over C: Only a 2xx with HX-Trigger "saved" shows "saved". Lock timeout → 503, 401/403/422/409 → "Nu s-a salvat"
     P->>S: GET /familie/{child}/ (adult session)
     S->>D: child WHERE public_id AND guardian = user; stats from DB
     S-->>P: 35/120, pages_7d updated
@@ -124,7 +132,7 @@ specs/001-reading-diary-mvp/
 pyproject.toml, uv.lock, manage.py, .env.example
 config/                 # settings (base/dev/prod), urls.py, wsgi.py      — owner: Arsenii
 apps/
-├── accounts/           # Account, ChildProfile, Reader, PIN, ChildModeMiddleware, authz.py — Arsenii
+├── accounts/           # Account, ChildProfile, Reader, Throttle, PIN, ChildModeMiddleware, authz.py, throttle.py — Arsenii
 ├── library/            # Book, ShelfEntry, ProgressEvent, services.py, stats.py, views   — Alisa
 ├── club/               # ClubMembership, MembershipCode, Achievement(+Grant), ClubActivity,
 │                       # services.py (redeem, evaluate), admin.py, views                — Igor
@@ -139,8 +147,8 @@ static/
 └── sw.js, manifest.webmanifest                  #                                  — Denis
 locale/ro/, locale/ru/                           # gettext catalogs                 — Vladimir
 tests/
-├── test_authz.py, test_child_mode.py            # Arsenii
-├── test_progress.py, test_stats.py              # Alisa
+├── test_authz.py, test_child_mode.py, test_login_throttle.py   # Arsenii
+├── test_progress.py, test_stats.py, test_concurrency.py        # Alisa
 ├── test_membership.py, test_achievements.py     # Igor
 └── test_demo_flow.py                            # Igor (end-to-end via test client)
 ```
@@ -150,18 +158,20 @@ tests/
 ## Key design decisions (detail in ADR-0001)
 
 1. **Reader abstraction** — one shelf model for adults and children; ownership via one function.
-2. **Child mode = server-side session mode + middleware allow-list + PIN gate**, not a UI toggle.
+2. **Child mode = server-side session mode + deny-by-default middleware allow-list + PIN-only gate** (recovery = full sign-out), not a UI toggle.
 3. **Membership = time-bounded entitlement rows**, computed per request; codes hashed and single-use; admin back office for activation/revocation.
-4. **Writes are idempotent** (`request_id` unique per reader) and **transactional** (`select_for_update`), and stats are derived from stored data only.
+4. **Writes are idempotent** (`request_id` unique per reader; same ID + other data → 409) and run in **short SQLite `IMMEDIATE` transactions** (one writer at a time, 5 s busy timeout, lock timeout → 503, no auto-retry). `select_for_update` has no effect on SQLite and is relied on only on Postgres. Stats are derived from stored data only.
 5. **Achievements are server-evaluated** after stored changes, unique per reader, members-only rules check `is_member` at evaluation time.
 6. **One contract style**: HTML forms + HTMX partials; no parallel JSON API.
 7. **PWA without offline writes**; visible failure states.
 8. **i18n from day one** (`gettext`, `LANGUAGE_CODE="ro"`); Russian catalog P1.
+9. **Three separate DB-backed throttles** (login, PIN, code redemption) in one `accounts/throttle.py`; stock `LoginView` has no rate limit, so login uses `ThrottledLoginView`.
+10. **No success UI without a commit**: HTMX requests without a session get 401 (not a followed 302); "saved" is shown only on `HX-Trigger: saved`.
 
 ## Errors, loading, offline, logging, accessibility
 
 - HTMX requests show an inline spinner via `hx-indicator`; buttons are disabled during requests (`hx-disabled-elt`).
-- 422 → partial with field messages; 403/404 → friendly page (child variant uses the mascot `oops` line); 429 → lockout message with remaining time; 5xx → generic page + toast.
+- 422 → partial with field messages; 403/404 → friendly page (child variant uses the mascot `oops` line); 401 (HTMX, no session) → "Nu s-a salvat" toast, then sign-in; 409/503 → "Nu s-a salvat — încearcă din nou"; 429 → lockout message with remaining time; 5xx → generic page + toast.
 - Offline: service worker serves `/offline/` for navigations when the network fails; HTMX `htmx:sendError` → toast "Nu s-a salvat".
 - Logging: Django logging to stdout; a filter strips emails; only `reader.public_id`, route name and status are logged. No request bodies.
 - Accessibility: semantic HTML, labels on all inputs, contrast ≥ 4.5:1, focus styles, mascot text duplicated as plain text (not only an image), `lang="ro"` on `<html>`.
@@ -171,7 +181,7 @@ tests/
 | Env | DB | Settings | Secrets |
 |---|---|---|---|
 | dev (each laptop) | `db.sqlite3` (git-ignored) | `config.settings.dev`, `DEBUG=True` | `.env` from `.env.example` (git-ignored) |
-| demo (public) | SQLite on persistent disk or Postgres | `config.settings.prod`, `DEBUG=False`, `ALLOWED_HOSTS`, secure cookies | `DJANGO_SECRET_KEY`, `DEMO_PASSWORD`, `DEMO_PIN` in host env vars only |
+| demo (public) | SQLite on a persistent disk (proven by the host proof, not by an ephemeral filesystem) or Postgres | `config.settings.prod`, `DEBUG=False`, `ALLOWED_HOSTS`, secure cookies | `DJANGO_SECRET_KEY`, `DEMO_PASSWORD`, `DEMO_PIN` in host env vars only |
 
 Deploy: `git pull` (or host's git integration) → `uv sync --frozen` → `migrate` → `collectstatic` → reload. Rollback: redeploy previous tag + restore the DB copy taken before `migrate` (`cp db.sqlite3 db.backup-<time>.sqlite3`). Demo safety: a tagged "demo-ready" commit; `seed_demo --reset` recreates synthetic data in < 10 s; laptop fallback with the same tag.
 

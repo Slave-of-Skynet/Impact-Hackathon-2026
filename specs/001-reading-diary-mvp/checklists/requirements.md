@@ -19,7 +19,7 @@ Checked by the author (self-review), not by an independent reviewer.
 - [x] Requirements are testable and unambiguous
 - [x] Success criteria are measurable
 - [x] Success criteria are technology-agnostic
-- [x] All acceptance scenarios are defined for P1 stories
+- [x] Acceptance scenarios are defined for all P0 stories (US1–US5)
 - [x] Edge cases are identified
 - [x] Scope is clearly bounded (P0 / P1 / Deferred)
 - [x] Dependencies and assumptions identified, with provenance labels
@@ -29,6 +29,8 @@ Checked by the author (self-review), not by an independent reviewer.
 - [x] All functional requirements map to acceptance scenarios or counter-example checks
 - [x] User scenarios cover the primary demo flow
 - [ ] Partner confirmation of gates G2–G6 — **pending** (not required to start the demo build)
+- [ ] Stack sign-off by team lead (G7) — **pending**; blocks PR-1 merge
+- [ ] Host proof H1–H7 — **NOT RUN**
 
 ## Notes
 
