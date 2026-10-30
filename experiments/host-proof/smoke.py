@@ -73,9 +73,13 @@ def value(request):
             except (KeyError, ValueError):
                 return HttpResponseBadRequest("Invalid number")
             cursor.execute("UPDATE host_proof_value SET value = %s WHERE id = 1", [number])
+            # POST/Redirect/GET: reloading the read page must not re-submit an old value.
+            return HttpResponse(status=303, headers={"Location": "/value/"})
         cursor.execute("SELECT value FROM host_proof_value WHERE id = 1")
         number = cursor.fetchone()[0]
-    return HttpResponse(f'<link rel="manifest" href="/manifest.webmanifest"><script>if("serviceWorker" in navigator) navigator.serviceWorker.register("/sw.js");</script><p>Value: {number}</p><form method="post"><input type="hidden" name="csrfmiddlewaretoken" value="{get_token(request)}"><input name="value" type="number"><button>Save</button></form>')
+    response = HttpResponse(f'<link rel="manifest" href="/manifest.webmanifest"><script>if("serviceWorker" in navigator) navigator.serviceWorker.register("/sw.js");</script><p>Value: {number}</p><form method="post"><input type="hidden" name="csrfmiddlewaretoken" value="{get_token(request)}"><input name="value" type="number"><button>Save</button></form>')
+    response["Cache-Control"] = "no-store"
+    return response
 
 urlpatterns = [path("health/", health), path("login/", sign_in), path("value/", value), path("manifest.webmanifest", manifest), path("sw.js", service_worker), path("icon-<int:size>.png", icon)]
 application = get_wsgi_application()
