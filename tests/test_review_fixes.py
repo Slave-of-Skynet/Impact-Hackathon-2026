@@ -106,3 +106,54 @@ def test_admin_child_profile_shows_nickname_only(admin_client_superuser):
     assert response.status_code == 403
     child.refresh_from_db()
     assert child.nickname == "Mia"
+
+
+def test_readonly_admin_denies_delete_even_for_superuser(admin_client_superuser):
+    """All read-only admin classes must deny deletion, including for superusers."""
+    from django.contrib import admin
+    from django.test import RequestFactory
+
+    from apps.accounts.models import Reader, Throttle
+    from apps.club.models import AchievementGrant, ClubMembership, MembershipCode
+    from apps.library.models import ProgressEvent, ShelfEntry
+
+    request = RequestFactory().get("/admin/")
+    request.user = Account.objects.get(email="boss@demo.local")
+    assert request.user.is_superuser
+
+    for model in (ChildProfile, Reader, Throttle, ShelfEntry, ProgressEvent,
+                  ClubMembership, MembershipCode, AchievementGrant):
+        model_admin = admin.site._registry[model]
+        assert not model_admin.has_add_permission(request), model.__name__
+        assert not model_admin.has_change_permission(request), model.__name__
+        assert not model_admin.has_delete_permission(request), model.__name__
+        assert "delete_selected" not in model_admin.get_actions(request), model.__name__
+
+
+def test_readonly_admin_rejects_child_delete_and_bulk_delete(admin_client_superuser):
+    """The superuser delete URL and crafted bulk action must not delete child data."""
+    from apps.accounts.models import Reader
+    from apps.library.models import Book, ShelfEntry
+
+    guardian = Account.objects.create_user("parinte@demo.local", "x-strong-pass-1", display_name="P")
+    child = ChildProfile.objects.create(guardian=guardian, nickname="Mia", age_band="9-11", avatar="fox")
+    reader = Reader.objects.create(kind=Reader.CHILD, child=child)
+    book = Book.objects.create(
+        title="Synthetic", author="Synthetic", page_count=120, genre="story",
+        cover_color="#123456", cover_emoji="📘", source_note="test",
+    )
+    entry = ShelfEntry.objects.create(reader=reader, book=book)
+    url = f"/admin/accounts/childprofile/{child.pk}/delete/"
+
+    assert admin_client_superuser.get(url).status_code == 403
+    assert admin_client_superuser.post(url, {"post": "yes"}).status_code == 403
+
+    # A forged action POST cannot bypass the absence of the bulk delete action.
+    response = admin_client_superuser.post(
+        "/admin/accounts/childprofile/",
+        {"action": "delete_selected", "_selected_action": [str(child.pk)], "index": "0"},
+    )
+    assert response.status_code in (200, 302)
+    assert ChildProfile.objects.filter(pk=child.pk).exists()
+    assert Reader.objects.filter(pk=reader.pk).exists()
+    assert ShelfEntry.objects.filter(pk=entry.pk).exists()
