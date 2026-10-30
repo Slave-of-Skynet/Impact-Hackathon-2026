@@ -58,7 +58,8 @@ def sign_in(request):
         if user is None:
             return HttpResponse("Invalid login", status=403)
         login(request, user)
-        return HttpResponse("Logged in")
+        # Redirect to the read page; do not leave the password POST in browser history.
+        return HttpResponse(status=303, headers={"Location": "/value/"})
     return HttpResponse(f'<form method="post"><input type="hidden" name="csrfmiddlewaretoken" value="{get_token(request)}"><input name="username"><input name="password" type="password"><button>Login</button></form>')
 
 @login_required
