@@ -45,7 +45,7 @@ One Django 5.2 LTS monolith serving a mobile-first, installable PWA with two pre
 | VII. Pragmatic SDD | `tasks.md` intentionally not generated before review (see below) | Pass |
 | VIII. Security & compliance | No secrets/PII committed; synthetic seeds; env-based credentials | Pass |
 
-Note: `AGENTS.md`/`CLAUDE.md`/`README.md` still say the stack is "TBD". They are left unchanged in this PR. Django 5.2 LTS + HTMX + PWA was **approved** by the team lead at gate **G7** on 2026-10-30 ([spec.md](./spec.md#decision-gates-blocking-items-need-answers-before-freezing)). This documentation update aligns them (constitution §VI says stack decisions remain deferred until accepted).
+Note: Django 5.2 LTS + HTMX + PWA was **approved** by the team lead at gate **G7** on 2026-10-30 ([spec.md](./spec.md#decision-gates-blocking-items-need-answers-before-freezing)). `README.md`, `AGENTS.md` and `CLAUDE.md` now reflect this decision. Partner-specific G1–G6 decisions remain open.
 
 ## Architecture
 
@@ -124,7 +124,7 @@ specs/001-reading-diary-mvp/
     └── authorization.md # Actor × operation matrix, child mode, membership lifecycle
 ```
 
-`tasks.md` is **not** generated in this PR: the review gate must approve the architecture first (Issue #7). After approval, `/speckit-tasks` produces it from these documents.
+`tasks.md` has **not yet been generated**. Architecture PR #8 passed independent review and the team lead approved G7; the team can now generate `tasks.md` from these contracts before starting separate workstreams.
 
 ### Source Code (repository root) — to be created in M0, not in this PR
 
