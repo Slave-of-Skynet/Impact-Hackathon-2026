@@ -1,0 +1,108 @@
+"""Regression tests for the PR #13 security review: WSGI fail-closed, PIN hash and child data in admin."""
+
+import json
+import os
+import subprocess
+import sys
+
+import pytest
+from django.conf import settings
+from django.contrib.auth.hashers import make_password
+
+from apps.accounts.models import Account, ChildProfile
+
+# Prints the settings a WSGI server would actually run with.
+PROBE = (
+    "import json, os, config.wsgi; from django.conf import settings as s; "
+    "print(json.dumps({'module': os.environ['DJANGO_SETTINGS_MODULE'], 'debug': s.DEBUG, "
+    "'session_secure': s.SESSION_COOKIE_SECURE, 'csrf_secure': s.CSRF_COOKIE_SECURE, "
+    "'ssl_redirect': s.SECURE_SSL_REDIRECT, 'hosts': s.ALLOWED_HOSTS}))"
+)
+
+
+def run_wsgi_probe(**env_overrides):
+    """Import config.wsgi in a fresh interpreter with a minimal environment.
+
+    DJANGO_SECRET_KEY / DJANGO_ALLOWED_HOSTS are always set explicitly (possibly empty): the .env loader in
+    base.py only fills unset variables, so a developer's local .env cannot change the result.
+    """
+    env = {"PATH": os.environ.get("PATH", ""), "DJANGO_SECRET_KEY": "", "DJANGO_ALLOWED_HOSTS": ""}
+    env.update(env_overrides)
+    return subprocess.run(
+        [sys.executable, "-c", PROBE], cwd=settings.BASE_DIR, env=env, capture_output=True, text=True, timeout=120
+    )
+
+
+def test_wsgi_without_settings_module_fails_closed_without_secret():
+    result = run_wsgi_probe()
+    assert result.returncode != 0
+    assert "ImproperlyConfigured" in result.stderr and "DJANGO_SECRET_KEY" in result.stderr
+    assert '"debug": true' not in result.stdout  # never fell back to dev
+
+
+def test_wsgi_without_settings_module_starts_with_prod():
+    result = run_wsgi_probe(DJANGO_SECRET_KEY="synthetic-test-key-" + "x" * 40, DJANGO_ALLOWED_HOSTS="demo.example.org")
+    assert result.returncode == 0, result.stderr
+    assert json.loads(result.stdout) == {
+        "module": "config.settings.prod", "debug": False, "session_secure": True, "csrf_secure": True,
+        "ssl_redirect": True, "hosts": ["demo.example.org"],
+    }
+
+
+def test_wsgi_respects_explicit_settings_module():
+    result = run_wsgi_probe(DJANGO_SETTINGS_MODULE="config.settings.dev")
+    assert result.returncode == 0, result.stderr
+    assert json.loads(result.stdout)["module"] == "config.settings.dev"
+
+
+def test_manage_py_still_defaults_to_dev():
+    env = {"PATH": os.environ.get("PATH", ""), "DJANGO_SECRET_KEY": ""}
+    result = subprocess.run(
+        [sys.executable, "manage.py", "diffsettings", "--output", "unified"],
+        cwd=settings.BASE_DIR, env=env, capture_output=True, text=True, timeout=120,
+    )
+    assert result.returncode == 0, result.stderr
+    assert "+ DEBUG = True" in result.stdout
+
+
+@pytest.fixture
+def admin_client_superuser(client, db):
+    Account.objects.create_superuser("boss@demo.local", "x-strong-pass-1", display_name="Boss")
+    client.login(username="boss@demo.local", password="x-strong-pass-1")
+    return client
+
+
+def test_admin_never_renders_pin_hash(admin_client_superuser):
+    guardian = Account.objects.create_user("parinte@demo.local", "x-strong-pass-1", display_name="P")
+    guardian.pin_hash = make_password("2468")
+    guardian.save()
+
+    html = admin_client_superuser.get(f"/admin/accounts/account/{guardian.pk}/change/").content.decode()
+    assert "parinte@demo.local" in html  # the page really rendered this account
+    assert guardian.pin_hash not in html
+    assert guardian.pin_hash.split("$")[2] not in html  # not even the salt
+    assert "pin_hash" not in html
+
+    guardian.refresh_from_db()
+    assert guardian.pin_hash and guardian.pin_hash.startswith("pbkdf2_sha256$")  # still stored for PR-2
+
+
+def test_admin_child_profile_shows_nickname_only(admin_client_superuser):
+    guardian = Account.objects.create_user("parinte@demo.local", "x-strong-pass-1", display_name="P")
+    child = ChildProfile.objects.create(guardian=guardian, nickname="Mia", age_band="9-11", avatar="fox")
+
+    changelist = admin_client_superuser.get("/admin/accounts/childprofile/").content.decode()
+    detail = admin_client_superuser.get(f"/admin/accounts/childprofile/{child.pk}/change/").content.decode()
+    for html in (changelist, detail):
+        assert "Mia" in html
+        assert "9–11" not in html  # age band display value
+        for hidden in ("age_band", "created_at", "avatar", "guardian"):
+            assert f"column-{hidden}" not in html and f"field-{hidden}" not in html
+    assert "field-nickname" in detail
+
+    # Still read-only for staff.
+    assert admin_client_superuser.get("/admin/accounts/childprofile/add/").status_code == 403
+    response = admin_client_superuser.post(f"/admin/accounts/childprofile/{child.pk}/change/", {"nickname": "Hacked"})
+    assert response.status_code == 403
+    child.refresh_from_db()
+    assert child.nickname == "Mia"

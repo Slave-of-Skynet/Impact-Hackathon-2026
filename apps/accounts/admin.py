@@ -9,9 +9,11 @@ class AccountAdmin(UserAdmin):
     ordering = ["email"]
     list_display = ["email", "display_name", "is_staff", "is_active"]
     search_fields = ["email", "display_name"]
-    readonly_fields = ["pin_hash", "last_login", "date_joined"]
+    # pin_hash is deliberately absent: readonly fields still render their value, and a 4–6 digit PIN hash
+    # is cheap to brute-force offline. The PIN is set and checked only by the app (PR-2).
+    readonly_fields = ["last_login", "date_joined"]
     fieldsets = [
-        (None, {"fields": ["email", "password", "display_name", "ui_language", "pin_hash"]}),
+        (None, {"fields": ["email", "password", "display_name", "ui_language"]}),
         ("Permissions", {"fields": ["is_active", "is_staff", "is_superuser", "groups", "user_permissions"]}),
         ("Dates", {"fields": ["last_login", "date_joined"]}),
     ]
@@ -31,8 +33,8 @@ class ReadOnlyAdmin(admin.ModelAdmin):
 @admin.register(ChildProfile)
 class ChildProfileAdmin(ReadOnlyAdmin):
     # authorization.md: staff see children read-only, nickname only; guardians manage them in the app.
-    list_display = ["nickname", "age_band", "created_at"]
-    fields = ["nickname", "age_band", "created_at"]
+    list_display = ["nickname"]
+    fields = ["nickname"]
 
 
 @admin.register(Reader)
