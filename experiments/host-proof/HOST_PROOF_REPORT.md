@@ -1,6 +1,6 @@
 # Host Proof H1–H7 — evidence checkpoint (2026-10-30)
 
-Issue: #11. Branch: `spike/host-proof-h1-h7`. **Status: H3/H4 PASS for manual post-redeploy and cross-device value tests (user-observed, HTTP logs corroborate request sequence); H1/H2/H5–H7 need remaining device, installability, performance, constraint, and fallback checks.**
+Issue: #11. Branch: `spike/host-proof-h1-h7`. **Status: H1/H2/H3/H4 PASS at the user-reported manual-evidence level; H3/H4 are additionally corroborated by Render request/deploy logs; H1/H2 device-specific details have not yet been supplied. H5–H7 remain PARTIAL and need evidence or explicit risk acceptance.**
 
 ## Scope and source integrity
 
@@ -21,13 +21,19 @@ This is an isolated synthetic Django probe in `experiments/host-proof/`, not the
 
 | Check | Status | Evidence or remaining requirement |
 |---|---|---|
-| H1 HTTPS accessible on phone + laptop | **PARTIAL** | 2026-10-30 14:56 +02:00: laptop curl validated TLS and returned 200; previous Windows/Android browser requests succeeded. Phone mobile-data connection and certificate warning status not yet reported |
-| H2 Manifest, service worker, Android install | **PARTIAL** | 2026-10-30 14:56 +02:00: HTTPS 200 and correct MIME for manifest, SW and both PNGs; manifest parses and PNG dimensions match 192/512. Android SW control, install, standalone and offline NOT RUN; iOS NOT RUN |
+| H1 HTTPS accessible on phone + laptop | **PASS (manual, user-reported)** | User reported H1 PASS on 2026-10-30. Earlier Windows curl validated TLS/HTTP 200 and browser logs included Android/Windows requests. Precise phone network mode, device and certificate-warning observation were **not separately described**; do not call this independently verified |
+| H2 Manifest, service worker, Android install | **PASS (manual, user-reported)** | User reported H2 PASS on 2026-10-30. Previously checked: manifest/SW/PNG endpoints HTTPS 200 and correct MIME/dimensions. Device-install, standalone, SW control and offline subtest observations/screenshots were **not separately supplied**, so they are accepted only as a self-report, not independently reproduced; iOS remains NOT RUN |
 | H3 Persist a database value through restart **and redeploy** | **PASS (manual, post-redeploy)** | User confirmed **Value: 35** after new deploy `dep-dbi93l0m7kps73c800k0` became **LIVE** at **12:48:21 UTC**, with Django `No migrations to apply` and new Gunicorn worker. Independent Render HTTP logs show Windows `GET /value/` **200** at **12:49:40 UTC** on the new instance after authentication; numeric value was observed by user, not captured in logs. This validates persistence through the deploy (which restarts the app). Separate standalone restart not tested |
 | H4 Cross-device login / save / read | **PASS (manual, user-reported)** | User confirmed after hotfix: Android saved 35; Windows loaded 35 on refresh. Access logs corroborate Android POST 303 followed by GET 200 and Windows GET 200; payload contents are not logged, so 35 is user-observed, not independently read via SQL. Whether the phone used mobile data vs Wi-Fi is unverified |
 | H5 Latency / cold-start / failure behavior | **PARTIAL** | 2026-10-30 14:56:32 +02:00: 3 laptop warm `/health/` GETs: 329/361/402 ms TTFB. Phone, save roundtrip and cold-start measurements NOT RUN |
 | H6 Free-tier resource constraints | **PARTIAL** | 2026-10-30 14:56 +02:00: free web + DB in Frankfurt; DB expires 2026-11-29; one web instance and Gunicorn worker 1. Published limits below; live forwarded-IP provenance and CPU use UNKNOWN |
 | H7 Demo fallback rehearsal | **PARTIAL** | 2026-10-30: local HTTP test used two independent sessions and SQLite, verified 17→35 and 35 after server restart. Real phone + laptop on LAN NOT RUN; local PWA installation unproven |
+
+## Human acceptance update (2026-10-30)
+
+- Project lead explicitly reported **H1 = PASS** and **H2 = PASS** after the manual verification instructions. These statuses are recorded as **user-reported**, not as a second independent device/browser experiment.
+- No device model, Chrome version, confirmation of mobile-data-only HTTPS, exact install/standalone steps, or offline-result details were supplied in that short status message; avoid inventing these specifics. Earlier independent HTTP assets/curl evidence is retained above.
+- **H5/H6/H7 still PARTIAL.** A final no-surprises demo decision still needs cold-start/phone-save observations (or a clearly accepted limitation), Render free-tier risk note, and actual laptop→phone LAN fallback (or fallback media).
 
 ## Cross-device value overwrite investigation (2026-10-30, 12:36 UTC)
 
@@ -47,8 +53,8 @@ This is an isolated synthetic Django probe in `experiments/host-proof/`, not the
 
 ### Review gates
 
-- **Next independent review:** H3/H4 have user-confirmed manual evidence corroborated by Render logs. Next confirm mobile-data HTTPS and PWA installation on Android, measured first-hit latency and save time, and an actual laptop/phone fallback rehearsal. If any fail, document FAIL and invoke fallback.
-- **Current decision:** **CONDITIONAL**: Render has successfully deployed and started. **CONDITIONAL GO** for Render + PostgreSQL as an operational, HTTPS-served, cross-device persisted data backend for the hackathon demo, based on H3 and H4 manual observations. **NOT YET GO** for claiming fully verified installable PWA, reliable presentation resilience or production readiness until H2 installability, H5 cold-start/latency and H7 fallback are tested. H1 mobile-data detail remains unknown. This does not block M0.
+- **Next independent review:** H1/H2/H3/H4 have been reported PASS manually; independent log evidence specifically corroborates H3/H4 (and parts of H1/H2 asset reachability). Obtain concise device/network/offline behavior details for H1/H2 if available; prioritize H5 first-hit/phone/save time and H7 actual phone+LAN fallback. If any fail, document FAIL and invoke fallback.
+- **Current decision:** **CONDITIONAL**: Render has successfully deployed and started. **CONDITIONAL GO** for Render + PostgreSQL as an operational, HTTPS-served, cross-device persisted data backend for the hackathon demo, based on H3 and H4 manual observations. **NOT YET GO** for claiming independently verified PWA installation, reliable presentation resilience or production readiness until device observations are recorded and H5 cold-start/latency and H7 fallback are tested. H1/H2 are user-reported PASS without detailed device logs. This does not block M0.
 - Probe is intentionally not production identity/child-mode logic. Its login and PWA shell do **not** prove minors' authorization, hardened production cookies or club entitlements.
 
 ## Follow-up evidence (2026-10-30)
