@@ -51,7 +51,7 @@ databases:
 - https://render.com/docs/blueprint-spec — PostgreSQL `ipAllowList: []` означает только внутренние подключения; отсутствие поля означает разрешение внешних попыток с любого IP при наличии credentials.
 - https://render.com/docs/postgresql-creating-connecting — Render service и DB в одном регионе могут работать по **internal** connection URL даже с запрещёнными внешними подключениями.
 
-В `docs/demo-deployment.md` §§3,4,5,7 зафиксируй:
+В `docs/demo-deployment.md` (разделы 3, 4, 5 и 7) зафиксируй:
 1. PostgreSQL **external access deny-by-default**, внутреннее соединение Render service ↔ DB через Blueprint `DATABASE_URL` должно оставаться работоспособным.
 2. Одноразовый `seed_demo` с Windows-ноутбука возможен через **external database URL** только после **временного allowlist точного внешнего IPv4/IPv6/CIDR оператора** в Render Dashboard. После seed убрать этот IP, убедиться, что allowlist вновь пуст.
 3. Никогда не публиковать external DB URL, секреты, пароли, PIN, одноразовые клубные коды и session cookies в PR/логах/чатах. Не оставлять открытую базу ради удобства демо.
@@ -63,7 +63,7 @@ databases:
 
 ## 3. R2 — реально работоспособный fallback на Windows / P1
 
-Сейчас `docs/demo-deployment.md` `10 ошибочно задаёт `DATABASE_URL` только для `migrate`/`seed_demo`, а для `runserver` — нет. Это может запустить сервер **с другой локальной БД** (репозиторный `db.sqlite3` вместо подготовленной вне репозитория). Там же нет `mkdir` для каталога SQLite и bind на `127.0.0.1` исключает телефон в LAN.
+Сейчас `docs/demo-deployment.md` (раздел 10) ошибочно задаёт `DATABASE_URL` только для `migrate`/`seed_demo`, а для `runserver` — нет. Это может запустить сервер **с другой локальной БД** (репозиторный `db.sqlite3` вместо подготовленной вне репозитория). Там же нет `mkdir` для каталога SQLite и bind на `127.0.0.1` исключает телефон в LAN.
 
 **Исправь `10`, предложив проверяемый Windows PowerShell сценарий** для владельца:
 - явно создаёт каталог в `$env:LOCALAPPDATA` **вне репозитория**;
@@ -86,7 +86,7 @@ PowerShell пример должен быть **копируемым и цель
 
 ## 4. R3 — формулировки Render и CI (documentation accuracy)
 
-В `docs/demo-deployment.md` `3 исправь чрезмерно категоричное утверждение **«новый workspace = guaranteed zero cost / гарантированно свободный бесплатный quota»**:
+В `docs/demo-deployment.md` (раздел 3) исправь чрезмерно категоричное утверждение **«новый workspace = guaranteed zero cost / гарантированно свободный бесплатный quota»**:
 
 - новый отдельный Hobby workspace — **предпочтительный кандидат**, но **не подтверждённая доступность в аккаунте пользователя**; его создание может запрашивать payment method / подтверждение billing;
 - **решение принимает Владимир**, только после проверки в своём Render UI фактического плана, допустимости второй бесплатной PostgreSQL и отсутствия потенциальных затрат;
@@ -94,7 +94,7 @@ PowerShell пример должен быть **копируемым и цель
 
 Авторитетный источник: https://render.com/docs/team-members (создание workspace, до пяти Hobby workspaces, step payment method); https://render.com/docs/free (текущие ограничения бесплатных ресурсов). Не изобретай точную цену или гарантированную бесплатность.
 
-В `docs/demo-deployment.md` `11 добавь подтверждённый **pre-fix** GitHub CI snapshot:
+В `docs/demo-deployment.md` (раздел 11) добавь подтверждённый **pre-fix** GitHub CI snapshot:
 - HEAD `40f0d59ed48e175d407fc3d3b50bdde4f9872095`;
 - Actions run https://github.com/Slave-of-Skynet/Impact-Hackathon-2026/actions/runs/41139884310;
 - **374 passed, 4 skipped, 0 failed** на Ubuntu.
