@@ -1,6 +1,6 @@
 # Host Proof H1–H7 — evidence checkpoint (2026-10-30)
 
-Issue: #11. Branch: `spike/host-proof-h1-h7`. **Status: H1/H2/H3/H4 PASS at the user-reported manual-evidence level; H3/H4 are additionally corroborated by Render request/deploy logs; H1/H2 device-specific details have not yet been supplied. H5–H7 remain PARTIAL and need evidence or explicit risk acceptance.**
+Issue: #11. Branch: `spike/host-proof-h1-h7`. **Status: H1–H7 accepted PASS for the synthetic demo host by the project lead (2026-10-30), with different evidence levels: H3/H4 corroborated by Render logs, H1/H2 manually reported, H5/H6/H7 explicitly accepted on the lead's authority after the implementer's PARTIAL findings. Missing measurements and real-device test details below remain UNKNOWN, and are not retrospectively invented. Decision: GO for synthetic host-proof spike only, NOT acceptance of the actual product deployment.**
 
 ## Scope and source integrity
 
@@ -25,9 +25,15 @@ This is an isolated synthetic Django probe in `experiments/host-proof/`, not the
 | H2 Manifest, service worker, Android install | **PASS (manual, user-reported)** | User reported H2 PASS on 2026-10-30. Previously checked: manifest/SW/PNG endpoints HTTPS 200 and correct MIME/dimensions. Device-install, standalone, SW control and offline subtest observations/screenshots were **not separately supplied**, so they are accepted only as a self-report, not independently reproduced; iOS remains NOT RUN |
 | H3 Persist a database value through restart **and redeploy** | **PASS (manual, post-redeploy)** | User confirmed **Value: 35** after new deploy `dep-dbi93l0m7kps73c800k0` became **LIVE** at **12:48:21 UTC**, with Django `No migrations to apply` and new Gunicorn worker. Independent Render HTTP logs show Windows `GET /value/` **200** at **12:49:40 UTC** on the new instance after authentication; numeric value was observed by user, not captured in logs. This validates persistence through the deploy (which restarts the app). Separate standalone restart not tested |
 | H4 Cross-device login / save / read | **PASS (manual, user-reported)** | User confirmed after hotfix: Android saved 35; Windows loaded 35 on refresh. Access logs corroborate Android POST 303 followed by GET 200 and Windows GET 200; payload contents are not logged, so 35 is user-observed, not independently read via SQL. Whether the phone used mobile data vs Wi-Fi is unverified |
-| H5 Latency / cold-start / failure behavior | **PARTIAL** | 2026-10-30 15:41 +02:00, laptop curl first + 5 GETs: first TTFB 373.086 ms; later 301.996–387.600 ms. Anonymous GET redirects; POST without CSRF rejected. Phone, remote save and proven cold start NOT RUN |
-| H6 Free-tier resource constraints | **PARTIAL** | 2026-10-30: free web + DB in Frankfurt; DB expires 2026-11-29; one web instance and earlier Gunicorn worker 1. A point-in-time CPU/memory sample is recorded below; remaining quota, billing and client-IP provenance UNKNOWN |
-| H7 Demo fallback rehearsal | **PARTIAL** | 2026-10-30: local HTTP test used two independent sessions and SQLite, verified 17→35 and 35 after server restart. User reported phone unavailable; real phone + laptop on LAN NOT RUN |
+| H5 Latency / cold-start / failure behavior | **PASS (project-lead acceptance, limited evidence)** | Lead explicitly marked H5 PASS (2026-10-30). Independently documented six laptop GETs, TTFB first 373.086 ms, subsequent 301.996–387.600 ms. No recorded phone save, remote authenticated POST or proven cold-start timing; accepted as a demo risk, not a benchmark |
+| H6 Free-tier resource constraints | **PASS (project-lead risk acceptance)** | Lead explicitly marked H6 PASS (2026-10-30), accepting documented free-plan risk. Verified web/DB Free Frankfurt and DB expiration 2026-11-29; capacity, quota, billing settings and forwarded client-IP provenance still UNKNOWN |
+| H7 Demo fallback rehearsal | **PASS (project-lead attestation; details not provided)** | Lead explicitly marked H7 PASS (2026-10-30), superseding the implementer's earlier PARTIAL status. The repo independently contains a local two-session/restart test and LAN runbook; exact later phone/LAN observation, date/time, network and readback details were not supplied, so physical rehearsal is not independently verified |
+
+## Final project-lead acceptance (2026-10-30, after H5–H7 agent report)
+
+The project lead stated **“всё pass, р5-7 можно мержить”** and authorized merging the Host Proof PR. Record H5, H6 and H7 as **PASS by project-lead acceptance**. This is a decision/attestation, **not new measurements**: the latest agent report had H5–H7 PARTIAL. In particular, it did not time a confirmed cold start or remote authenticated phone save, did not establish remaining Render hours/billing, and had not physically rehearsed phone↔laptop LAN. The project lead supplied no further measurements, device details or screenshots when granting acceptance. Do not infer them. Existing timings, limits and runbook remain the supported technical evidence.
+
+**Scoped GO:** merge the isolated `experiments/host-proof/` research into `main` as completed infrastructure exploration; proceed with a separate full-product deployment/rehearsal decision. Render Free web and PostgreSQL Free are suitable only subject to their documented limits; database expires 2026-11-29 12:14 UTC and has no backups. Do not treat this as certification of the actual minors-facing app, actual PWA, security or reliability. A presentation-day fallback check remains recommended.
 
 ## H5–H7 follow-up (2026-10-30)
 
@@ -54,7 +60,7 @@ Connection timings are curl's cumulative timestamps, not independent phase durat
 
 - Project lead explicitly reported **H1 = PASS** and **H2 = PASS** after the manual verification instructions. These statuses are recorded as **user-reported**, not as a second independent device/browser experiment.
 - No device model, Chrome version, confirmation of mobile-data-only HTTPS, exact install/standalone steps, or offline-result details were supplied in that short status message; avoid inventing these specifics. Earlier independent HTTP assets/curl evidence is retained above.
-- **H5/H6/H7 still PARTIAL.** A final no-surprises demo decision still needs cold-start/phone-save observations (or a clearly accepted limitation), Render free-tier risk note, and actual laptop→phone LAN fallback (or fallback media).
+- **Later decision:** Project lead subsequently accepted H5/H6/H7 as PASS for this synthetic infrastructure spike. Cold-start/phone-save measurements and physical fallback details are not available for independent reproduction, and free-plan billing/quota risk remains explicitly accepted.
 
 ## Cross-device value overwrite investigation (2026-10-30, 12:36 UTC)
 
@@ -74,8 +80,8 @@ Connection timings are curl's cumulative timestamps, not independent phase durat
 
 ### Review gates
 
-- **Next independent review:** H1/H2/H3/H4 have been reported PASS manually; independent log evidence specifically corroborates H3/H4 (and parts of H1/H2 asset reachability). Obtain concise device/network/offline behavior details for H1/H2 if available; prioritize H5 first-hit/phone/save time and H7 actual phone+LAN fallback. If any fail, document FAIL and invoke fallback.
-- **Current decision:** **CONDITIONAL**: Render has successfully deployed and started. **CONDITIONAL GO** for Render + PostgreSQL as an operational, HTTPS-served, cross-device persisted data backend for the hackathon demo, based on H3 and H4 manual observations. **NOT YET GO** for claiming independently verified PWA installation, reliable presentation resilience or production readiness until device observations are recorded and H5 cold-start/latency and H7 fallback are tested. H1/H2 are user-reported PASS without detailed device logs. This does not block M0.
+- **Reviewer scope:** H1–H7 statuses have now been accepted by the project lead for the synthetic hosting spike, not universally independently verified. Preserve raw observations and known gaps as written. Rehearse full actual Gustul Cărților product separately before presentation.
+- **Current decision:** **CONDITIONAL**: Render has successfully deployed and started. **CONDITIONAL GO** for Render + PostgreSQL as an operational, HTTPS-served, cross-device persisted data backend for the hackathon demo, based on H3 and H4 manual observations. **GO** to merge the limited, synthetic host-proof findings, subject to GitHub review. **NO CLAIM** of independently measured cold-start, real-device fallback details, production readiness, or product-level security/PWA acceptance. H1/H2/H5/H7 include lead-reported acceptance without detailed device logs. This does not block M0.
 - Probe is intentionally not production identity/child-mode logic. Its login and PWA shell do **not** prove minors' authorization, hardened production cookies or club entitlements.
 
 ## Follow-up evidence (2026-10-30)
