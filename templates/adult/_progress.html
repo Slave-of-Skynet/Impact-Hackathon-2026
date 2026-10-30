@@ -66,14 +66,14 @@
       <div class="form-group">
         <label for="id_page" class="form-label">{% translate "La ce pagină ai ajuns?" %}</label>
         <div style="display: flex; gap: var(--space-3); align-items: center; max-width: 320px;">
-          <input 
-            type="number" 
-            name="page" 
-            id="id_page" 
-            class="form-control" 
-            min="1" 
-            max="{{ entry.page_count }}" 
-            value="{{ entry.current_page }}" 
+          <input
+            type="number"
+            name="page"
+            id="id_page"
+            class="form-control"
+            min="0"
+            max="{{ entry.page_count }}"
+            value="{{ entry.current_page }}"
             required
             aria-describedby="page-help"
           >
@@ -82,7 +82,7 @@
           </span>
         </div>
         <div id="page-help" class="form-hint">
-          {% translate "Introdu un număr între 1 și" %} {{ entry.page_count }}.
+          {% translate "Introdu un număr între 0 și" %} {{ entry.page_count }}.
         </div>
       </div>
 

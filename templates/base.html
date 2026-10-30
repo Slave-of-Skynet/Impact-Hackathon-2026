@@ -18,7 +18,7 @@
 
   <header class="site-header">
     <div class="container header-inner">
-      <a href="{% if request.user.is_authenticated or me %}/panou/{% else %}/{% endif %}" class="brand-link" aria-label="{% translate 'Pagina principală Gustul Cărților' %}">
+      <a href="{% if request.session.mode == 'child' %}/copil/{% elif request.user.is_authenticated or me %}/panou/{% else %}/{% endif %}" class="brand-link" aria-label="{% translate 'Pagina principală Gustul Cărților' %}">
         <span class="brand-icon" aria-hidden="true">📖</span>
         <span>Gustul Cărților</span>
       </a>
@@ -29,7 +29,17 @@
 
       <nav aria-label="{% translate 'Navigare principală' %}">
         <ul id="nav-menu" class="nav-menu">
-          {% if request.user.is_authenticated or me %}
+          {% if request.session.mode == 'child' %}
+            <li><a href="/copil/" class="nav-link">{% translate "Acasă" %}</a></li>
+            <li><a href="/carti/" class="nav-link">{% translate "Catalog cărți" %}</a></li>
+            <li><a href="/parinte/" class="btn btn-outline btn-sm">🔒 {% translate "Mod Părinte" %}</a></li>
+            <li class="nav-user">
+              <form method="post" action="/cont/iesire/" style="display:inline;">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-outline btn-sm">{% translate "Ieșire" %}</button>
+              </form>
+            </li>
+          {% elif request.user.is_authenticated or me %}
             <li><a href="/panou/" class="nav-link {% if request.path == '/panou/' %}active{% endif %}">{% translate "Panou" %}</a></li>
             <li><a href="/raft/" class="nav-link {% if request.path == '/raft/' %}active{% endif %}">{% translate "Raftul meu" %}</a></li>
             <li><a href="/carti/" class="nav-link {% if request.path == '/carti/' %}active{% endif %}">{% translate "Catalog cărți" %}</a></li>

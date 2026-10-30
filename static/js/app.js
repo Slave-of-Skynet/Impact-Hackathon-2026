@@ -138,14 +138,7 @@
     // 4. Committed Success: Triggered ONLY on 2xx with response header "HX-Trigger: saved"
     document.body.addEventListener('saved', function () {
       showToast('Progresul a fost salvat cu succes!', 'success');
-
-      // Refresh request_id for next save so idempotency token is fresh
-      const requestIdInputs = document.querySelectorAll('input[name="request_id"]');
-      requestIdInputs.forEach(function (input) {
-        if (window.crypto && typeof window.crypto.randomUUID === 'function') {
-          input.value = window.crypto.randomUUID();
-        }
-      });
+      // The server partial itself supplies the next request_id UUID; no client-side global rotation.
     });
   });
 })();

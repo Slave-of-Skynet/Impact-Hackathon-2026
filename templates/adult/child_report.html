@@ -11,15 +11,19 @@
       <div class="child-avatar" style="width: 64px; height: 64px; font-size: 2rem;" aria-hidden="true">
         {% if child.avatar == 'fox' %}🦊
         {% elif child.avatar == 'owl' %}🦉
+        {% elif child.avatar == 'cat' %}🐱
         {% elif child.avatar == 'bear' %}🐻
         {% elif child.avatar == 'rabbit' %}🐰
+        {% elif child.avatar == 'hedgehog' %}🦔
+        {% elif child.avatar == 'squirrel' %}🐿️
+        {% elif child.avatar == 'turtle' %}🐢
         {% else %}⭐{% endif %}
       </div>
       <div>
         <h1 style="margin-bottom: 2px; font-size: var(--text-2xl);">{{ child.nickname }}</h1>
         <div style="display: flex; gap: var(--space-2); align-items: center; flex-wrap: wrap;">
           <span class="badge badge-accent">{% translate "Grupa de vârstă" %}: {{ child.age_band }} {% translate "ani" %}</span>
-          {% if memberships %}
+          {% if is_member or has_active_membership %}
             <span class="badge badge-primary">⭐ {% translate "Membru Club activ" %}</span>
           {% else %}
             <span class="badge">{% translate "Club inactiv" %}</span>
@@ -140,15 +144,29 @@
     <div class="card" style="background: var(--color-surface-subtle); border-color: var(--color-border-subtle);">
       <h3 style="font-size: var(--text-base); margin-bottom: var(--space-2);">{% translate "Abonament Club Gustul Cărților" %}</h3>
       {% if memberships %}
-        {% for m in memberships %}
-          <p style="font-size: var(--text-sm); margin-bottom: var(--space-2);">
-            <strong style="color: var(--color-success);">✓ {% translate "Activ" %}</strong> &middot; 
-            {% translate "Valabil până la" %}: {{ m.valid_until|date:"d M Y" }}
-          </p>
-        {% endfor %}
+        <div style="display: flex; flex-direction: column; gap: var(--space-2); margin-bottom: var(--space-4);">
+          {% for m in memberships %}
+            <div style="font-size: var(--text-sm); display: flex; justify-content: space-between; align-items: center; padding: var(--space-2); background: var(--color-surface); border-radius: var(--radius-sm); border: 1px solid var(--color-border);">
+              <span>{% translate "Valabil până la" %}: {{ m.valid_until|date:"d M Y" }}</span>
+              <span class="badge {% if m.status == 'active' and is_member %}badge-primary{% elif m.status == 'active' %}badge-accent{% else %}badge-outline{% endif %}">
+                {% if m.status == 'active' and is_member %}
+                  ✓ {% translate "Activ" %}
+                {% elif m.status == 'active' %}
+                  {% translate "Înregistrat" %}
+                {% elif m.status == 'expired' %}
+                  {% translate "Expirat" %}
+                {% elif m.status == 'revoked' %}
+                  {% translate "Revocat" %}
+                {% else %}
+                  {{ m.status }}
+                {% endif %}
+              </span>
+            </div>
+          {% endfor %}
+        </div>
       {% else %}
         <p style="font-size: var(--text-sm); margin-bottom: var(--space-3);">
-          {% translate "Copilul nu are un abonament activ la Clubul de lectură." %}
+          {% translate "Copilul nu are un istoric de membru al Clubului de lectură." %}
         </p>
         <a href="/club/cod/" class="btn btn-outline btn-sm">
           {% translate "Activează un cod pentru acest copil" %} &rarr;

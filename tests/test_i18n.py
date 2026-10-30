@@ -24,6 +24,7 @@ PREVIEW_TEMPLATES = [
     "adult/dashboard.html",
     "adult/family.html",
     "adult/pin_setup.html",
+    "adult/pin_set.html",
     "adult/child_report.html",
     "adult/catalog.html",
     "adult/book_detail.html",
@@ -87,7 +88,7 @@ def test_forms_include_csrf():
     assert "X-CSRFToken" in base_html, "base.html must configure X-CSRFToken for HTMX"
 
     # Check key form templates
-    form_templates = ["login.html", "signup.html", "family.html", "pin_setup.html", "redeem_code.html"]
+    form_templates = ["login.html", "signup.html", "family.html", "pin_set.html", "redeem_code.html"]
     for name in form_templates:
         tmpl = (TEMPLATES_DIR / "adult" / name).read_text(encoding="utf-8")
         assert "{% csrf_token %}" in tmpl, f"Form in {name} is missing {{% csrf_token %}}"
@@ -98,7 +99,7 @@ def test_htmx_status_handling_contract_in_js():
 
     - htmx:beforeSwap enables swap ONLY for status 422
     - responseError handles 401 (HX-Redirect), 403, 404, 409, 429, 503
-    - 'saved' event regenerates request_id and fires on HX-Trigger: saved
+    - 'saved' event triggers success toast, but does NOT rotate request_id globally (server partial is authoritative)
     """
     app_js_path = STATIC_JS_DIR / "app.js"
     assert app_js_path.exists(), "static/js/app.js must exist"
@@ -116,9 +117,9 @@ def test_htmx_status_handling_contract_in_js():
     assert "HX-Redirect" in content
     assert "Nu s-a salvat" in content
 
-    # 3. Success event and request_id rotation
+    # 3. Success event: toast only, no global client-side randomUUID mutation
     assert "saved" in content
-    assert "request_id" in content
+    assert "crypto.randomUUID" not in content
 
 
 def test_romanian_po_file_exists():
@@ -139,4 +140,3 @@ def test_root_template_aliases_render():
         html = render_to_string(tmpl, ctx)
         assert len(html) > 100
         assert "{%" not in html
-

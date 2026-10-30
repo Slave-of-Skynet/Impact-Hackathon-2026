@@ -39,7 +39,13 @@
       </p>
 
       <div style="border-top: 1px solid var(--color-border); padding-top: var(--space-6);">
-        {% if shelf_book_ids and book.public_id in shelf_book_ids %}
+        {% if not request.user.is_authenticated %}
+          <div style="display: flex; gap: var(--space-3); align-items: center;">
+            <a href="/cont/intrare/?next=/carti/{{ book.public_id }}/" class="btn btn-primary btn-lg">
+              {% translate "Conectează-te pentru a adăuga pe raft" %}
+            </a>
+          </div>
+        {% elif shelf_book_ids and book.public_id in shelf_book_ids %}
           <div style="display: flex; gap: var(--space-3); align-items: center;">
             <a href="/raft/" class="btn btn-outline btn-lg" style="border-color: var(--color-success); color: var(--color-success);">
               ✓ {% translate "Cartea este pe raftul tău" %}
