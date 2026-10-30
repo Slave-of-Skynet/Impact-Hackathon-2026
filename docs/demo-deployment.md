@@ -136,6 +136,12 @@ Known Windows-only, pre-existing: the 4 subprocess tests in `tests/test_review_f
 minimal-environment interpreter (documented in `docs/deploy-club-integration.md`); Ubuntu CI is the source
 of truth for them. No skips or xfails were added.
 
+CI interlock (found by the first CI run on `494950f`, run 41139115030): the two WSGI regression probes in
+`tests/test_review_fixes.py` predated the new prod contract — without `DATABASE_URL` the new guard now
+fails the process before the secret-key guard. They now carry a synthetic PostgreSQL `DATABASE_URL`
+(docs §12), and CI installs `--extra postgres` so the prod-start probe has the psycopg driver, exactly
+like the deployment build. Final run counts: see the PR description.
+
 ## 9. D34-05 external HTTPS smoke checklist + persistence ledger (to execute on the live host)
 
 Record HTTP status, observed values and timestamps for each step. No DSNs, credentials, session cookies,
@@ -203,6 +209,12 @@ was actually run.
 (`transaction_mode == "IMMEDIATE"`); under the new contract it asserts the PostgreSQL engine and no SQLite
 options. `test_prod_settings_require_secret_key` pins a valid `DATABASE_URL` so the raised error is the
 secret-key guard.
+
+`tests/test_review_fixes.py` — the two WSGI regression probes now carry a synthetic PostgreSQL
+`DATABASE_URL`: the fail-closed probe must exercise the *secret-key* guard (not the new database guard),
+and the prod-start probe starts on a PostgreSQL engine. The latter needs the psycopg driver, so
+`.github/workflows/django-checks.yml` now runs `uv sync --frozen --extra postgres`, mirroring the
+production build command. The dev-settings probe and `manage.py diffsettings` probe are unchanged.
 
 `render.yaml`, `tests/test_prod_settings.py`, `docs/demo-deployment.md` are new files; no models,
 migrations, public URLs or authz/club contracts changed.
