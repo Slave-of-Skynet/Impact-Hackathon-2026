@@ -80,3 +80,8 @@ Igor owns the new integration test and evidence. Arsenii inspects authentication
 ## 5. Source of proof vs design intent
 
 Some existing plans/quickstart/tasks.md still say NOT RUN or imply no application code exists; those are stale relative to main. Do not silently edit historical architecture records to manufacture evidence. Update the execution status in the final report only from observed checks. Partner approval for G1–G6 and production compliance is outside this contract.
+
+
+## 6. Critical test harness constraint: durable redemption transactions
+
+The current club.services.redeem_code checks that **no outer transaction is already open** and then opens transaction.atomic(durable=True). Ordinary pytest-django db fixtures / pytest.mark.django_db can wrap a test in a transaction, causing a false failure (RuntimeError: Redemption requires an outermost transaction). Any scenario containing an actual code redemption **MUST** use pytest.mark.django_db(transaction=True) / transactional_db or another harness proven not to wrap the service call in an outer transaction. Follow tests/test_club_views.py and tests/test_club_redemption.py, which already use transaction=True. Do NOT remove the production safety check or bypass redemption to accommodate a wrong test fixture. Record the fixture strategy in the E2E report.
