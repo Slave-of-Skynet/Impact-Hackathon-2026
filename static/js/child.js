@@ -35,8 +35,8 @@
   // Rule: Swap ONLY on 2xx and 422 (to render inline validation errors).
   // Reject 401, 403, 404, 409, 429, 500, 503.
   document.addEventListener("htmx:beforeSwap", function (evt) {
-    const status = evt.detail.xhr ? evt.detail.xhr.status : 0;
-    if (status === 422) {
+    const status = evt.detail && evt.detail.xhr ? evt.detail.xhr.status : 0;
+    if (status === 422 && evt.detail) {
       evt.detail.shouldSwap = true;
       evt.detail.isError = false;
     }
@@ -44,11 +44,11 @@
 
   // HTMX Event: responseError
   document.addEventListener("htmx:responseError", function (evt) {
-    const xhr = evt.detail.xhr;
+    const xhr = evt.detail ? evt.detail.xhr : null;
     const status = xhr ? xhr.status : 0;
 
     if (status === 401) {
-      const redirectUrl = xhr.getResponseHeader("HX-Redirect") || "/cont/intrare/";
+      const redirectUrl = (xhr.getResponseHeader && xhr.getResponseHeader("HX-Redirect")) || "/cont/intrare/";
       window.location.href = redirectUrl;
       return;
     }
@@ -77,7 +77,8 @@
   });
 
   // HTMX Trigger: saved (Confirmed transaction from backend)
-  document.body.addEventListener("saved", function () {
+  // Attached to document rather than document.body so script evaluates safely even when loaded in <head>.
+  document.addEventListener("saved", function () {
     showToast("Salvat cu succes! ✓", "success");
   });
 

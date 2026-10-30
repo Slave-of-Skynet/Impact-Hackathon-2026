@@ -17,8 +17,8 @@
   <link rel="stylesheet" href="{% static 'css/child.css' %}">
 
   <!-- HTMX & Child Controller -->
-  <script src="{% static 'js/htmx.min.js' %}"></script>
-  <script src="{% static 'js/child.js' %}"></script>
+  <script src="{% static 'js/htmx.min.js' %}" defer></script>
+  <script src="{% static 'js/child.js' %}" defer></script>
   {% block extra_head %}{% endblock %}
 </head>
 <body hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
