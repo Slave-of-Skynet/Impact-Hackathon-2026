@@ -1,15 +1,11 @@
-"""HTML diary routes, using the authorization API from accounts PR-2.
+"""HTML diary routes using the shared accounts authorization and child middleware.
 
-Integration gate: real accounts.authz/ChildModeMiddleware and adult/child
-templates must land before this draft is deployed. Tests supply mocks only in
-the test process. Missing authz fails closed with 503, never a local substitute.
+Adult/child production templates remain an integration gate for deployment.
 """
 
 from functools import wraps
-from importlib import import_module
 from uuid import uuid4
 
-from django.contrib.auth.views import redirect_to_login
 from django.core.exceptions import ValidationError
 from django.http import Http404, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
@@ -18,6 +14,7 @@ from django.utils.translation import gettext as _
 from django.views.decorators.csrf import csrf_protect
 from django.views.decorators.http import require_GET, require_POST
 
+from apps.accounts import authz
 from apps.core.viewmodels import BookVM, GrantVM, MascotLine, ShelfEntryVM, percent
 from apps.library import services
 from apps.library.models import Book, ShelfEntry
@@ -39,33 +36,14 @@ def _with_reader(*, optional=False):
     def decorate(view):
         @wraps(view)
         def wrapped(request, *args, **kwargs):
-            if not request.user.is_authenticated:
-                if optional:
-                    return view(request, None, *args, **kwargs)
-                if "entry" in kwargs:
-                    next_page = reverse("shelf_entry", args=[kwargs["entry"]])
-                elif "book" in kwargs:
-                    next_page = reverse("book_detail", args=[kwargs["book"]])
-                else:
-                    next_page = request.get_full_path()
-                response = redirect_to_login(next_page, login_url="/cont/intrare/")
-                if _htmx(request):
-                    return HttpResponse(status=401, headers={"HX-Redirect": response["Location"]})
-                return response
-            try:
-                authz = import_module("apps.accounts.authz")
-            except ModuleNotFoundError as error:
-                if error.name != "apps.accounts.authz":
-                    raise
-                return _unsaved(503)
-            reader = authz.current_reader(request)
+            reader = authz.current_reader(request) if request.user.is_authenticated else None
             return view(request, reader, *args, **kwargs)
-        return wrapped
+        return wrapped if optional else authz.login_required(wrapped)
     return decorate
 
 
 def _mode(request):
-    return "child" if request.session.get("mode") == "child" else "adult"
+    return "child" if authz.is_child_mode(request) else "adult"
 
 
 def _book_vm(book):
@@ -87,7 +65,7 @@ def _grant_vm(grant):
 
 
 def _get_entry(reader, public_id):
-    return import_module("apps.accounts.authz").get_entry_for_reader(reader, public_id)
+    return authz.get_entry_for_reader(reader, public_id)
 
 
 def _shelf_book_ids(reader):
@@ -178,18 +156,21 @@ def _saved_response(request, result):
 @_with_reader()
 def add_to_shelf(request, reader, book):
     active_book = get_object_or_404(Book, public_id=book, is_active=True)
-    if _htmx(request):
-        # HTMX add = PENDING UI CONTRACT (#17/#18). Until the UI owner supplies
-        # an agreed partial/target, refuse without writing or announcing saved.
-        # Normal POST remains available; never swap a progress screen here.
-        return _unsaved(503)
     try:
-        entry, _created = services.add_to_shelf(reader, active_book)
+        entry, created = services.add_to_shelf(reader, active_book)
     except Book.DoesNotExist:
         raise Http404 from None
     except services.LockTimeout:
         return _unsaved(503)
-    return redirect("shelf_entry", entry=entry.public_id)
+    target = reverse("shelf_entry", args=[entry.public_id])
+    if _htmx(request):
+        # HTMX processes HX-Redirect before response swapping, including 204.
+        # Navigate the whole page; no add partial or DOM target is required.
+        response = HttpResponse(status=204, headers={"HX-Redirect": target})
+        if created:
+            response["HX-Trigger"] = "saved"
+        return response
+    return redirect(target)
 
 
 def _write_progress(request, reader, public_id, *, finish):

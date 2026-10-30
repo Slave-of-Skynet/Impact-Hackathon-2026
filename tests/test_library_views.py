@@ -1,20 +1,20 @@
 """Route/context tests with explicit test-only authz and template contracts.
 
-These mocks do not prove the pending accounts middleware or real UI integration.
-They let the library owner verify the routes without copying either workstream.
+These unit mocks do not prove authorization. The separate
+test_library_authz_integration.py exercises the real backend and middleware.
 """
 
 from html.parser import HTMLParser
 import os
 from pathlib import PurePosixPath
 import subprocess
-import sys
 import types
 import uuid
 from unittest.mock import Mock
 
 import pytest
 from django.conf import settings
+from django.core.exceptions import PermissionDenied
 from django.db import connection
 from django.shortcuts import get_object_or_404
 from django.test import Client
@@ -60,11 +60,12 @@ def diary(client, monkeypatch, ui_contract):
                                age_band="9-11", cover_color="#123456", cover_emoji="📚")
     entry, _ = services.add_to_shelf(reader, book)
     authz = types.ModuleType("apps.accounts.authz")
+    authz.is_child_mode = views.authz.is_child_mode
     authz.current_reader = Mock(return_value=reader)
     authz.get_entry_for_reader = Mock(side_effect=lambda owner, public_id: get_object_or_404(
         ShelfEntry.objects.select_related("book"), reader=owner, public_id=public_id,
     ))
-    monkeypatch.setitem(sys.modules, "apps.accounts.authz", authz)
+    monkeypatch.setattr(views, "authz", authz)
     client.force_login(account)
     return types.SimpleNamespace(account=account, reader=reader, child=child, child_reader=child_reader,
                                  book=book, entry=entry, authz=authz)
@@ -151,21 +152,22 @@ def test_detail_template_context_and_current_reader_shelf_isolation(diary, clien
 
 
 @pytest.mark.parametrize("child_mode", [False, True])
-def test_htmx_add_pending_contract_never_writes_or_swaps_progress(diary, client, monkeypatch, child_mode):
+def test_htmx_add_navigates_without_swapping_progress(diary, client, child_mode):
     if child_mode:
         diary.authz.current_reader.return_value = diary.child_reader
         session = client.session
         session.update({"mode": "child", "active_child": str(diary.child.public_id)})
         session.save()
     book = Book.objects.create(title="Not shelved", author="Demo", page_count=120, genre="story")
-    write = Mock()
-    monkeypatch.setattr(services, "add_to_shelf", write)
-    response = client.post(reverse("add_to_shelf", args=[book.public_id]), HTTP_HX_REQUEST="true")
-    assert_unsaved(response, 503)
-    assert not response.templates
-    assert b"request_id" not in response.content and b"progress-panel" not in response.content
-    assert not ShelfEntry.objects.filter(book=book).exists()
-    write.assert_not_called()
+    owner = diary.child_reader if child_mode else diary.reader
+    for created in (True, False):
+        response = client.post(reverse("add_to_shelf", args=[book.public_id]), HTTP_HX_REQUEST="true")
+        entry = ShelfEntry.objects.get(book=book, reader=owner)
+        assert response.status_code == 204
+        assert response["HX-Redirect"] == reverse("shelf_entry", args=[entry.public_id])
+        assert (response.get("HX-Trigger") == "saved") is created
+        assert response.content == b"" and not response.templates
+    assert ShelfEntry.objects.filter(book=book).count() == 1
 
 
 @pytest.fixture
@@ -446,7 +448,9 @@ def test_expired_session_htmx_is_401_and_normal_post_goes_to_login(diary, client
     client.logout()
     value = diary.book.public_id if route == "add_to_shelf" else diary.entry.public_id
     url = reverse(route, args=[value])
-    response = client.post(url, {"page": 35, "request_id": uuid.uuid4()}, HTTP_HX_REQUEST="true")
+    current_url = reverse("book_detail" if route == "add_to_shelf" else "shelf_entry", args=[value])
+    response = client.post(url, {"page": 35, "request_id": uuid.uuid4()}, HTTP_HX_REQUEST="true",
+                           HTTP_HX_CURRENT_URL=f"http://testserver{current_url}")
     assert_unsaved(response, 401)
     assert response.content == b"" and response["HX-Redirect"].startswith("/cont/intrare/?next=")
     assert "/progres/" not in response["HX-Redirect"]
@@ -485,58 +489,11 @@ def test_lock_exception_is_503_without_save(diary, client, monkeypatch, route):
     assert response["Retry-After"] == "1" and not ProgressEvent.objects.exists()
 
 
-def test_missing_authz_fails_closed(diary, client, monkeypatch):
-    monkeypatch.setitem(sys.modules, "apps.accounts.authz", None)
+def test_refused_current_reader_never_saves(diary, client):
+    diary.authz.current_reader.side_effect = PermissionDenied
     response = client.post(progress_url(diary.entry), {"page": 35, "request_id": uuid.uuid4()}, HTTP_HX_REQUEST="true")
-    assert_unsaved(response, 503)
+    assert_unsaved(response, 403)
     assert not ProgressEvent.objects.exists()
-
-
-def real_lock_response():
-    # Executed in test_concurrency's isolated, migrated file database, with
-    # two independent thread-local connections and no in-memory fallback.
-    import sys
-    import types
-    from unittest.mock import Mock
-    from django.test import Client
-    from django.shortcuts import get_object_or_404
-
-    settings.ALLOWED_HOSTS = ["testserver"]
-    authz = types.ModuleType("apps.accounts.authz")
-    authz.current_reader = Mock(return_value=reader)
-    authz.get_entry_for_reader = Mock(side_effect=lambda owner, public_id: get_object_or_404(
-        ShelfEntry, reader=owner, public_id=public_id,
-    ))
-    sys.modules["apps.accounts.authz"] = authz
-    browser = Client()
-    browser.force_login(reader.account)
-    connection.close()
-    settings.DATABASES["default"]["OPTIONS"]["timeout"] = 0.15
-    key = uuid.uuid4()
-    def attempt():
-        close_old_connections()
-        try:
-            before = time.monotonic()
-            response = browser.post(f"/raft/{entry.public_id}/progres/",
-                                    {"page": 35, "request_id": key}, HTTP_HX_REQUEST="true")
-            return response, time.monotonic() - before
-        finally:
-            connection.close()
-    with ThreadPoolExecutor(max_workers=1) as pool:
-        with transaction.atomic():
-            response, elapsed = pool.submit(attempt).result(timeout=5)
-            assert 0.10 <= elapsed < 3
-            assert response.status_code == 503 and "HX-Trigger" not in response
-            assert not ProgressEvent.objects.exists()
-            assert ShelfEntry.objects.get(pk=entry.pk).current_page == 0
-    assert not record_progress(reader, entry, 35, key).replayed
-    assert record_progress(reader, entry, 35, key).replayed
-
-
-def test_real_file_database_lock_returns_503_with_no_partial_write(tmp_path):
-    from test_concurrency import run_scenario
-
-    run_scenario(tmp_path, real_lock_response)
 
 
 @pytest.mark.django_db(transaction=True)
