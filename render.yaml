@@ -39,3 +39,8 @@ databases:
     databaseName: gustul_cartilor
     region: frankfurt
     plan: free
+    # Deny-by-default (blueprint spec): an empty list refuses all external connection attempts; the only
+    # client is the web service itself via Render's internal DATABASE_URL (same region). A temporary
+    # operator-IP entry for the one-time seed is made in the Render dashboard and removed afterwards
+    # (docs/demo-deployment.md §7).
+    ipAllowList: []
