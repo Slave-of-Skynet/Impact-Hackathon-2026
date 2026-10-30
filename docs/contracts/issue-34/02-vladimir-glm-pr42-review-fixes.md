@@ -32,7 +32,7 @@ git branch --show-current
 
 Если локальный origin — fork/ветка отстаёт, получи истинный HEAD PR #42 через `gh pr view 42 --repo Slave-of-Skynet/Impact-Hackathon-2026 --json headRefOid,headRefName` или `git fetch https://github.com/Slave-of-Skynet/Impact-Hackathon-2026.git refs/pull/42/head`. **Не затирай локальные незакоммиченные изменения** — используй отдельный `git worktree`, если необходимо. Не создавай новую ветку от `main`: нужно обновить **именно существующий PR #42**, сохранив его код и историю.
 
-Прочитай фактические `render.yaml`, `docs/demo-deployment.md` (``3,4,7,10,11`), полный review PR #42 и `AGENTS.md`. Если замечание уже исправлено новым HEAD, не переделывай его второй раз; проверь критерии и задокументируй.
+Прочитай фактические `render.yaml`, `docs/demo-deployment.md` (§§3,4,7,10,11), полный review PR #42 и `AGENTS.md`. Если замечание уже исправлено новым HEAD, не переделывай его второй раз; проверь критерии и задокументируй.
 
 ## 2. R1 — безопасность Render PostgreSQL / P1
 
@@ -51,7 +51,7 @@ databases:
 - https://render.com/docs/blueprint-spec — PostgreSQL `ipAllowList: []` означает только внутренние подключения; отсутствие поля означает разрешение внешних попыток с любого IP при наличии credentials.
 - https://render.com/docs/postgresql-creating-connecting — Render service и DB в одном регионе могут работать по **internal** connection URL даже с запрещёнными внешними подключениями.
 
-В `docs/demo-deployment.md` ``3,4,5,7` зафиксируй:
+В `docs/demo-deployment.md` §§3,4,5,7 зафиксируй:
 1. PostgreSQL **external access deny-by-default**, внутреннее соединение Render service ↔ DB через Blueprint `DATABASE_URL` должно оставаться работоспособным.
 2. Одноразовый `seed_demo` с Windows-ноутбука возможен через **external database URL** только после **временного allowlist точного внешнего IPv4/IPv6/CIDR оператора** в Render Dashboard. После seed убрать этот IP, убедиться, что allowlist вновь пуст.
 3. Никогда не публиковать external DB URL, секреты, пароли, PIN, одноразовые клубные коды и session cookies в PR/логах/чатах. Не оставлять открытую базу ради удобства демо.
