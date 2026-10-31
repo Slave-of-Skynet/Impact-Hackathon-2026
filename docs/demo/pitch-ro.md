@@ -4,7 +4,7 @@
 [`run-of-show.md`](run-of-show.md) (demonstrația pas cu pas) și
 [`staging-and-recovery.md`](staging-and-recovery.md) (pregătirea demo-ului).
 
-**Vorbitori:** Vladimir (narațiune, pitch) + Denis (demonstrația pe telefon/laptop).
+**Vorbitori:** Vladimir (narațiune, pitch) + Denis (demonstrația pe telefon/laptop). **Înainte de scenă:** două profiluri de browser autentificate separat în același guardian: **A = adult** pe `/panou/`; **B = copil** (mod copil Mia), cu cartea nefinalizată pregătită pe ecranul de progres. Nu transforma A în mod copil. Scenariul complet de 9 pași din run-of-show este o **repetiție EXTINSĂ**, nu o promisiune că încape în segmentul live de 55 s.
 
 **Regulă de onestitate (pentru orice adaptare):**
 - `IMPLEMENTED` = există în cod și e demonstrat în demo-ul de față.
@@ -22,8 +22,8 @@
 |---|---|---|---|
 | 0:00–0:20 | Landing `/carti/` (sau `/` după PR #51) | Vladimir | **Problema.** „Fiecare părinte o cunoaște: copilul începe o carte cu entuziasm și, după câteva zile, cartea ajunge pe raft. Noi — părinții și cluburile de lectură — nu avem o modalitate blândă de a vedea progresul copilului și de a-l ține aproape de citit, fără presiune și fără ecrane sociale." |
 | 0:20–0:40 | Același | Vladimir | **Utilizatorul.** „Gustul Cărților e făcut pentru familii cu copii de 7–15 ani și pentru cluburile de lectură care le însoțesc. Copilul citește în ritmul lui; părintele rămâne în câmp vizual; clubul rămâne conectat la familii." |
-| 0:40–1:00 | `https://gustul-cartilor.onrender.com` | Vladimir | **Produsul.** „E un jurnal de lectură pentru toată familia, în română, instalabil ca aplicație (PWA). Copilul are un mod protejat, simplu, cu mascotă; părintele are panoul lui; totul e separat printr-un PIN parental." |
-| 1:00–1:55 | Demo live (2 ferestre) | Denis (telefon) + Vladimir | **Demonstrația** — vezi [`run-of-show.md`](run-of-show.md): părintele deschide panoul → intră în modul copil pentru Mia → alege „Capra cu trei iezi" → salvează pagina 35 din 120 → părintele, în a doua sesiune, vede imediat 35/120 → termină cartea → insigna „Prima carte" → cod de club → colțul membrului. **Replică de tranziție:** „Uite totul, live: copilul salvează o pagină — și părintele o vede instant, în sesiunea lui." |
+| 0:40–1:00 | `https://gustul-cartilor.onrender.com` | Vladimir | **Produsul.** „E un jurnal de lectură web pentru toată familia, în română, pregătit pentru experiența PWA (instalarea pe Android mai trebuie verificată). Copilul are un mod simplu, cu mascotă; părintele are panoul lui; PIN-ul limitează trecerea din modul copil la funcțiile părintelui, fără a verifica identitatea sau vârsta.” |
+| 1:00–1:55 | Demo live (2 ferestre) | Denis (telefon) + Vladimir | **Demonstrația SCURTĂ, țintă 55 s** — două sesiuni distincte pregătite din timp: în **B (copil)** arată cartea nefinalizată „Capra cu trei iezi”, salvează **35/120**; în **A (adult)** actualizează `/panou/` și arată imediat **35/120**. Nu încerca să parcurgi și loginul, finish, PIN, redeem + club în aceste 55 s. **Replică de tranziție:** „Uite totul, live: copilul salvează o pagină — și părintele o vede în sesiunea lui independentă.” Insignele și codul de club sunt menționate verbal sau demonstrate în versiunea extinsă din [`run-of-show.md`](run-of-show.md), numai dacă timpul permite. |
 | 1:55–2:25 | Slide/narativ | Vladimir | **Diferențierea** (răspunsul la „de ce nu Goodreads/Discord?" — mai jos). „Nu construim încă o rețea socială. Construim spațiul de citit al familiei: controlul părintelui, drepturile clubului și, mai târziu, legătura cu întâlnirile reale." |
 | 2:25–2:45 | Slide/narativ | Vladimir | **Ipoteza de impact + roadmap.** „Ipoteza noastră: dacă progresul e vizibil și sărbătorit în familie, copiii citesc mai mult și cluburile își retențează familiile. Mai departe — doar împreună cu partenerul: schimb de cărți mediat de părinte, întâlniri organizate de club, «Cărți pentru fapte». Fiecare pas are porțile lui: siguranța copiilor, moderare, aprobarea partenerului, confidențialitate, costuri." |
 | 2:45–3:00 | Același | Vladimir | **Cererea către partener.** „Vă propunem un pilot cu clubul vostru: 10 familii, o lună, împreună definim regulile de siguranță și măsurăm dacă cititul crește. Ce spuneți?" |
@@ -51,11 +51,7 @@ ulterior, doar împreună cu partenerul și cu regulile lui de siguranță."
 
 ## Versiunea de rezervă (30 de secunde)
 
-„Gustul Cărților e jurnalul de lectură al familiei, în română. Copilul își salvează pagina curentă —
-părintele o vede instant în panoul lui; copilul e protejat de un PIN parental, fără profiluri publice și
-fără mesagerie. Termină cartea → insignă; codul unic de la staff → activitățile clubului. Demo-ul e live
-acum; persistența pe server și testele trec în CI. Viitorul — schimb de cărți și întâlniri de club, doar
-cu partenerul. Vă invităm la un pilot de o lună."
+„Gustul Cărților e jurnalul de lectură al familiei, în română. Copilul salvează pagina curentă, părintele o vede în sesiunea lui separată; modul copil are un PIN de ieșire, fără profiluri publice sau mesagerie. Terminarea cărții acordă o insignă; un cod unic de club deblochează activități pentru membri. Testele automate sunt verzi; persistența după redeploy pe Render nu e încă verificată. Pentru viitor propunem un pilot cu partenerul și funcții sociale doar după reguli de siguranță.”
 
 ## Traducere rusă / подсказки команде
 
@@ -65,8 +61,7 @@ cu partenerul. Vă invităm la un pilot de o lună."
 - **0:20 Пользователь:** «Gustul Cărților — для семей с детьми 7–15 и читательских клубов, которые их ведут.»
 - **0:40 Продукт:** «Семейный читательский дневник на румынском, устанавливается как PWA. У ребёнка —
   защищённый режим с маскотом, у родителя — свой панель; между ними — родительский PIN.»
-- **1:00 Демо (Денис):** показать по run-of-show; ключевой момент — «ребёнок сохранил страницу — и родитель
-  видит это мгновенно в своей сессии».
+- **1:00 Демо (Денис):** только короткий путь: заранее отдельные сессии **A (родитель)** и **B (ребёнок)**; ребёнок сохраняет 35/120, родитель A обновляет `/panou/`. Полный 9-шаговый сценарий — отдельная репетиция, не 55 секунд.
 - **1:55 Дифференциация:** не ругаем конкурентов; акцент — семейный контроль + права клуба + офлайн-связка
   как гипотеза будущего.
 - **2:25 Impact/roadmap:** гипотеза, а не факт; всё будущее — через ворота безопасности/модерации/партнёра.
