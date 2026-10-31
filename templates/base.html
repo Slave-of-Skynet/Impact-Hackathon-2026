@@ -7,12 +7,19 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="description" content="{% block meta_description %}{% translate 'Gustul Cărților — Jurnal de lectură prietenos pentru copii și părinți.' %}{% endblock %}">
   <title>{% block title %}{% translate 'Gustul Cărților' %}{% endblock %}</title>
-  
+
+  <!-- PWA installability (#58): same manifest/theme as child mode, served by apps.core.pwa. -->
+  <meta name="theme-color" content="#3B82F6">
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="icon" type="image/png" sizes="192x192" href="{% static 'img/icons/icon-192.png' %}">
+  <link rel="apple-touch-icon" href="{% static 'img/icons/icon-192.png' %}">
+
   <link rel="stylesheet" href="{% static 'css/app.css' %}">
   {% block extra_css %}{% endblock %}
-  
+
   <script src="{% static 'js/htmx.min.js' %}" defer></script>
   <script src="{% static 'js/app.js' %}" defer></script>
+  <script src="{% static 'js/pwa.js' %}" defer></script>
 </head>
 <body hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
   <a href="#main-content" class="skip-link">{% translate "Sari la conținutul principal" %}</a>
@@ -82,6 +89,18 @@
       <div>
         <a href="/carti/">{% translate "Cărți" %}</a> &middot;
         <a href="/club/cod/">{% translate "Cod de acces Club" %}</a>
+      </div>
+      <div class="pwa-install">
+        <button id="pwa-install-btn" type="button" class="btn btn-outline btn-sm" hidden>
+          📥 {% translate "Instalează aplicația" %}
+        </button>
+        <details id="pwa-install-manual" class="pwa-install-manual">
+          <summary>{% translate "Cum instalez aplicația?" %}</summary>
+          <ol>
+            <li>{% translate "Android (Chrome): meniul ⋮ → «Instalează aplicația» sau «Adaugă pe ecranul de start»." %}</li>
+            <li>{% translate "iPhone (Safari): butonul Distribuire → «Adaugă pe ecranul de start»." %}</li>
+          </ol>
+        </details>
       </div>
     </div>
   </footer>

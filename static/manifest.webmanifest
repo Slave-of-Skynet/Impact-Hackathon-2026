@@ -3,7 +3,7 @@
   "name": "Gustul Cărților",
   "short_name": "Gustul Cărților",
   "description": "Jurnalul de lectură pentru copii și familie",
-  "start_url": "/copil/",
+  "start_url": "/app/",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait",
