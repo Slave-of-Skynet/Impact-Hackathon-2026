@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load static i18n library_tags %}
+{% load static i18n library_tags club_extras %}
 
 {% block title %}{% translate "Raport lectură" %} {{ child.nickname }} — Gustul Cărților{% endblock %}
 {% block extra_css %}<link rel="stylesheet" href="{% static 'css/streak.css' %}">{% endblock %}
@@ -157,13 +157,11 @@
           {% for m in memberships %}
             <div style="font-size: var(--text-sm); display: flex; justify-content: space-between; align-items: center; padding: var(--space-2); background: var(--color-surface); border-radius: var(--radius-sm); border: 1px solid var(--color-border);">
               <span>{% translate "Valabil până la" %}: {{ m.valid_until|date:"d.m.Y" }}</span>
-              <span class="badge {% if m.status == 'active' and is_member %}badge-primary{% elif m.status == 'active' %}badge-accent{% else %}badge-outline{% endif %}">
-                {% if m.status == 'active' and is_member %}
+              <span class="badge {% if m|membership_is_current and is_member %}badge-primary{% elif m.status == 'active' %}badge-accent{% else %}badge-outline{% endif %}">
+                {% if m|membership_is_current and is_member %}
                   ✓ {% translate "Activ" %}
                 {% elif m.status == 'active' %}
                   {% translate "Înregistrat" %}
-                {% elif m.status == 'expired' %}
-                  {% translate "Expirat" %}
                 {% elif m.status == 'revoked' %}
                   {% translate "Revocat" %}
                 {% else %}

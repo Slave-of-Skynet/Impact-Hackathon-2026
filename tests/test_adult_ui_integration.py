@@ -246,7 +246,14 @@ def test_child_mode_navigation_and_middleware(client: Client):
 # ==============================================================================
 
 def test_child_report_membership_status_no_false_entitlement():
-    """Verify child_report.html does not mark expired/revoked memberships as active."""
+    """Verify child_report.html labels each membership history row by its OWN date
+    window, never by the reader-level is_member flag.
+
+    Issue #17 review: a date-expired row keeps status 'active' in the database
+    (the enum only has active/revoked — 'expired' is expressed by the window),
+    so the old `m.status == 'active' and is_member` check labeled an expired row
+    "✓ Activ" whenever another row was currently valid.
+    """
     child = ChildVM(public_id=UUID(int=1), nickname="Ana", avatar="fox", age_band="9-11")
     stats = StatsVM(books_on_shelf=1, books_finished=0, pages_total=10, pages_7d=10)
 
@@ -257,24 +264,87 @@ def test_child_report_membership_status_no_false_entitlement():
     })
     assert "Club inactiv" in html
     assert "Membru Club activ" not in html
+    assert "✓ Activ" not in html
 
-    # 2. Expired membership with is_member=False
-    expired = [{"status": "expired", "valid_until": datetime(2025, 1, 1, tzinfo=timezone.utc)}]
+    # 2. Date-expired row: status stays 'active' (real enum), but the window has passed.
+    expired = [{
+        "status": "active",
+        "valid_from": datetime(2024, 1, 1, tzinfo=timezone.utc),
+        "valid_until": datetime(2025, 1, 1, tzinfo=timezone.utc),
+    }]
     html = render_to_string("adult/child_report.html", {
         "child": child, "stats": stats, "entries": [], "grants": [], "memberships": expired,
         "is_member": False,
     })
     assert "Membru Club activ" not in html
-    assert "Expirat" in html
+    assert "✓ Activ" not in html
+    assert "Înregistrat" in html
 
-    # 3. Active entitlement with is_member=True
-    active = [{"status": "active", "valid_until": datetime(2027, 1, 1, tzinfo=timezone.utc)}]
+    # 3. Revoked row never shows active either.
+    revoked = [{
+        "status": "revoked",
+        "valid_from": datetime(2024, 1, 1, tzinfo=timezone.utc),
+        "valid_until": datetime(2025, 1, 1, tzinfo=timezone.utc),
+    }]
+    html = render_to_string("adult/child_report.html", {
+        "child": child, "stats": stats, "entries": [], "grants": [], "memberships": revoked,
+        "is_member": False,
+    })
+    assert "Revocat" in html
+    assert "✓ Activ" not in html
+
+    # 4. Currently valid row with reader-level entitlement.
+    active = [{
+        "status": "active",
+        "valid_from": datetime(2026, 1, 1, tzinfo=timezone.utc),
+        "valid_until": datetime(2027, 1, 1, tzinfo=timezone.utc),
+    }]
     html = render_to_string("adult/child_report.html", {
         "child": child, "stats": stats, "entries": [], "grants": [], "memberships": active,
         "is_member": True,
     })
     assert "Membru Club activ" in html
     assert "✓ Activ" in html
+
+    # 5. THE REVIEWER CASE: an old date-expired row plus a separate currently
+    #    valid row — only the valid row may show ✓ Activ, regardless of is_member.
+    history = [expired[0], active[0]]
+    html = render_to_string("adult/child_report.html", {
+        "child": child, "stats": stats, "entries": [], "grants": [], "memberships": history,
+        "is_member": True,
+    })
+    assert "Membru Club activ" in html
+    assert html.count("✓ Activ") == 1
+    assert "Înregistrat" in html
+
+
+@pytest.mark.django_db
+def test_membership_history_rows_reflect_own_windows(adult_client, child):
+    """Issue #17 acceptance: two REAL database memberships for one reader —
+    (1) status=active, valid_until < now and (2) status=active, valid_until > now.
+    Only the currently valid row shows ✓ Activ; the top badge stays active."""
+    from datetime import timedelta
+
+    from django.utils import timezone as dj_timezone
+
+    from apps.club.models import ClubMembership
+
+    now = dj_timezone.now()
+    day = timedelta(days=1)
+    ClubMembership.objects.create(
+        reader=child.reader, source=ClubMembership.ADMIN,
+        valid_from=now - 30 * day, valid_until=now - 10 * day,
+        status=ClubMembership.ACTIVE,  # date-expired row: status stays 'active'
+    )
+    ClubMembership.objects.create(
+        reader=child.reader, source=ClubMembership.ADMIN,
+        valid_from=now - day, valid_until=now + 20 * day,
+        status=ClubMembership.ACTIVE,  # currently valid row
+    )
+    html = adult_client.get(f"/familie/{child.public_id}/").content.decode()
+    assert "Membru Club activ" in html  # reader-level badge remains entitlement-true
+    assert html.count("✓ Activ") == 1   # exactly the currently valid history row
+    assert "Înregistrat" in html        # the date-expired row is neutral history
 
 
 # ==============================================================================
