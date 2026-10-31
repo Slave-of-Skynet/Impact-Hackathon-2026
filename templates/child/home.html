@@ -17,14 +17,17 @@
 
   {% include "library/_streak.html" %}
 
-  <!-- Recent Achievement Banner (if any) -->
+  <!-- Transient notices: awards remain permanently accessible under /realizari/. -->
   {% if recent_grants %}
-    {% for grant in recent_grants %}
-      <div class="child-grant-banner" role="status">
-        <span style="font-size: 1.5rem;">🎉</span>
-        <strong>{% translate "Nou trofeu deblocat:" %} {{ grant.title }}!</strong>
-      </div>
-    {% endfor %}
+    <div id="child-grant-notices" data-reader-id="{{ child.public_id }}">
+      {% for grant in recent_grants %}
+        <div class="child-grant-banner" role="status" data-grant-code="{{ grant.code }}">
+          <span aria-hidden="true" class="child-grant-icon">🎉</span>
+          <strong class="child-grant-message">{% translate "Nou trofeu deblocat:" %} {{ grant.title }}!</strong>
+          <button type="button" class="child-grant-dismiss" aria-label="{% translate 'Închide notificarea' %}: {{ grant.title }}">×</button>
+        </div>
+      {% endfor %}
+    </div>
   {% endif %}
 
   <!-- Current Book Card or Invitation -->
