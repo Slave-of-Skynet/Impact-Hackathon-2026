@@ -1,29 +1,52 @@
 {% load i18n %}
 {% if parent_access.show %}
-<section aria-label="Accesul părinților" style="padding:16px;margin:16px 0;border:1px solid currentColor;border-radius:12px;overflow-wrap:anywhere;">
   {% if parent_access.trusted %}
-    <p role="status"><strong>{% translate "Accesul părinților este deblocat" %}</strong> — {% translate "până la" %} {{ parent_access.until|date:"H:i" }}.</p>
-    <p style="margin-top:8px;">{% translate "Blochează accesul înainte de a oferi dispozitivul copilului." %}</p>
-    <p style="margin-top:8px;">{% translate "În acest interval, copilul poate reveni fără PIN în modul părinte pe același dispozitiv." %}</p>
+    <section class="parent-session parent-session--trusted" aria-label="Accesul părinților">
+      <p class="parent-session-status" role="status">
+        <strong>🔓 {% translate "Acces parental deblocat" %}</strong>
+        — {% translate "până la" %} {{ parent_access.until|date:"H:i" }}.
+        <span class="parent-session-risk">{% translate "Blochează accesul înainte de a oferi dispozitivul copilului." %}</span>
+      </p>
+      <form action="{% url 'parent_lock' %}" method="post" class="parent-session-form">
+        {% csrf_token %}
+        {% if not parent_access.child_mode and parent_access.children %}
+          <label for="parent-lock-child">{% translate "Continuă în modul copil pentru" %}</label>
+          <select name="child" id="parent-lock-child" class="parent-session-select" required>
+            {% for child_option in parent_access.children %}<option value="{{ child_option.public_id }}">{{ child_option.nickname }}</option>{% endfor %}
+          </select>
+        {% endif %}
+        <button type="submit" class="btn btn-outline btn-sm" aria-label="{% translate 'Blochează accesul părinților' %}" style="min-height:44px;max-width:100%;white-space:normal;font:inherit;cursor:pointer;padding:8px 12px;">🔒 {% translate "Blochează" %}</button>
+      </form>
+      <details class="parent-session-details">
+        <summary>{% translate "Ce înseamnă acest acces?" %}</summary>
+        <p>{% translate "În acest interval, copilul poate reveni fără PIN în modul părinte pe același dispozitiv." %}</p>
+        {% if not parent_access.child_mode and not parent_access.children %}
+          <p>{% translate "Blocarea încheie sesiunea, deoarece nu există un profil de copil disponibil." %}</p>
+        {% endif %}
+      </details>
+    </section>
   {% elif parent_access.child_mode %}
-    <p role="status"><strong>{% translate "Accesul părinților este blocat. Pentru revenire este necesar PIN-ul." %}</strong></p>
+    <p class="parent-session parent-session--locked" role="status">
+      🔒 {% translate "Accesul părinților este blocat. Pentru revenire este necesar PIN-ul." %}
+    </p>
   {% else %}
-    <p><strong>{% translate "Mod Părinte activ" %}</strong></p>
-    <p style="margin-top:8px;">{% translate "Blochează accesul înainte de a oferi dispozitivul copilului." %}</p>
+    <details class="parent-session parent-session--adult">
+      <summary aria-label="{% translate 'Mod Părinte activ — extinde pentru explicații și blocare' %}">{% translate "Mod Părinte activ" %}</summary>
+      <div class="parent-session-body">
+        <p>{% translate "Blochează accesul înainte de a oferi dispozitivul copilului." %}</p>
+        <form action="{% url 'parent_lock' %}" method="post" class="parent-session-form">
+          {% csrf_token %}
+          {% if parent_access.children %}
+            <label for="parent-lock-child">{% translate "Continuă în modul copil pentru" %}</label>
+            <select name="child" id="parent-lock-child" class="parent-session-select" required>
+              {% for child_option in parent_access.children %}<option value="{{ child_option.public_id }}">{{ child_option.nickname }}</option>{% endfor %}
+            </select>
+          {% else %}
+            <p>{% translate "Blocarea încheie sesiunea, deoarece nu există un profil de copil disponibil." %}</p>
+          {% endif %}
+          <button type="submit" class="btn btn-outline btn-sm" style="min-height:44px;max-width:100%;white-space:normal;font:inherit;cursor:pointer;padding:8px 12px;">{% translate "Blochează accesul părinților" %}</button>
+        </form>
+      </div>
+    </details>
   {% endif %}
-  {% if parent_access.trusted or not parent_access.child_mode %}
-    <form action="{% url 'parent_lock' %}" method="post" style="margin-top:12px;">
-      {% csrf_token %}
-      {% if not parent_access.child_mode and parent_access.children %}
-        <label for="parent-lock-child">{% translate "Continuă în modul copil pentru" %}</label>
-        <select name="child" id="parent-lock-child" style="display:block;min-height:52px;width:100%;font:inherit;margin:8px 0;" required>
-          {% for child_option in parent_access.children %}<option value="{{ child_option.public_id }}">{{ child_option.nickname }}</option>{% endfor %}
-        </select>
-      {% elif not parent_access.child_mode %}
-        <p>{% translate "Blocarea încheie sesiunea, deoarece nu există un profil de copil disponibil." %}</p>
-      {% endif %}
-      <button type="submit" class="btn btn-outline" style="min-height:52px;max-width:100%;white-space:normal;font:inherit;cursor:pointer;padding:12px;">{% translate "Blochează accesul părinților" %}</button>
-    </form>
-  {% endif %}
-</section>
 {% endif %}
