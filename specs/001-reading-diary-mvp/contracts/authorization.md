@@ -11,7 +11,7 @@ Staff (`is_staff`) is a third, back-office-only flag. It does not grant reader-l
 
 | Layer | Mechanism | What it guarantees |
 |---|---|---|
-| Middleware `ChildModeMiddleware` | **Deny by default.** If `session.mode == "child"`, only URL names in `CHILD_ALLOWED = {child_home, catalog, book_detail, add_to_shelf, my_shelf, shelf_entry, record_progress, finish_book, rate_book, achievements, club_corner, pin_gate, logout, offline, manifest, sw}` pass. Every other URL name, including routes added later, `/admin/` and unresolved paths, is refused: a normal request → 302 to `pin_gate`; an HTMX request → 403 with no partial (see *Session expiry and HTMX*). `logout` is allowed because it ends the **whole** session: it is the recovery path, not a way into adult mode | Child cannot reach adult/staff routes by URL (FR-005); new routes are blocked until someone adds them to the allow-list on purpose |
+| Middleware `ChildModeMiddleware` | **Deny by default.** If `session.mode == "child"`, only URL names in `CHILD_ALLOWED = {child_home, catalog, book_detail, add_to_shelf, my_shelf, shelf_entry, record_progress, finish_book, rate_book, book_reflection, start_reflection, save_reflection, achievements, club_corner, pin_gate, logout, offline, manifest, sw}` pass. Every other URL name, including routes added later, `/admin/` and unresolved paths, is refused: a normal request → 302 to `pin_gate`; an HTMX request → 403 with no partial (see *Session expiry and HTMX*). `logout` is allowed because it ends the **whole** session: it is the recovery path, not a way into adult mode | Child cannot reach adult/staff routes by URL (FR-005); new routes are blocked until someone adds them to the allow-list on purpose |
 | `authz.current_reader(request)` | Adult mode → own reader; child mode → `session.active_child` reader **re-validated** against `child.guardian == request.user` on every request | No reader ID ever trusted from client |
 | `authz.get_child_for_guardian(request, public_id)` | `ChildProfile.objects.get(public_id=…, guardian=request.user)` else 404 | IDOR-safe lookups |
 | `authz.get_entry_for_reader(reader, public_id)` | `ShelfEntry.objects.get(public_id=…, reader=reader)` else 404 | IDOR-safe lookups |
@@ -104,3 +104,7 @@ Spoofing defences: no client-side membership flag; `is_member` queried per reque
 ## Issue #62 ratings
 
 POST rate_book permits only the current reader's finished entry (adult self or active child). Guardian report access grants no rating authority. Foreign/unknown entries return 404. See [Backend contract for Denis #62B](../../../docs/contracts/issue-62-ratings.md) for the additive context and privacy threshold. The one-name allowlist addition preserves deny-by-default and PIN restrictions.
+
+## Issue #63 private reflections
+
+Only current-reader owned finished entries accept reflection POSTs; guardians read their own child's answers exclusively via child_report and cannot write as the child. Three narrowly allowed child route names retain active-child revalidation and PIN denial. Exact schema, strict fields, revision409, privacy and route semantics: [reflection contract](../../../docs/contracts/issue-63-reflections.md).

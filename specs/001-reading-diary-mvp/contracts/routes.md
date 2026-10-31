@@ -109,3 +109,20 @@ personal_ratings maps, personal_rating/can_rate entry keys are defined in
 [Backend contract for Denis #62B](../../../docs/contracts/issue-62-ratings.md).
 Frozen VMs unchanged; authenticated catalog/detail no-store for personal context. Star UI is
 Denis's follow-up #62B.
+
+## Issue #63 private reading reflections
+
+GET book_reflection `/raft/<entry>/ganduri/` never creates or redraws questions.
+POST start_reflection `.../ganduri/set/`: CSRF + revision; first set revision0,
+then only unanswered redraw at current revision. POST save_reflection
+`.../ganduri/salveaza/`: CSRF + revision + question_1..4 + answer_1..4, exact fields,
+text<=2000 and at least one nonblank. Current reader's finished entries only.
+Normal success302 PRG plus server confirmation after commit; HTMX204 empty plus
+HX-Redirect and saved. 422 bound full page/HTMX form fragment;409 retains submitted
+text and original canonical labels, no write;503 unsaved; foreign/unknown404.
+Existing login, child PIN and CSRF semantics remain. Native forms work without JS.
+
+New adult/child reflection pages and owned-child read-only book_reflections
+report context leave BookVM/ShelfEntryVM unchanged; private,no-store throughout.
+Exact fields, errors, canonical15-question interpretation, guarded reset,
+revision policy and PR66 migration integration gate: [contract](../../../docs/contracts/issue-63-reflections.md).

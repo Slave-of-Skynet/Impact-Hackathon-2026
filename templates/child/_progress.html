@@ -123,4 +123,7 @@
       }
     </script>
   {% endif %}
+  {% if entry.status == 'finished' %}
+    <a href="{% url 'book_reflection' entry.public_id %}" class="btn-child btn-child-primary" style="min-height:52px;white-space:normal;">Gânduri despre carte</a>
+  {% endif %}
 </div>

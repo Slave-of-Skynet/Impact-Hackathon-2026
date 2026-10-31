@@ -2,6 +2,8 @@ import uuid
 
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
+from django.db.models.functions import Length
+from django.db.models.lookups import LessThanOrEqual
 from django.utils import timezone
 
 from apps.accounts.models import AGE_BANDS, Reader
@@ -106,3 +108,37 @@ class ProgressEvent(models.Model):
             ),
         ]
         indexes = [models.Index(fields=["reader", "created_at"], name="progress_reader_created_idx")]
+
+
+class BookReflectionSet(models.Model):
+    """One stable set per diary entry. Only an unanswered set can be redrawn."""
+
+    entry = models.OneToOneField(ShelfEntry, on_delete=models.CASCADE, related_name="reflection_set")
+    pool_version = models.PositiveSmallIntegerField(default=1, editable=False)
+    revision = models.PositiveIntegerField(default=1)
+    created_at = models.DateTimeField(default=timezone.now)
+    updated_at = models.DateTimeField(default=timezone.now)
+
+    class Meta:
+        constraints = [
+            models.CheckConstraint(condition=models.Q(pool_version=1), name="reflection_pool_v1"),
+            models.CheckConstraint(condition=models.Q(revision__gte=1), name="reflection_revision_positive"),
+        ]
+
+
+class BookReflectionAnswer(models.Model):
+    reflection = models.ForeignKey(BookReflectionSet, on_delete=models.CASCADE, related_name="answers")
+    position = models.PositiveSmallIntegerField()
+    question_id = models.PositiveSmallIntegerField()
+    text = models.TextField(max_length=2000, blank=True, default="")
+
+    class Meta:
+        ordering = ["position"]
+        constraints = [
+            models.UniqueConstraint(fields=["reflection", "position"], name="reflection_position_unique"),
+            models.UniqueConstraint(fields=["reflection", "question_id"], name="reflection_question_unique"),
+            models.CheckConstraint(condition=models.Q(position__gte=1, position__lte=4), name="reflection_position_range"),
+            # Literal v1 source IDs: 1 combines fragments 1+2; ID2 is not standalone.
+            models.CheckConstraint(condition=models.Q(question_id__in=[1, *range(3, 17)]), name="reflection_question_v1"),
+            models.CheckConstraint(condition=LessThanOrEqual(Length("text"), 2000), name="reflection_answer_length"),
+        ]
