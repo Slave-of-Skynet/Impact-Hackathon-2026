@@ -156,3 +156,71 @@ def test_precache_assets_all_resolve_and_exist():
         p = Path(found_path)
         assert p.is_file(), f"Asset path is not a file: {found_path}"
         assert p.stat().st_size > 0, f"Asset is empty (0 bytes): {found_path}"
+
+
+def test_manifest_link_on_public_pages(client):
+    """Issue #58: PWA metadata must be discoverable from the landing and login pages too."""
+    for url in ("/", "/cont/intrare/"):
+        response = client.get(url)
+        assert response.status_code == 200
+        html = response.content.decode()
+        assert '<link rel="manifest" href="/manifest.webmanifest">' in html
+        assert 'name="theme-color" content="#3B82F6"' in html
+        assert 'id="pwa-install-btn"' in html
+        assert 'id="pwa-install-manual"' in html
+
+
+def test_manifest_link_on_adult_dashboard(adult_client):
+    """Issue #58: the shared adult layout exposes the same manifest and install affordance."""
+    response = adult_client.get("/panou/")
+    assert response.status_code == 200
+    html = response.content.decode()
+    assert '<link rel="manifest" href="/manifest.webmanifest">' in html
+    assert 'id="pwa-install-btn"' in html
+    assert 'id="pwa-install-manual"' in html
+
+
+def test_manifest_link_in_child_mode(child_session):
+    """Child mode keeps its manifest link and SW registration (no regression)."""
+    client, guardian, child = child_session
+    response = client.get("/copil/")
+    assert response.status_code == 200
+    html = response.content.decode()
+    assert '<link rel="manifest" href="/manifest.webmanifest">' in html
+    assert "navigator.serviceWorker.register" in html
+
+
+def test_manifest_installability_fields(client):
+    """Chrome installability contract: stable identity, standalone display, PNG 192/512 any+maskable."""
+    response = client.get("/manifest.webmanifest")
+    manifest = json.loads(response.content.decode("utf-8"))
+    # Identity and start_url must not drift: existing installs key on them.
+    assert manifest["id"] == "/copil/"
+    assert manifest["start_url"] == "/copil/"
+    assert manifest["scope"] == "/"
+    assert manifest["display"] == "standalone"
+    assert manifest["theme_color"] == "#3B82F6"
+    entries = {(icon["sizes"], icon["type"], icon["purpose"]) for icon in manifest["icons"]}
+    assert ("192x192", "image/png", "any") in entries
+    assert ("512x512", "image/png", "any") in entries
+    assert ("512x512", "image/png", "maskable") in entries
+
+
+def test_sw_never_caches_private_html(client):
+    """Privacy invariant: the worker passes through non-GET and never writes to the cache at runtime."""
+    content = client.get("/sw.js").content.decode()
+    assert 'request.method !== "GET"' in content
+    assert "fetch(request).catch" in content  # navigations: network-first, no cache.put
+    assert "caches.put" not in content  # no runtime cache writes, so private HTML can never be stored
+
+
+def test_install_button_hidden_rule_in_css():
+    """Regression: .btn sets its own display, so a bare hidden attribute would not hide it.
+
+    Without `.pwa-install .btn[hidden] { display: none; }` the install button renders
+    even when pwa.js marks it hidden — a broken, non-functional button (issue #58).
+    """
+    css_path = Path(settings.BASE_DIR) / "static" / "css" / "app.css"
+    css = css_path.read_text(encoding="utf-8")
+    assert ".pwa-install .btn[hidden]" in css
+    assert "display: none" in css

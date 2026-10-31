@@ -310,6 +310,39 @@ a:hover {
   }
 }
 
+/* PWA install affordance (issue #58): one-click button when beforeinstallprompt
+   fires, otherwise the real browser menu path; both hidden once standalone. */
+.pwa-install {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  align-items: center;
+  text-align: center;
+}
+/* .btn sets its own display, which would defeat the hidden attribute. */
+.pwa-install .btn[hidden] {
+  display: none;
+}
+@media (min-width: 640px) {
+  .pwa-install {
+    align-items: flex-end;
+    text-align: right;
+  }
+}
+.pwa-install-manual {
+  font-size: var(--text-sm);
+  color: var(--color-text-light);
+}
+.pwa-install-manual summary {
+  cursor: pointer;
+  color: var(--color-primary);
+}
+.pwa-install-manual ol {
+  margin: var(--space-2) 0 0;
+  padding-left: var(--space-5);
+  text-align: left;
+}
+
 /* Card components */
 .card {
   background-color: var(--color-surface);
