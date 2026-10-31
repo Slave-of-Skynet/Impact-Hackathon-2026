@@ -298,6 +298,7 @@ def test_saved_acknowledgement_follows_actual_commit(diary, adult_client):
 @pytest.mark.django_db(transaction=True)
 def test_additive_migration_preserves_existing_entry_data(guardian):
     executor = MigrationExecutor(connection)
+    original_leaves = executor.loader.graph.leaf_nodes()
     before = [("library", "0001_initial")]
     after = [("library", "0002_shelfentry_rating")]
     executor.migrate(before)
@@ -314,7 +315,7 @@ def test_additive_migration_preserves_existing_entry_data(guardian):
         assert current.current_page == 35 and current.status == "reading" and current.rating is None
         assert current.reader_id == guardian.reader.pk and current.book_id == book.pk
     finally:
-        MigrationExecutor(connection).migrate(after)
+        MigrationExecutor(connection).migrate(original_leaves)
 
 
 def rating_race_and_lock():

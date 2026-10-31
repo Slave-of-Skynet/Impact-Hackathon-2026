@@ -26,7 +26,7 @@ prevents deleting saved work to bypass the redraw guard.
 
 ## Storage and migration
 
-`library.0002_book_reflections` adds two new tables only:
+`library.0003_book_reflections` adds two new tables only:
 
 - `BookReflectionSet`: OneToOne ShelfEntry, pool_version=1, positive revision,
   created_at/updated_at. Unique entry prevents duplicate sets.
@@ -102,15 +102,19 @@ The report section contains no textareas, save forms or private edit links.
 
 ## Parallel integration with ratings #62 / PR #66
 
-This branch starts from main374fcb5 while ratings PR66 is open. New tables are
-independent of ShelfEntry.rating and public aggregation. Do not overwrite either
-migration or either feature's allowlist names. Before the second PR merges,
-rebase on the first and resolve Django's two library migration leaves: regenerate
-the second migration's number/dependency or add a reviewed merge migration.
-Also restore **all original migration leaf nodes** in schema-migration tests,
-rather than leaving the test database at a hardcoded earlier migration. Run the
-combined ratings/reflection tests and full CI after integration. Until then,
-ratings compatibility is structural, not a claimed combined-suite PASS.
+Implementation began from main374fcb5 while ratings PR66 was open. PR66 merged
+during verification; this branch was rebased onto mainb40086b (also including
+reliability68 and UI69). The final single migration chain is
+0001_initial → 0002_shelfentry_rating → **0003_book_reflections**. Both features'
+allowlist entries, route definitions and contracts are preserved.
+
+Both schema tests restore **all original migration leaf nodes**. The small
+test_ratings.py teardown update is needed so its migration probe does not leave
+the reflection tables unapplied for later tests. New combined acceptance checks
+prove rating updates and finish replays preserve reflection questions/answers;
+reflection saves do not alter ratings/progress. Exact combined-suite results
+are reported in the PR. Ratings UI PR70 remains separate: preserve the reflection
+link when integrating its adult/child progress partial additions.
 
 No PIN60 behavior, palette61 tokens, dependencies, secrets or deployment config
 are changed. Independent ChatGPT review/merge and deployed Render SHA plus live

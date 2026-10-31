@@ -343,6 +343,34 @@ def test_no_start_before_finish_and_no_stale_service_bypass(diary, adult_client)
         reflections.start_set(entry.reader, entry, reflection.revision)
 
 
+@pytest.mark.parametrize("is_child", [False, True])
+def test_integrated_ratings_and_reading_remain_independent(diary, client, is_child):
+    if is_child:
+        enter_child(client, diary)
+    else:
+        client.force_login(diary.guardian)
+    entry = diary.child_entry if is_child else diary.adult_entry
+    key = uuid.uuid4()
+    finish_url = reverse("finish_book", args=[entry.public_id])
+    assert client.post(finish_url, {"request_id": key}, **HX).status_code == 200
+    rating_url = reverse("rate_book", args=[entry.public_id])
+    assert client.post(rating_url, {"rating": 3}).status_code == 302
+    assert client.post(url(entry, "start_reflection"), {"revision": 0}).status_code == 302
+    reflection = BookReflectionSet.objects.get(entry=entry)
+    assert client.post(url(entry, "save_reflection"), payload(reflection, "Private integration answer")).status_code == 302
+    before = stored()
+    assert client.post(rating_url, {"rating": 5}, **HX).status_code == 204
+    assert client.post(finish_url, {"request_id": key}, **HX).status_code == 200  # exact replay
+    assert stored() == before
+    entry.refresh_from_db()
+    assert entry.rating == 5 and entry.status == "finished" and entry.current_page == 120
+    assert ProgressEvent.objects.filter(entry=entry).count() == 1
+    catalog = client.get(reverse("catalog"))
+    assert catalog.context["personal_ratings"] == {entry.book.public_id: 5}
+    assert catalog.context["book_ratings"][entry.book.public_id]["average"] is None
+    assert b"Private integration answer" not in catalog.content
+
+
 def test_batched_parent_report_queries(diary):
     entry = finished(diary.child_entry)
     reflections.start_set(entry.reader, entry, 0)

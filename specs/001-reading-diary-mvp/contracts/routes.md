@@ -125,4 +125,4 @@ Existing login, child PIN and CSRF semantics remain. Native forms work without J
 New adult/child reflection pages and owned-child read-only book_reflections
 report context leave BookVM/ShelfEntryVM unchanged; private,no-store throughout.
 Exact fields, errors, canonical15-question interpretation, guarded reset,
-revision policy and PR66 migration integration gate: [contract](../../../docs/contracts/issue-63-reflections.md).
+revision policy and completed PR66 migration integration: [contract](../../../docs/contracts/issue-63-reflections.md).

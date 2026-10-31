@@ -61,8 +61,11 @@ disallowed, and all-blank saves are rejected. Source1+2 combining is the working
 interpretation, not confirmed owner clarification. Conflicts require copying
 text then reloading; there is no automatic merge/offline queue. PostgreSQL live
 persistence, deployed static manifests, actual phone keyboards and live sessions
-have not been tested here. Ratings PR66 is a separate integration gate: reconcile
-migration leaves and schema-test restoration, then run combined CI before merge.
+have not been tested here. Ratings PR66 merged during implementation; this branch
+was rebased onto mainb40086b, reflection migration moved after rating migration,
+and both migration probes restore all original leaves. Combined rating/reflection
+checks are recorded in the PR. Ratings UI PR70 is separate; preserve the new
+reflection link when integrating its progress partial changes.
 
 After independent merge and verified Render SHA: rehearse child finish → create
 four prompts → save → refresh/new device → owned parent report, check foreign
