@@ -13,8 +13,12 @@ services:
     healthCheckPath: /healthz/
     # Stages are kept separate: collectstatic belongs to the build; migrate runs right before the
     # server (safe for one instance; no seed_demo and no --reset anywhere); gunicorn is the runtime.
+    # 1 worker x 8 threads (#59): each login/PIN check is ~2.6 s of PBKDF2 on the 0.1-CPU free plan; with 2x2
+    # five phones filled every slot, /healthz/ queued past Render's 5 s check and traffic was cut (502).
+    # PBKDF2 releases the GIL, so threads still hash in parallel; one process also uses less RAM (113 -> 70 MB).
+    # Measurements: docs/qa/issue-59-demo-502.md, load script: scripts/demo_load_check.py.
     buildCommand: uv sync --frozen --extra postgres --no-dev && uv run --no-sync python manage.py collectstatic --noinput
-    startCommand: uv run --no-sync python manage.py migrate --noinput && uv run --no-sync gunicorn config.wsgi:application --bind 0.0.0.0:$PORT --workers 2 --threads 2 --timeout 60
+    startCommand: uv run --no-sync python manage.py migrate --noinput && uv run --no-sync gunicorn config.wsgi:application --bind 0.0.0.0:$PORT --workers 1 --threads 8 --timeout 60
     envVars:
       # uv provisions Python 3.12 from .python-version / uv.lock regardless of the image default.
       - key: DJANGO_SETTINGS_MODULE

@@ -1,4 +1,5 @@
 import hashlib
+import re
 
 import pytest
 from django.db import transaction
@@ -41,6 +42,23 @@ def test_sixth_attempt_locked_even_if_correct(client, guardian):
     assert response.status_code == 429
     assert "_auth_user_id" not in client.session
     assert int(response["Retry-After"]) > 14 * 60
+
+
+def test_locked_response_does_not_reveal_or_check_the_password(client, guardian, monkeypatch):
+    # #59: a bound form rendered on 429 authenticated, so only wrong guesses said "greșită" (an oracle through
+    # the lock) and every locked attempt still paid a full PBKDF2 hash on the 0.1-CPU host.
+    for _ in range(5):
+        attempt(client, guardian.email, "wrong")
+    calls = []
+    monkeypatch.setattr("django.contrib.auth.backends.ModelBackend.authenticate", lambda *a, **k: calls.append(1))
+    wrong, right = attempt(client, guardian.email, "wrong-again"), attempt(client, guardian.email, PASSWORD)
+    assert wrong.status_code == right.status_code == 429
+    assert calls == []
+    unmasked = [re.sub(r"\b[A-Za-z0-9]{64}\b", "", r.content.decode()) for r in (wrong, right)]  # CSRF mask
+    assert unmasked[0] == unmasked[1]
+    body = right.content.decode()
+    assert "Prea multe încercări greșite" in body and "greșită" not in body
+    assert f'value="{guardian.email}"' in body
 
 
 def test_lock_survives_new_session_and_case_variants(client, guardian):
