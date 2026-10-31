@@ -52,7 +52,10 @@ class ThrottledLoginView(LoginView):
         try:
             throttle.check(Throttle.LOGIN, email)
         except throttle.Locked as locked:
-            return _locked(request, self.template_name, self.get_context_data(form=self.get_form()), locked)
+            # Unbound form: rendering a bound one would authenticate (≈2.6 s of PBKDF2 on the free host) and
+            # show "wrong password" only for wrong guesses, leaking a correct password through the lock (#59).
+            form = self.get_form_class()(request, initial={"username": request.POST.get("username", "")})
+            return _locked(request, self.template_name, self.get_context_data(form=form), locked)
         form = self.get_form()
         if form.is_valid():
             throttle.reset(Throttle.LOGIN, email)

@@ -16,7 +16,12 @@
       </p>
     </div>
 
-    {% if form.errors or error or errors %}
+    {% if locked_minutes %}
+      <div class="alert alert-error" role="alert">
+        <span aria-hidden="true">⏳</span>
+        <div>{% blocktranslate with minutes=locked_minutes %}Prea multe încercări greșite. Încearcă din nou în {{ minutes }} min.{% endblocktranslate %}</div>
+      </div>
+    {% elif form.errors or error or errors %}
       <div class="alert alert-error" role="alert">
         <span aria-hidden="true">⚠</span>
         <div>

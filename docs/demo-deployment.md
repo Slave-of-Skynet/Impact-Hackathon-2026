@@ -64,7 +64,7 @@ Commands, stages kept separate (no single unconditional blob):
 | Stage | Command |
 |---|---|
 | build | `uv sync --frozen --extra postgres --no-dev && uv run --no-sync python manage.py collectstatic --noinput` |
-| start | `uv run --no-sync python manage.py migrate --noinput && uv run --no-sync gunicorn config.wsgi:application --bind 0.0.0.0:$PORT --workers 2 --threads 2 --timeout 60` |
+| start | `uv run --no-sync python manage.py migrate --noinput && uv run --no-sync gunicorn config.wsgi:application --bind 0.0.0.0:$PORT --workers 1 --threads 8 --timeout 60` |
 
 Notes:
 
