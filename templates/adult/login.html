@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load i18n %}
+{% load i18n static %}
 
 {% block title %}{% translate "Conectare — Gustul Cărților" %}{% endblock %}
 
@@ -7,7 +7,7 @@
 <div style="max-width: 440px; margin: var(--space-8) auto;">
   <div class="card">
     <div style="text-align: center; margin-bottom: var(--space-6);">
-      <span style="font-size: 2.5rem;" aria-hidden="true">🔐</span>
+      <img src="{% static 'img/logo-gustul-cartilor.png' %}" alt="Gustul Cărților" width="200" height="112" style="display: block; margin: 0 auto; max-width: 100%; height: auto;">
       <h1 style="font-size: var(--text-2xl); margin-top: var(--space-2); margin-bottom: var(--space-1);">
         {% translate "Conectare părinte" %}
       </h1>
