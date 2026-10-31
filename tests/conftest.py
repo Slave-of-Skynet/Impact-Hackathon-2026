@@ -1,7 +1,7 @@
 from datetime import timedelta
 
 import pytest
-from django.contrib.auth.hashers import make_password
+from django.contrib.auth.hashers import PBKDF2PasswordHasher, make_password
 from django.utils import timezone
 
 from apps.accounts.models import Account, ChildProfile, Reader
@@ -9,6 +9,17 @@ from apps.accounts.models import Account, ChildProfile, Reader
 PASSWORD = "x-strong-pass-1"
 PIN = "2468"
 HTMX = {"HTTP_HX_REQUEST": "true"}
+
+
+class FastPBKDF2PasswordHasher(PBKDF2PasswordHasher):
+    iterations = 1
+
+
+@pytest.fixture(autouse=True)
+def fast_password_hasher(settings):
+    # Tests only: 1M-iteration PBKDF2 made the suite take ~7.5 min. Same algorithm and hash format
+    # (tests assert "pbkdf2_sha256$"), 1 iteration. Prod hash cost is unchanged.
+    settings.PASSWORD_HASHERS = ["tests.conftest.FastPBKDF2PasswordHasher"]
 
 
 def make_guardian(email, pin=PIN):
