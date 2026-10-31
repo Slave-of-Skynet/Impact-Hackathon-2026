@@ -721,3 +721,5 @@ html, body { overflow-x: clip; }
 .kid-detail .labels { display: flex; gap: var(--s-2); justify-content: center; flex-wrap: wrap; margin: var(--s-4) 0; }
 .kid-detail .rating { justify-content: center; }
 .done-band + .done-band { border-top: 0; margin-top: 0; }
+.page-row .input { flex: 1; min-width: 0; }
+.page-row .of-total { white-space: nowrap; margin: 0; }
