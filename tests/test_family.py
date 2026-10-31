@@ -30,6 +30,16 @@ def test_signup_existing_email_any_case_is_422(client, guardian):
     assert Account.objects.count() == 1
 
 
+def test_signup_parallel_duplicate_is_422_not_500(client, guardian, monkeypatch):
+    # Double tap: the other request commits the same email after this one's clean_email check passed.
+    from apps.accounts.forms import SignupForm
+    monkeypatch.setattr(SignupForm, "clean_email", lambda self: self.cleaned_data["email"].lower())
+    response = signup(client, email="parinte@demo.local")
+    assert response.status_code == 422
+    assert "Există deja un cont" in response.content.decode()
+    assert Account.objects.count() == 1 and "_auth_user_id" not in client.session
+
+
 def test_signup_ignores_staff_fields(client):
     signup(client, is_staff="on", is_superuser="on")
     account = Account.objects.get()
