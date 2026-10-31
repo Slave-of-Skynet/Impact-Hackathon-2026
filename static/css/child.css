@@ -620,12 +620,37 @@ img.book-cover {
 }
 
 .child-grant-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
   background: var(--child-accent-light);
   border: 2px solid var(--child-accent);
   border-radius: var(--radius-md);
-  padding: 14px;
-  text-align: center;
+  padding: 8px 10px 8px 14px;
+  text-align: left;
   animation: grant-pop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+.child-grant-banner + .child-grant-banner { margin-top: 8px; }
+.child-grant-icon { font-size: 1.5rem; flex-shrink: 0; }
+.child-grant-message { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.child-grant-dismiss {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--child-text);
+  cursor: pointer;
+  font: inherit;
+  font-size: 1.6rem;
+}
+.child-grant-dismiss:hover,
+.child-grant-dismiss:focus-visible {
+  background: rgba(0, 0, 0, 0.08);
+  outline-offset: 2px;
 }
 
 @keyframes grant-pop {
