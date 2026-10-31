@@ -79,7 +79,7 @@
     </div>
     {% include "library/_streak.html" with streak=my_streak %}
     {% if my_stats %}
-      <dl class="figures stat-grid" style="grid-template-columns:1fr 1fr">
+      <dl class="figures stat-grid figures-2">
         <div><dt>{% translate "Cărți pe raft" %}</dt><dd>{{ my_stats.books_on_shelf }}</dd></div>
         <div><dt>{% translate "Cărți finalizate" %}</dt><dd>{{ my_stats.books_finished }}</dd></div>
         <div><dt>{% translate "Total pagini citite" %}</dt><dd>{{ my_stats.pages_total }}</dd></div>

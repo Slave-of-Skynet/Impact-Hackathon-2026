@@ -723,3 +723,43 @@ html, body { overflow-x: clip; }
 .done-band + .done-band { border-top: 0; margin-top: 0; }
 .page-row .input { flex: 1; min-width: 0; }
 .page-row .of-total { white-space: nowrap; margin: 0; }
+
+/* ---------- 23. QA pass fixes (qa/QA-REPORT.md) ---------- */
+/* D03 two-column figures in a narrow column: only the first column is flush left */
+.figures.figures-2 { grid-template-columns: 1fr 1fr; }
+@media (min-width: 720px) { .figures-2 div:nth-child(odd) { padding-left: 0; border-left: 0; } }
+/* D04/D05 section-head links and the checkout head never break into ragged two-line blocks */
+.section-head > a { white-space: nowrap; }
+.checkout-head { flex-wrap: wrap; }
+.checkout-head .checkout-title { white-space: nowrap; }
+.checkout-head .meta { margin-left: auto; }
+/* D06 ruler labels keep a gap in narrow cards */
+.ruler-labels { gap: var(--s-2); flex-wrap: wrap; }
+/* D07 two-line CTA labels get room to breathe */
+.book-grid .btn { padding-block: var(--s-2); }
+/* D08 kid mode on wide screens: header, strip and tab bar line up with the 34rem content column */
+@media (min-width: 720px) {
+  .kid-top, .mode-child .tabbar { padding-left: max(var(--s-4), calc((100% - 34rem) / 2 + var(--s-4))); padding-right: max(var(--s-4), calc((100% - 34rem) / 2 + var(--s-4))); }
+  .mode-child .session-strip .inner { max-width: 34rem; }
+}
+/* D09 child report: avatar stays beside the name on phones */
+.report-head > div:not(.actions) { flex: 1 1 10rem; min-width: 0; }
+/* D10 wrapped success notes read left to right next to their icon */
+.status-ok { text-align: left; }
+/* D11 signup has no intro line under the heading */
+.auth-wrap .auth-body h1 + .notice, .auth-wrap .auth-body h1 + form { margin-top: var(--s-5); }
+/* D13 trophy bands followed by "Acum citesc" share one rule */
+.done-band + .now-reading { border-top: 0; margin-top: 0; }
+/* D14 kid tap targets >= 44px */
+.mode-child .backlink, .kid-top > a:first-child { display: inline-flex; align-items: center; min-height: 44px; }
+.kid-top .me { min-height: 44px; }
+.mode-child .filters a { min-height: 44px; }
+.mode-child .catalog .book-title { display: block; min-height: 44px; padding: var(--s-2) 0; }
+/* D15 the bookmark ribbon never covers the spine title */
+.spine.reading { padding-top: 22px; }
+/* D18 kid catalog: rating, shelf mark and action each on their own line */
+.child-book-list .rating, .child-book-list .on-shelf { display: flex; }
+.child-book-list .rating { margin-top: var(--s-1); }
+/* D19 short adult pages: footer sits at the bottom of the screen */
+body.mode-adult { min-height: 100vh; display: flex; flex-direction: column; }
+body.mode-adult > main { flex: 1 0 auto; width: 100%; }

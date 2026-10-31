@@ -33,8 +33,13 @@
   <header class="kid-top child-header">
     <a href="/copil/" aria-label="Acasă - pagina copilului"><img class="logo" src="{% static 'img/logo-gustul-cartilor.png' %}" alt="Gustul Cărților" width="58" height="32"></a>
     <a href="/copil/" class="me child-profile-badge">
+      {% if not child and parent_access.active_child %}
+      {% include "_avatar.html" with key=parent_access.active_child.avatar alt=parent_access.active_child.nickname size="" %}
+      <span class="child-nickname">{{ parent_access.active_child.nickname }}</span>
+      {% else %}
       {% include "_avatar.html" with key=child.avatar alt=child.nickname|default:"Avatar" size="" %}
       <span class="child-nickname">{{ child.nickname|default:"Copil" }}</span>
+      {% endif %}
     </a>
     {% if parent_access.can_return %}
     <form action="{% url 'parent_return' %}" method="post">
@@ -57,7 +62,7 @@
 
   {% block tabbar %}
   <nav class="tabbar" aria-label="Meniu principal">
-    <a href="/copil/"{% if request.path == '/copil/' or request.path == '/raft/' %} aria-current="page"{% endif %}><svg class="icon" aria-hidden="true"><use href="#i-shelf"/></svg><span>{% translate "Raftul meu" %}</span></a>
+    <a href="/copil/"{% if request.path == '/copil/' or request.path|slice:':6' == '/raft/' %} aria-current="page"{% endif %}><svg class="icon" aria-hidden="true"><use href="#i-shelf"/></svg><span>{% translate "Raftul meu" %}</span></a>
     <a href="/carti/"{% if request.path|slice:':6' == '/carti' %} aria-current="page"{% endif %}><svg class="icon" aria-hidden="true"><use href="#i-books"/></svg><span>{% translate "Cărți" %}</span></a>
     <a href="/realizari/"{% if request.path == '/realizari/' %} aria-current="page"{% endif %}><svg class="icon" aria-hidden="true"><use href="#i-seal"/></svg><span>{% translate "Trofee" %}</span></a>
     <a href="/clubul-meu/"{% if request.path == '/clubul-meu/' %} aria-current="page"{% endif %}><svg class="icon" aria-hidden="true"><use href="#i-club"/></svg><span>{% translate "Clubul meu" %}</span></a>

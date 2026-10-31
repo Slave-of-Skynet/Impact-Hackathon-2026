@@ -26,7 +26,7 @@
     <!-- Action area: Add to shelf (POST with redirect to entry) or Open entry -->
     <div class="stack">
       {% if book.public_id in shelf_book_ids or entry %}
-        <p class="status-ok" style="justify-content:center"><svg class="icon" aria-hidden="true"><use href="#i-check"/></svg>{% translate "Această carte este deja pe raftul tău!" %}</p>
+        <p class="status-ok"><svg class="icon" aria-hidden="true"><use href="#i-check"/></svg>{% translate "Această carte este deja pe raftul tău!" %}</p>
         {% if entry %}
           <a href="/raft/{{ entry.public_id }}/" class="btn btn-primary btn-block"><svg class="icon" aria-hidden="true"><use href="#i-books"/></svg><span>{% translate "Deschide cartea" %}</span></a>
         {% else %}
