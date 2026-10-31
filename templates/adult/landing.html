@@ -4,49 +4,81 @@
 {% block title %}{% translate "Gustul Cărților — Jurnalul tău de lectură" %}{% endblock %}
 
 {% block content %}
-<div class="landing-hero" style="text-align: center; padding: var(--space-10) 0; max-width: 800px; margin: 0 auto;">
-  <span style="font-size: 3.5rem; display: block; margin-bottom: var(--space-4);" aria-hidden="true">📚✨</span>
-  <h1 style="font-size: clamp(2rem, 5vw, 3rem); margin-bottom: var(--space-4); color: var(--color-primary);">
-    {% translate "Descoperă bucuria de a citi în fiecare zi" %}
-  </h1>
-  <p style="font-size: var(--text-lg); line-height: var(--leading-relaxed); margin-bottom: var(--space-8); color: var(--color-text-muted);">
-    {% translate "Gustul Cărților este un jurnal de lectură prietenos și sigur pentru întreaga familie. Urmărește progresul, colecționează insigne și transformă lectura într-o aventură captivantă." %}
-  </p>
-  
-  <div style="display: flex; gap: var(--space-4); justify-content: center; flex-wrap: wrap; margin-bottom: var(--space-12);">
-    {% if request.user.is_authenticated or me %}
-      <a href="/panou/" class="btn btn-primary btn-lg">{% translate "Mergi la Panou" %}</a>
-      <a href="/raft/" class="btn btn-outline btn-lg">{% translate "Raftul meu" %}</a>
-    {% else %}
-      <a href="/cont/inregistrare/" class="btn btn-primary btn-lg">{% translate "Creează cont gratuit" %}</a>
-      <a href="/carti/" class="btn btn-outline btn-lg">{% translate "Explorează cărțile" %}</a>
-    {% endif %}
+<section class="hero landing-hero" aria-labelledby="hero-title">
+  <div>
+    <p class="eyebrow">{% translate "Jurnal de lectură pentru copii de 7–15 ani și părinții lor" %}</p>
+    <h1 id="hero-title">{% translate "Fiecare pagină citită primește o ștampilă." %}</h1>
+    <p class="lede">{% translate "Copilul notează până unde a ajuns. Gusti îl încurajează, raftul lui crește, iar tu vezi totul din contul de părinte, fără să-i citești peste umăr." %}</p>
+    <div class="btn-row">
+      {% if request.user.is_authenticated or me %}
+        <a href="/panou/" class="btn btn-primary">{% translate "Mergi la Panou" %}</a>
+        <a href="/raft/" class="btn">{% translate "Raftul meu" %}</a>
+      {% else %}
+        <a href="/cont/inregistrare/" class="btn btn-primary">{% translate "Creează cont gratuit" %}</a>
+        <a href="/carti/" class="btn">{% translate "Explorează cărțile" %}</a>
+      {% endif %}
+    </div>
   </div>
-</div>
-
-<div class="grid-cards" style="grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); margin-top: var(--space-6);">
-  <div class="card" style="border-top: 4px solid var(--color-primary);">
-    <div style="font-size: 2.25rem; margin-bottom: var(--space-3);" aria-hidden="true">📖</div>
-    <h2 class="card-title" style="margin-bottom: var(--space-2);">{% translate "Jurnal personalizat" %}</h2>
-    <p>{% translate "Înregistrează cărțile citite, pagină cu pagină. Fără presiune, într-un ritm adaptat fiecărui cititor." %}</p>
+  <div class="hero-art" aria-hidden="true">
+    <ul class="shelf" style="min-height:200px">
+      <li><span class="spine c-oxblood" style="height:190px"><span class="st">Amintiri din copilărie</span><span class="pct"><svg class="icon"><use href="#i-check"/></svg></span></span></li>
+      <li><span class="spine c-navy" style="height:140px"><span class="st">Greuceanu</span><span class="pct"><svg class="icon"><use href="#i-check"/></svg></span></span></li>
+      <li><span class="spine c-teal reading" style="height:180px"><span class="st">Harap-Alb</span><span class="pct">57%</span></span></li>
+      <li><span class="spine c-ochre" style="height:160px"><span class="st">Capra cu trei iezi</span><span class="pct"><svg class="icon"><use href="#i-check"/></svg></span></span></li>
+      <li><span class="spine c-moss lean" style="height:150px"><span class="st">Zâna Zorilor</span><span class="pct">0%</span></span></li>
+    </ul>
+    <div class="checkout">
+      <div class="checkout-head"><span class="checkout-title">{% translate "Fișa săptămânii" %}</span><strong class="checkout-count">4 zile consecutive</strong></div>
+      <ol class="checkout-days">
+        <li class="is-read"><span class="stamp"><svg class="icon"><use href="#i-check"/></svg></span><span>L</span></li>
+        <li class="is-read"><span class="stamp"><svg class="icon"><use href="#i-check"/></svg></span><span>M</span></li>
+        <li class="is-read"><span class="stamp"><svg class="icon"><use href="#i-check"/></svg></span><span>M</span></li>
+        <li class="is-read"><span class="stamp"><svg class="icon"><use href="#i-check"/></svg></span><span>J</span></li>
+        <li class="is-today"><span class="stamp"></span><span>V</span></li>
+        <li><span class="stamp"></span><span>S</span></li>
+        <li><span class="stamp"></span><span>D</span></li>
+      </ol>
+    </div>
   </div>
+</section>
 
-  <div class="card" style="border-top: 4px solid var(--color-accent);">
-    <div style="font-size: 2.25rem; margin-bottom: var(--space-3);" aria-hidden="true">🛡️</div>
-    <h2 class="card-title" style="margin-bottom: var(--space-2);">{% translate "Mod Copil protejat" %}</h2>
-    <p>{% translate "Interfață intuitivă cu litere mari și mascotă prietenoasă, securizată printr-un cod PIN parental." %}</p>
+<section class="section" aria-labelledby="how-title">
+  <div class="section-head"><h2 id="how-title">{% translate "Cum funcționează" %}</h2></div>
+  <ol class="steps">
+    <li><span class="n">1</span><h3>{% translate "Faci contul de familie" %}</h3><p>{% translate "Adaugi copiii cu un nume de alint și grupa de vârstă. Alegi un PIN pentru zona de părinți." %}</p></li>
+    <li><span class="n">2</span><h3>{% translate "Copilul își alege cartea" %}</h3><p>{% translate "Din catalog, pe măsura vârstei. O pune pe raft și notează pagina la care a ajuns." %}</p></li>
+    <li><span class="n">3</span><h3>{% translate "Voi vedeți cum crește raftul" %}</h3><p>{% translate "Zilele de lectură se adună pe fișă, cărțile terminate devin insigne, iar gândurile despre carte rămân în familie." %}</p></li>
+  </ol>
+</section>
+
+<section class="section spread" aria-label="{% translate 'Pentru copii și pentru părinți' %}">
+  <div>
+    <p class="eyebrow">{% translate "Pentru copii" %}</p>
+    <h3>{% translate "Litere mari, butoane mari, un vierme cu ochelari" %}</h3>
+    <ul>
+      <li>{% translate "Modul Copil arată doar raftul, cărțile, trofeele și clubul." %}</li>
+      <li>{% translate "Ieșirea spre contul de părinte cere PIN-ul tău." %}</li>
+      <li>{% translate "Nu sunt reclame și nici linkuri spre alte site-uri." %}</li>
+    </ul>
   </div>
-
-  <div class="card" style="border-top: 4px solid var(--color-success);">
-    <div style="font-size: 2.25rem; margin-bottom: var(--space-3);" aria-hidden="true">🏅</div>
-    <h2 class="card-title" style="margin-bottom: var(--space-2);">{% translate "Insigne și realizări" %}</h2>
-    <p>{% translate "Recompense vizuale la finalizarea cărților și atingerea pragurilor de lectură. Fiecare pas contează!" %}</p>
+  <div>
+    <p class="eyebrow">{% translate "Pentru părinți" %}</p>
+    <h3>{% translate "Un raport liniștit, nu un clasament" %}</h3>
+    <ul>
+      <li>{% translate "Vezi paginile, zilele de lectură și cărțile terminate ale fiecărui copil." %}</li>
+      <li>{% translate "Citești răspunsurile copilului despre carte, fără să le poți modifica." %}</li>
+      <li>{% translate "Ai și tu un raft al tău." %}</li>
+    </ul>
   </div>
-</div>
+</section>
 
-<div class="card" style="margin-top: var(--space-10); background: var(--color-surface-subtle); border-color: var(--color-border-subtle); text-align: center; padding: var(--space-8);">
-  <h2 style="margin-bottom: var(--space-2);">{% translate "Ai deja un cod de membru al clubului?" %}</h2>
-  <p style="margin-bottom: var(--space-4);">{% translate "Activează codul pentru a debloca activități speciale și insigne exclusive de membru." %}</p>
-  <a href="/club/cod/" class="btn btn-accent">{% translate "Activează codul de club" %}</a>
-</div>
+<section class="band band-inline" aria-labelledby="club-code-title">
+  <div class="inner">
+    <div>
+      <h2 id="club-code-title">{% translate "Ai deja un cod de membru al clubului?" %}</h2>
+      <p>{% translate "Activează codul pentru a debloca activități speciale și insigne exclusive de membru." %}</p>
+    </div>
+    <a href="/club/cod/" class="btn"><svg class="icon" aria-hidden="true"><use href="#i-ticket"/></svg>{% translate "Activează codul de club" %}</a>
+  </div>
+</section>
 {% endblock %}

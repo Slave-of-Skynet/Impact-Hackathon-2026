@@ -3,77 +3,50 @@
 
 {% block title %}Gustul Cărților — Zonă pentru Părinți{% endblock %}
 
+{# The PIN gate shows no child navigation: a stale or foreign session must not see shortcuts. #}
+{% block body_class %}{% endblock %}
+{% block tabbar %}{% endblock %}
+
 {% block content %}
-  <div style="display: flex; align-items: center; justify-content: space-between;">
-    <a href="/copil/" class="child-exit-btn">
-      <span>⬅️</span>
-      <span>{% translate "Înapoi la lectură" %}</span>
-    </a>
-  </div>
+<a href="/copil/" class="backlink child-exit-btn"><svg class="icon" aria-hidden="true"><use href="#i-back"/></svg>{% translate "Înapoi la lectură" %}</a>
 
-  <div class="pin-gate-box">
-    <span style="font-size: 3rem;">🔒</span>
-    <div>
-      <h1 style="font-size: 1.35rem; font-weight: 800;">{% translate "Zonă pentru părinți" %}</h1>
-      <p style="font-size: 0.95rem; color: var(--child-text-muted); margin-top: 4px;">
-        {% if parent_verified %}{% translate "PIN-ul a fost deja verificat pentru acest interval scurt." %}{% else %}{% translate "Introdu codul PIN pentru a accesa panoul de control." %}{% endif %}
-      </p>
+<div class="pin-box pin-gate-box">
+  <svg class="icon seal-lock" aria-hidden="true"><use href="#i-lock"/></svg>
+  <h1>{% translate "Zonă pentru părinți" %}</h1>
+  <p class="meta">{% if parent_verified %}{% translate "PIN-ul a fost deja verificat pentru acest interval scurt." %}{% else %}{% translate "Introdu codul PIN pentru a accesa panoul de control." %}{% endif %}</p>
+
+  <!-- Error & lock alerts -->
+  {% if form.errors or errors %}
+    <div class="notice child-alert-error" role="alert" style="margin-top:var(--s-4);text-align:left">
+      {% for err in form.non_field_errors %}<p>{{ err }}</p>{% endfor %}
+      {% for field in form %}{% for err in field.errors %}<p>{{ err }}</p>{% endfor %}{% endfor %}
+      {% for err in errors %}<p>{{ err }}</p>{% endfor %}
     </div>
+  {% endif %}
+  {% if locked_minutes %}
+    <div class="notice notice-warn child-alert-error" role="alert" style="margin-top:var(--s-4);text-align:left">
+      <p>{% blocktranslate with minutes=locked_minutes %}Prea multe încercări greșite. Încearcă din nou în {{ minutes }} min.{% endblocktranslate %}</p>
+    </div>
+  {% elif locked_seconds %}
+    <div class="notice notice-warn child-alert-error" role="alert" style="margin-top:var(--s-4);text-align:left">
+      <p>{% translate "Prea multe încercări greșite. Încearcă din nou în" %} {{ locked_seconds }} {% translate "secunde." %}</p>
+    </div>
+  {% endif %}
 
-    <!-- Error & lock alerts -->
-    {% if form.errors or errors %}
-      <div class="child-alert-error" role="alert">
-        {% for err in form.non_field_errors %}
-          <p>⚠️ {{ err }}</p>
-        {% endfor %}
-        {% for field in form %}
-          {% for err in field.errors %}
-            <p>⚠️ {{ err }}</p>
-          {% endfor %}
-        {% endfor %}
-        {% for err in errors %}
-          <p>⚠️ {{ err }}</p>
-        {% endfor %}
-      </div>
-    {% endif %}
-
-    {% if locked_minutes %}
-      <div class="child-alert-error" role="alert">
-        <p>⏳ {% blocktranslate with minutes=locked_minutes %}Prea multe încercări greșite. Încearcă din nou în {{ minutes }} min.{% endblocktranslate %}</p>
-      </div>
-    {% elif locked_seconds %}
-      <div class="child-alert-error" role="alert">
-        <p>⏳ {% translate "Prea multe încercări greșite. Încearcă din nou în" %} {{ locked_seconds }} {% translate "secunde." %}</p>
-      </div>
-    {% endif %}
-
-    {% if parent_verified %}
-    <form method="post" action="{% url 'parent_return' %}">
+  {% if parent_verified %}
+    <form method="post" action="{% url 'parent_return' %}" class="stack">
       {% csrf_token %}
-      <button type="submit" class="btn-child btn-child-primary" style="min-height:52px;">{% translate "Revino la Mod Părinte fără PIN" %}</button>
+      <button type="submit" class="btn btn-primary btn-block">{% translate "Revino la Mod Părinte fără PIN" %}</button>
     </form>
-    {% else %}
+  {% else %}
     <!-- PIN Form -->
-    <form action="/parinte/" method="post" id="pin-form" style="display: flex; flex-direction: column; gap: 16px;">
+    <form action="/parinte/" method="post" id="pin-form">
       {% csrf_token %}
-
-      <div>
-        <label for="pin-input" class="sr-only" style="display: none;">{% translate "Cod PIN" %}</label>
-        <input type="password"
-               name="pin"
-               id="pin-input"
-               class="pin-display"
-               maxlength="6"
-               autocomplete="off"
-               inputmode="numeric"
-               pattern="[0-9]*"
-               required
-               placeholder="••••"
-               {% if locked_minutes or locked_seconds %}disabled{% endif %}>
-      </div>
+      <label for="pin-input" class="sr-only">{% translate "Cod PIN" %}</label>
+      <input type="password" name="pin" id="pin-input" class="pin-display" maxlength="6" autocomplete="off" inputmode="numeric" pattern="[0-9]*" required placeholder="••••" {% if locked_minutes or locked_seconds %}disabled{% endif %}>
 
       <!-- On-screen Numeric Keypad for Ergonomic Phone Tap -->
-      <div class="keypad-grid" role="group" aria-label="Tastatură numerică PIN">
+      <div class="keypad keypad-grid" role="group" aria-label="Tastatură numerică PIN">
         <button type="button" class="keypad-btn" onclick="pressDigit('1')" {% if locked_minutes or locked_seconds %}disabled{% endif %}>1</button>
         <button type="button" class="keypad-btn" onclick="pressDigit('2')" {% if locked_minutes or locked_seconds %}disabled{% endif %}>2</button>
         <button type="button" class="keypad-btn" onclick="pressDigit('3')" {% if locked_minutes or locked_seconds %}disabled{% endif %}>3</button>
@@ -83,45 +56,40 @@
         <button type="button" class="keypad-btn" onclick="pressDigit('7')" {% if locked_minutes or locked_seconds %}disabled{% endif %}>7</button>
         <button type="button" class="keypad-btn" onclick="pressDigit('8')" {% if locked_minutes or locked_seconds %}disabled{% endif %}>8</button>
         <button type="button" class="keypad-btn" onclick="pressDigit('9')" {% if locked_minutes or locked_seconds %}disabled{% endif %}>9</button>
-        <button type="button" class="keypad-btn" style="font-size: 1.1rem; color: var(--child-danger);" onclick="clearPin()" {% if locked_minutes or locked_seconds %}disabled{% endif %}>C</button>
+        <button type="button" class="keypad-btn k-alt" onclick="clearPin()" aria-label="{% translate 'Șterge tot' %}" {% if locked_minutes or locked_seconds %}disabled{% endif %}>C</button>
         <button type="button" class="keypad-btn" onclick="pressDigit('0')" {% if locked_minutes or locked_seconds %}disabled{% endif %}>0</button>
-        <button type="button" class="keypad-btn" style="font-size: 1.1rem;" onclick="backspacePin()" {% if locked_minutes or locked_seconds %}disabled{% endif %}>⌫</button>
+        <button type="button" class="keypad-btn" onclick="backspacePin()" aria-label="{% translate 'Șterge o cifră' %}" {% if locked_minutes or locked_seconds %}disabled{% endif %}><svg class="icon" aria-hidden="true"><use href="#i-backspace"/></svg></button>
       </div>
 
-      <button type="submit" class="btn-child btn-child-primary" style="margin-top: 8px;" {% if locked_minutes or locked_seconds %}disabled{% endif %}>
-        <span>🔓</span>
-        <span>{% translate "Deblochează" %}</span>
+      <button type="submit" class="btn btn-primary btn-block" {% if locked_minutes or locked_seconds %}disabled{% endif %}>
+        <svg class="icon" aria-hidden="true"><use href="#i-unlock"/></svg><span>{% translate "Deblochează" %}</span>
       </button>
     </form>
+  {% endif %}
 
-    {% endif %}
-    <!-- Emergency PIN Recovery (Logout) -->
-    <div style="margin-top: 14px; border-top: 1px solid var(--child-border); padding-top: 16px;">
-      <form action="/cont/iesire/" method="post">
-        {% csrf_token %}
-        <button type="submit" style="background: none; border: none; color: var(--child-text-muted); font-size: 0.9rem; text-decoration: underline; cursor: pointer; padding: 8px;">
-          {% translate "Am uitat PIN-ul — ieși din cont" %}
-        </button>
-      </form>
-    </div>
-  </div>
+  <!-- Emergency PIN Recovery (Logout) -->
+  <form class="forgot" action="/cont/iesire/" method="post">
+    {% csrf_token %}
+    <button type="submit" class="link-btn">{% translate "Am uitat PIN-ul — ieși din cont" %}</button>
+  </form>
+</div>
 
-  <script>
-    function pressDigit(d) {
-      const pin = document.getElementById('pin-input');
-      if (pin && pin.value.length < 6) {
-        pin.value += d;
-      }
+<script>
+  function pressDigit(d) {
+    const pin = document.getElementById('pin-input');
+    if (pin && pin.value.length < 6) {
+      pin.value += d;
     }
-    function clearPin() {
-      const pin = document.getElementById('pin-input');
-      if (pin) pin.value = '';
+  }
+  function clearPin() {
+    const pin = document.getElementById('pin-input');
+    if (pin) pin.value = '';
+  }
+  function backspacePin() {
+    const pin = document.getElementById('pin-input');
+    if (pin && pin.value.length > 0) {
+      pin.value = pin.value.slice(0, -1);
     }
-    function backspacePin() {
-      const pin = document.getElementById('pin-input');
-      if (pin && pin.value.length > 0) {
-        pin.value = pin.value.slice(0, -1);
-      }
-    }
-  </script>
+  }
+</script>
 {% endblock %}

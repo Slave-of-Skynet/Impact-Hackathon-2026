@@ -2,17 +2,14 @@
 {% load static library_tags i18n %}
 
 {% block title %}Gustul Cărților — Acasă{% endblock %}
-{% block extra_head %}<link rel="stylesheet" href="{% static 'css/streak.css' %}">{% endblock %}
 
 {% block content %}
   <!-- Mascot Welcome / Reaction -->
-  <section class="mascot-container" aria-label="Mesaj de la Gusti">
+  <section class="gusti mascot-container" aria-label="Mesaj de la Gusti">
     <!-- The view always renders the "welcome" script (mood happy); the static tag must receive a
          complete path — the production manifest storage raises on partial names (#56). -->
-    <img src="{% static 'img/mascot/mascot-happy.svg' %}" alt="Mascot" class="mascot-avatar" width="72" height="72">
-    <div class="mascot-bubble">
-      <p class="mascot-text">{{ mascot.text|default:"Salut! Hai să citim ceva frumos!" }}</p>
-    </div>
+    <img src="{% static 'img/mascot/mascot-happy.svg' %}" alt="Mascot" class="mascot-avatar" width="64" height="64">
+    <p class="mascot-text">{{ mascot.text|default:"Salut! Hai să citim ceva frumos!" }}</p>
   </section>
 
   {% include "library/_streak.html" %}
@@ -20,84 +17,42 @@
   <!-- Recent Achievement Banner (if any) -->
   {% if recent_grants %}
     {% for grant in recent_grants %}
-      <div class="child-grant-banner" role="status">
-        <span style="font-size: 1.5rem;">🎉</span>
-        <strong>{% translate "Nou trofeu deblocat:" %} {{ grant.title }}!</strong>
+      <div class="done-band child-grant-banner" role="status">
+        <img src="{% static 'img/mascot/mascot-cheer.svg' %}" alt="" width="72" height="72">
+        <p><strong>{% translate "Nou trofeu deblocat:" %} {{ grant.title }}!</strong></p>
       </div>
     {% endfor %}
   {% endif %}
 
-  <!-- Current Book Card or Invitation -->
-  <section aria-labelledby="current-book-heading">
+  <!-- Current Book or Invitation -->
+  <section class="now-reading" aria-labelledby="current-book-heading">
     {% if current_entry %}
-      <div class="current-book-card">
-        <div class="current-book-header">
-          {% with cover=current_entry.book|book_cover %}
-            {% if cover %}
-              <img src="{% static cover %}" alt="{{ current_entry.book.title }}" class="book-cover" aria-hidden="true">
-            {% else %}
-              <div class="book-cover" style="background-color: {{ current_entry.book.cover_color|default:'#F59E0B' }};" aria-hidden="true">
-                {{ current_entry.book.cover_emoji|default:"📖" }}
-              </div>
-            {% endif %}
-          {% endwith %}
-          <div class="current-book-info">
-            <h2 id="current-book-heading" class="current-book-title">{{ current_entry.book.title }}</h2>
-            <p class="current-book-author">{{ current_entry.book.author }}</p>
-          </div>
+      <p class="eyebrow">{% translate "Acum citesc" %}</p>
+      <div class="row">
+        {% include "library/_cover.html" with book=current_entry.book size="cover-lg" %}
+        <div style="flex:1;min-width:0">
+          <h2 id="current-book-heading" class="current-book-title">{{ current_entry.book.title }}</h2>
+          <p class="book-author current-book-author">{{ current_entry.book.author }}</p>
+          <p class="big-page num" style="margin-top:var(--s-3)">{{ current_entry.current_page }}<small> / {{ current_entry.page_count }} {% translate "pagini" %}</small></p>
         </div>
-
-        <div class="progress-bar-container">
-          <div class="progress-bar-header">
-            <span>{% translate "Pagina" %} {{ current_entry.current_page }} {% translate "din" %} {{ current_entry.page_count }}</span>
-            <span>{{ current_entry.percent }}%</span>
-          </div>
-          <div class="progress-bar-track" role="progressbar" aria-valuenow="{{ current_entry.percent }}" aria-valuemin="0" aria-valuemax="100">
-            <div class="progress-bar-fill" style="width: {{ current_entry.percent }}%;"></div>
-          </div>
-        </div>
-
-        <a href="/raft/{{ current_entry.public_id }}/" class="btn-child btn-child-primary">
-          <span>📖</span>
-          <span>{% translate "Continuă lectura" %}</span>
-        </a>
+      </div>
+      {% include "library/_ruler.html" with current=current_entry.current_page total=current_entry.page_count percent=current_entry.percent %}
+      <p class="visually-hidden">{% translate "Pagina" %} {{ current_entry.current_page }} {% translate "din" %} {{ current_entry.page_count }}</p>
+      <div class="stack">
+        <a href="/raft/{{ current_entry.public_id }}/" class="btn btn-primary btn-block"><svg class="icon" aria-hidden="true"><use href="#i-pencil"/></svg><span>{% translate "Continuă lectura" %}</span></a>
       </div>
     {% else %}
-      <div class="current-book-card" style="text-align: center; padding: 24px;">
-        <span style="font-size: 3rem; margin-bottom: 8px;">📚</span>
-        <h2 id="current-book-heading" class="current-book-title" style="margin-bottom: 6px;">{% translate "Nicio carte pe raft încă" %}</h2>
-        <p class="current-book-author" style="margin-bottom: 16px;">{% translate "Alege o carte din bibliotecă și începe aventura!" %}</p>
-        <a href="/carti/" class="btn-child btn-child-primary">
-          <span>✨</span>
-          <span>{% translate "Alege o carte" %}</span>
-        </a>
-      </div>
+      <div class="empty-shelf" aria-hidden="true"><i style="height:90px"></i><i style="height:110px"></i><i style="height:80px"></i></div>
+      <h2 id="current-book-heading" class="current-book-title">{% translate "Nicio carte pe raft încă" %}</h2>
+      <p class="meta current-book-author" style="margin-top:var(--s-2)">{% translate "Alege o carte din bibliotecă și începe aventura!" %}</p>
+      <div class="stack"><a href="/carti/" class="btn btn-primary btn-block"><svg class="icon" aria-hidden="true"><use href="#i-books"/></svg><span>{% translate "Alege o carte" %}</span></a></div>
     {% endif %}
   </section>
 
-  <!-- 4 Primary Destinations (FR-030: maximum 4 primary destinations) -->
-  <nav class="child-nav-grid" aria-label="Meniu principal">
-    <a href="/raft/" class="child-nav-card">
-      <span class="child-nav-icon">📖</span>
-      <span class="child-nav-title">{% translate "Raftul meu" %}</span>
-    </a>
-
-    <a href="/carti/" class="child-nav-card">
-      <span class="child-nav-icon">📚</span>
-      <span class="child-nav-title">{% translate "Toate cărțile" %}</span>
-    </a>
-
-    <a href="/realizari/" class="child-nav-card">
-      <span class="child-nav-icon">🏆</span>
-      <span class="child-nav-title">{% translate "Trofeele mele" %}</span>
-    </a>
-
-    <a href="/clubul-meu/" class="child-nav-card">
-      <span class="child-nav-icon">⭐</span>
-      <span class="child-nav-title">
-        {% translate "Clubul meu" %}
-        {% if not is_member %}🔒{% endif %}
-      </span>
-    </a>
+  <!-- 4 Primary Destinations (FR-030: maximum 4 primary destinations) live in the tab bar (child/base.html);
+       the shelf link stays here too as the big next step. -->
+  <nav class="stack" aria-label="{% translate 'Raftul meu' %}">
+    <a href="/raft/" class="btn btn-block"><svg class="icon" aria-hidden="true"><use href="#i-shelf"/></svg><span>{% translate "Raftul meu" %}</span></a>
+    <a href="/realizari/" class="btn btn-block btn-quiet"><span>{% translate "Trofeele mele" %}</span></a>
   </nav>
 {% endblock %}

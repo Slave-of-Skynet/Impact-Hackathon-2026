@@ -9,10 +9,13 @@
   <title>{% block title %}{% translate 'Gustul Cărților' %}{% endblock %}</title>
 
   <!-- PWA installability (#58): same manifest/theme as child mode, served by apps.core.pwa. -->
-  <meta name="theme-color" content="#3B82F6">
+  <meta name="theme-color" content="#F7F5EE">
   <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="icon" type="image/png" sizes="32x32" href="{% static 'img/icons/favicon-32.png' %}">
   <link rel="icon" type="image/png" sizes="192x192" href="{% static 'img/icons/icon-192.png' %}">
-  <link rel="apple-touch-icon" href="{% static 'img/icons/icon-192.png' %}">
+  <link rel="apple-touch-icon" href="{% static 'img/icons/apple-touch-icon.png' %}">
+  <link rel="preload" href="{% static 'fonts/literata-normal-latin.woff2' %}" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="{% static 'fonts/atkinson-hyperlegible-next-normal-latin.woff2' %}" as="font" type="font/woff2" crossorigin>
 
   <link rel="stylesheet" href="{% static 'css/app.css' %}">
   {% block extra_css %}{% endblock %}
@@ -21,78 +24,68 @@
   <script src="{% static 'js/app.js' %}" defer></script>
   <script src="{% static 'js/pwa.js' %}" defer></script>
 </head>
-<body hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
+<body class="mode-adult" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
+  {% include "_icons.html" %}
   <a href="#main-content" class="skip-link">{% translate "Sari la conținutul principal" %}</a>
 
-  <header class="site-header">
-    <div class="container header-inner">
+  <header class="masthead site-header">
+    <div class="masthead-inner">
       <a href="{% if request.session.mode == 'child' %}/copil/{% elif request.user.is_authenticated or me %}/panou/{% else %}/{% endif %}" class="brand-link" aria-label="{% translate 'Pagina principală Gustul Cărților' %}">
-        <span>Gustul Cărților</span>
+        <img class="logo" src="{% static 'img/logo-gustul-cartilor.png' %}" alt="Gustul Cărților" width="72" height="40">
       </a>
-
-      <button id="nav-toggle" class="nav-toggle" type="button" aria-label="{% translate 'Deschide meniul' %}" aria-expanded="false" aria-controls="nav-menu">
-        <span aria-hidden="true">☰</span>
-      </button>
 
       <nav aria-label="{% translate 'Navigare principală' %}">
         <ul id="nav-menu" class="nav-menu">
           {% if request.session.mode == 'child' %}
             <li><a href="/copil/" class="nav-link">{% translate "Acasă" %}</a></li>
             <li><a href="/carti/" class="nav-link">{% translate "Catalog cărți" %}</a></li>
-            <li><a href="/parinte/" class="btn btn-outline btn-sm">🔒 {% translate "Mod Părinte" %}</a></li>
-            <li class="nav-user">
-              <form method="post" action="/cont/iesire/" style="display:inline;">
-                {% csrf_token %}
-                <button type="submit" class="btn btn-outline btn-sm">{% translate "Ieșire" %}</button>
-              </form>
-            </li>
+            <li><a href="/parinte/" class="nav-link">{% translate "Mod Părinte" %}</a></li>
           {% elif request.user.is_authenticated or me %}
-            <li><a href="/panou/" class="nav-link {% if request.path == '/panou/' %}active{% endif %}">{% translate "Panou" %}</a></li>
-            <li><a href="/raft/" class="nav-link {% if request.path == '/raft/' %}active{% endif %}">{% translate "Raftul meu" %}</a></li>
-            <li><a href="/carti/" class="nav-link {% if request.path == '/carti/' %}active{% endif %}">{% translate "Catalog cărți" %}</a></li>
-            <li><a href="/familie/" class="nav-link {% if request.path == '/familie/' %}active{% endif %}">{% translate "Familie" %}</a></li>
-            <li><a href="/realizari/" class="nav-link {% if request.path == '/realizari/' %}active{% endif %}">{% translate "Realizări" %}</a></li>
-            <li><a href="/clubul-meu/" class="nav-link {% if request.path == '/clubul-meu/' %}active{% endif %}">{% translate "Club" %}</a></li>
-            <li class="nav-user">
-              <span class="user-badge" title="{% translate 'Utilizator conectat' %}">
-                👤 {% if me.display_name %}{{ me.display_name }}{% elif request.user.is_authenticated %}{{ request.user.display_name }}{% else %}{% translate "Contul meu" %}{% endif %}
-              </span>
-              <form method="post" action="/cont/iesire/" style="display:inline;">
-                {% csrf_token %}
-                <button type="submit" class="btn btn-outline btn-sm">{% translate "Ieșire" %}</button>
-              </form>
-            </li>
+            <li><a href="/panou/" class="nav-link{% if request.path == '/panou/' %} active{% endif %}"{% if request.path == '/panou/' %} aria-current="page"{% endif %}>{% translate "Panou" %}</a></li>
+            <li><a href="/raft/" class="nav-link{% if request.path == '/raft/' %} active{% endif %}"{% if request.path == '/raft/' %} aria-current="page"{% endif %}>{% translate "Raftul meu" %}</a></li>
+            <li><a href="/carti/" class="nav-link{% if request.path == '/carti/' %} active{% endif %}"{% if request.path == '/carti/' %} aria-current="page"{% endif %}>{% translate "Catalog cărți" %}</a></li>
+            <li><a href="/familie/" class="nav-link{% if request.path == '/familie/' %} active{% endif %}"{% if request.path == '/familie/' %} aria-current="page"{% endif %}>{% translate "Familie" %}</a></li>
+            <li><a href="/realizari/" class="nav-link{% if request.path == '/realizari/' %} active{% endif %}"{% if request.path == '/realizari/' %} aria-current="page"{% endif %}>{% translate "Realizări" %}</a></li>
+            <li><a href="/clubul-meu/" class="nav-link{% if request.path == '/clubul-meu/' %} active{% endif %}"{% if request.path == '/clubul-meu/' %} aria-current="page"{% endif %}>{% translate "Club" %}</a></li>
           {% else %}
             <li><a href="/carti/" class="nav-link">{% translate "Catalog cărți" %}</a></li>
             <li><a href="/cont/intrare/" class="nav-link">{% translate "Conectare" %}</a></li>
-            <li><a href="/cont/inregistrare/" class="btn btn-primary btn-sm">{% translate "Înregistrare" %}</a></li>
           {% endif %}
         </ul>
       </nav>
+
+      {% if request.session.mode == 'child' %}
+        <form class="who" method="post" action="/cont/iesire/">{% csrf_token %}<button type="submit" class="link-btn">{% translate "Ieșire" %}</button></form>
+      {% elif request.user.is_authenticated or me %}
+        <form class="who" method="post" action="/cont/iesire/">
+          {% csrf_token %}
+          <span class="user-badge" title="{% translate 'Utilizator conectat' %}">{% if me.display_name %}{{ me.display_name }}{% elif request.user.is_authenticated %}{{ request.user.display_name }}{% else %}{% translate "Contul meu" %}{% endif %}</span> ·
+          <button type="submit" class="link-btn">{% translate "Ieșire" %}</button>
+        </form>
+      {% else %}
+        <a href="/cont/inregistrare/" class="btn btn-primary btn-sm">{% translate "Înregistrare" %}</a>
+      {% endif %}
     </div>
   </header>
 
-  <main id="main-content" class="main-content">
-    <div class="container">
-      {% include "accounts/_parent_session.html" %}
-      {% block content %}{% endblock %}
-    </div>
+  {% include "accounts/_parent_session.html" %}
+
+  <main id="main-content" class="page main-content">
+    {% block content %}{% endblock %}
   </main>
 
   {% include "_toast.html" %}
 
   <footer class="site-footer">
-    <div class="container footer-inner">
-      <div>
-        <strong>Gustul Cărților</strong> &copy; 2026. {% translate "Jurnal de lectură dedicat comunității și bucuriei de a citi." %}
-      </div>
-      <div>
+    <div class="inner footer-inner">
+      <span><strong>Gustul Cărților</strong> &copy; 2026. {% translate "Jurnal de lectură dedicat comunității și bucuriei de a citi." %}</span>
+      <span>
         <a href="/carti/">{% translate "Cărți" %}</a> &middot;
         <a href="/club/cod/">{% translate "Cod de acces Club" %}</a>
-      </div>
+      </span>
       <div class="pwa-install">
-        <button id="pwa-install-btn" type="button" class="btn btn-outline btn-sm" hidden>
-          📥 {% translate "Instalează aplicația" %}
+        <button id="pwa-install-btn" type="button" class="btn btn-sm" hidden>
+          <svg class="icon" aria-hidden="true"><use href="#i-plus"/></svg> {% translate "Instalează aplicația" %}
         </button>
         <details id="pwa-install-manual" class="pwa-install-manual">
           <summary>{% translate "Cum instalez aplicația?" %}</summary>

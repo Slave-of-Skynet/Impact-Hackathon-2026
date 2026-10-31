@@ -4,33 +4,13 @@
 {% block title %}Gustul Cărților — {{ entry.book.title }}{% endblock %}
 
 {% block content %}
-  <!-- Top navigation back button -->
-  <div class="child-top-nav">
-    <a href="/raft/" class="child-exit-btn" aria-label="Înapoi la raft">
-      <span>⬅️</span>
-      <span>{% translate "Raftul meu" %}</span>
-    </a>
-  </div>
+  <a href="/raft/" class="backlink child-exit-btn" aria-label="Înapoi la raft"><svg class="icon" aria-hidden="true"><use href="#i-back"/></svg>{% translate "Raftul meu" %}</a>
 
-  <!-- Book Header Card -->
-  <div class="current-book-card">
-    <div class="current-book-header">
-      {% with cover=entry.book|book_cover %}
-        {% if cover %}
-          <img src="{% static cover %}" alt="{{ entry.book.title }}" class="book-cover" aria-hidden="true">
-        {% else %}
-          <div class="book-cover" style="background-color: {{ entry.book.cover_color|default:'#3B82F6' }}; font-size: 3rem;" aria-hidden="true">
-            {{ entry.book.cover_emoji|default:"📖" }}
-          </div>
-        {% endif %}
-      {% endwith %}
-      <div class="current-book-info">
-        <h1 class="current-book-title" style="font-size: 1.35rem;">{{ entry.book.title }}</h1>
-        <p class="current-book-author" style="font-size: 1.05rem;">{{ entry.book.author }}</p>
-        <p style="font-size: 0.9rem; color: var(--child-text-muted); margin-top: 4px;">
-          {{ entry.page_count }} {% translate "pagini în total" %}
-        </p>
-      </div>
+  <div class="log-book">
+    {% include "library/_cover.html" with book=entry.book size="cover-lg" %}
+    <div>
+      <h1>{{ entry.book.title }}</h1>
+      <p class="book-author">{{ entry.book.author }} · {{ entry.page_count }} {% translate "pagini în total" %}</p>
     </div>
   </div>
 

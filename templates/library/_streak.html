@@ -1,27 +1,32 @@
 {% load i18n %}
-{# Daily reading streak (#65). Context: streak StreakVM; optional compact=True hides the week strip. #}
-<section class="streak streak-{{ streak.status }}{% if compact %} streak-compact{% endif %}" aria-label="{% translate 'Zile consecutive de lectură' %}">
-  <p class="streak-headline">
+{% comment %} Daily reading streak (#65) as a library checkout card: one stamp per day read this week.
+   Context: streak StreakVM; optional compact=True renders the one-line version (dots + label). {% endcomment %}
+{% if compact %}
+<p class="streak streak-{{ streak.status }} streak-compact checkout-compact" aria-label="{% translate 'Zile consecutive de lectură' %}">
+  <span class="dots" aria-hidden="true">{% for day in streak.week %}<i{% if day.read %} class="on"{% endif %}></i>{% endfor %}</span>
+  {% if streak.status == "none" %}<span>{% translate "Începe seria ta de lectură!" %}</span>{% else %}<strong class="streak-count">{{ streak.label }}</strong>{% endif %}
+</p>
+{% else %}
+<section class="streak streak-{{ streak.status }} checkout" aria-label="{% translate 'Zile consecutive de lectură' %}">
+  <div class="checkout-head">
+    <span class="checkout-title">{% translate "Fișa săptămânii" %}</span>
     {% if streak.status == "none" %}
-      <span class="streak-icon" aria-hidden="true">🌱</span>
-      <span>{% translate "Începe seria ta de lectură!" %}</span>
+      <span class="streak-headline meta">{% translate "Începe seria ta de lectură!" %}</span>
     {% else %}
-      <span class="streak-icon" aria-hidden="true">🔥</span>
-      <strong class="streak-count">{{ streak.label }}</strong>
+      <strong class="streak-headline streak-count checkout-count num">{{ streak.label }}</strong>
     {% endif %}
-  </p>
+  </div>
+  <ol class="streak-week checkout-days" aria-label="{% translate 'Săptămâna aceasta' %}">
+    {% for day in streak.week %}
+      <li class="streak-day{% if day.read %} is-read{% endif %}{% if day.is_today %} is-today{% endif %}{% if day.is_future %} is-future{% endif %}">
+        <span class="stamp" aria-hidden="true">{% if day.read %}<svg class="icon"><use href="#i-check"/></svg>{% endif %}</span>
+        <span class="streak-day-label" aria-hidden="true">{{ day.label }}</span>
+        <span class="visually-hidden">{{ day.name }}{% if day.is_today %} ({% translate "azi" %}){% endif %}: {% if day.read %}{% translate "citit" %}{% elif day.is_future %}{% translate "urmează" %}{% else %}{% translate "fără lectură" %}{% endif %}</span>
+      </li>
+    {% endfor %}
+  </ol>
   {% if streak.status == "carried" %}
-    <p class="streak-hint">{% translate "Mai poți continua seria azi!" %}</p>
-  {% endif %}
-  {% if not compact %}
-    <ol class="streak-week" aria-label="{% translate 'Săptămâna aceasta' %}">
-      {% for day in streak.week %}
-        <li class="streak-day{% if day.read %} is-read{% endif %}{% if day.is_today %} is-today{% endif %}{% if day.is_future %} is-future{% endif %}">
-          <span class="streak-dot" aria-hidden="true">{% if day.read %}✓{% endif %}</span>
-          <span class="streak-day-label" aria-hidden="true">{{ day.label }}</span>
-          <span class="visually-hidden">{{ day.name }}{% if day.is_today %} ({% translate "azi" %}){% endif %}: {% if day.read %}{% translate "citit" %}{% elif day.is_future %}{% translate "urmează" %}{% else %}{% translate "fără lectură" %}{% endif %}</span>
-        </li>
-      {% endfor %}
-    </ol>
+    <p class="streak-hint checkout-hint">{% translate "Mai poți continua seria azi!" %}</p>
   {% endif %}
 </section>
+{% endif %}

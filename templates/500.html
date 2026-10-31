@@ -1,22 +1,21 @@
-{% load i18n %}<!DOCTYPE html>
+{% load i18n static %}<!DOCTYPE html>
 <html lang="ro">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>{% translate "Eroare de server" %} — Gustul Cărților</title>
+  <title>{% translate "Ceva nu a funcționat" %} — Gustul Cărților</title>
+  <meta name="theme-color" content="#F7F5EE">
+  <link rel="icon" type="image/png" sizes="32x32" href="/static/img/icons/favicon-32.png">
   <link rel="stylesheet" href="/static/css/app.css">
 </head>
-<body>
-  <main style="min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 16px;">
-    <div class="card" style="max-width: 560px; width: 100%; text-align: center; padding: 32px 24px;">
-      <div style="font-size: 3rem; margin-bottom: 12px;" aria-hidden="true">⚠️</div>
-      <h1 style="margin-bottom: 12px; font-size: 1.5rem;">{% translate "Ceva nu a funcționat" %}</h1>
-      <p style="color: var(--color-text-muted); margin-bottom: 24px;">
-        {% translate "A apărut o eroare neașteptată de partea noastră. Datele tale sunt în siguranță — te rugăm să încerci din nou mai târziu." %}
-      </p>
-      <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
-        <a href="/" class="btn btn-primary">{% translate "Pagina principală" %}</a>
-      </div>
+<body class="mode-adult">
+  <main class="error-page" id="main-content">
+    <div>
+      <a href="/"><img class="logo" src="/static/img/logo-gustul-cartilor.png" alt="Gustul Cărților" width="120" height="67"></a>
+      <p class="code num" aria-hidden="true">5<em>0</em>0</p>
+      <h1>{% translate "Ceva nu a funcționat" %}</h1>
+      <p>{% translate "A apărut o eroare neașteptată de partea noastră. Datele tale sunt în siguranță — te rugăm să încerci din nou mai târziu." %}</p>
+      <div class="btn-row"><a href="/" class="btn btn-primary">{% translate "Pagina principală" %}</a></div>
     </div>
   </main>
 </body>

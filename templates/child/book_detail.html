@@ -4,73 +4,38 @@
 {% block title %}Gustul Cărților — {{ book.title }}{% endblock %}
 
 {% block content %}
-  <div class="child-top-nav">
-    <a href="/carti/" class="child-exit-btn">
-      <span>⬅️</span>
-      <span>{% translate "Înapoi la cărți" %}</span>
-    </a>
-  </div>
+  <a href="/carti/" class="backlink child-exit-btn"><svg class="icon" aria-hidden="true"><use href="#i-back"/></svg>{% translate "Înapoi la cărți" %}</a>
 
-  <article class="current-book-card" style="text-align: center; align-items: center; padding: 24px 20px;">
-    <!-- Large colorful book cover -->
-    {% with cover=book|book_cover %}
-      {% if cover %}
-        <img src="{% static cover %}" alt="{{ book.title }}" class="book-cover" style="width: 120px; height: 160px;" aria-hidden="true">
+  <article class="kid-detail">
+    <div class="kid-detail-cover">{% include "library/_cover.html" with book=book size="cover-xl" %}</div>
+    <h1>{{ book.title }}</h1>
+    <p class="book-author">{{ book.author }}</p>
+    <div class="labels">
+      <span class="label">{{ book.page_count }} {% translate "pagini" %}</span>
+      {% if book.age_band %}<span class="label">{{ book.age_band }} {% translate "ani" %}</span>{% endif %}
+      {% if book.genre %}<span class="label">{{ book.genre|genre_label }}</span>{% endif %}
+    </div>
+    {% with r=book_ratings|get_rating:book.public_id %}
+      {% if r and r.count and r.count >= 3 %}
+        <p class="rating rating-pill" aria-label="{% blocktranslate with avg=r.average|format_avg cnt=r.count %}Evaluare: {{ avg }} din 5 stele, {{ cnt }} evaluări{% endblocktranslate %}"><svg class="icon" aria-hidden="true"><use href="#i-star"/></svg><b>{{ r.average|format_avg }}</b> ({{ r.count }} {% translate "evaluări" %})</p>
       {% else %}
-        <div class="book-cover" style="width: 120px; height: 160px; font-size: 5rem; background-color: {{ book.cover_color|default:'#F59E0B' }};" aria-hidden="true">
-          {{ book.cover_emoji|default:"📖" }}
-        </div>
+        <p class="rating rating-pill-empty" title="{% translate 'Minim 3 evaluări necesare' %}">{% translate 'Fără evaluări' %}</p>
       {% endif %}
     {% endwith %}
 
-    <h1 style="font-size: 1.4rem; font-weight: 800; margin-top: 14px;">{{ book.title }}</h1>
-    <p style="font-size: 1.1rem; color: var(--child-text-muted); margin-top: 4px;">{{ book.author }}</p>
-
-    <div style="display: flex; gap: 10px; margin-top: 12px; flex-wrap: wrap; justify-content: center; align-items: center;">
-      <span class="child-filter-chip">📄 {{ book.page_count }} {% translate "pagini" %}</span>
-      {% if book.age_band %}
-        <span class="child-filter-chip">🎯 {{ book.age_band }} {% translate "ani" %}</span>
-      {% endif %}
-      {% if book.genre %}
-        <span class="child-filter-chip">✨ {{ book.genre|genre_label }}</span>
-      {% endif %}
-      {% with r=book_ratings|get_rating:book.public_id %}
-        {% if r and r.count and r.count >= 3 %}
-          <span class="rating-pill" style="font-size: 0.95rem; padding: 6px 12px;" aria-label="{% blocktranslate with avg=r.average|format_avg cnt=r.count %}Evaluare: {{ avg }} din 5 stele, {{ cnt }} evaluări{% endblocktranslate %}">
-            ⭐ {{ r.average|format_avg }} ({{ r.count }} {% translate "evaluări" %})
-          </span>
-        {% else %}
-          <span class="rating-pill-empty" style="font-size: 0.9rem;" title="{% translate 'Minim 3 evaluări necesare' %}">
-            {% translate 'Fără evaluări' %}
-          </span>
-        {% endif %}
-      {% endwith %}
-    </div>
-
     <!-- Action area: Add to shelf (POST with redirect to entry) or Open entry -->
-    <div id="action-area" style="width: 100%; margin-top: 24px;">
+    <div class="stack">
       {% if book.public_id in shelf_book_ids or entry %}
-        <div style="background: var(--child-success-light); border: 2px solid var(--child-success); border-radius: var(--radius-md); padding: 14px; margin-bottom: 12px;">
-          <p style="color: var(--child-success); font-weight: 700;">✓ {% translate "Această carte este deja pe raftul tău!" %}</p>
-        </div>
+        <p class="status-ok" style="justify-content:center"><svg class="icon" aria-hidden="true"><use href="#i-check"/></svg>{% translate "Această carte este deja pe raftul tău!" %}</p>
         {% if entry %}
-          <a href="/raft/{{ entry.public_id }}/" class="btn-child btn-child-primary">
-            <span>📖</span>
-            <span>{% translate "Deschide cartea" %}</span>
-          </a>
+          <a href="/raft/{{ entry.public_id }}/" class="btn btn-primary btn-block"><svg class="icon" aria-hidden="true"><use href="#i-books"/></svg><span>{% translate "Deschide cartea" %}</span></a>
         {% else %}
-          <a href="/raft/" class="btn-child btn-child-primary">
-            <span>📚</span>
-            <span>{% translate "Mergi la raftul tău" %}</span>
-          </a>
+          <a href="/raft/" class="btn btn-primary btn-block"><svg class="icon" aria-hidden="true"><use href="#i-shelf"/></svg><span>{% translate "Mergi la raftul tău" %}</span></a>
         {% endif %}
       {% else %}
         <form action="/carti/{{ book.public_id }}/adauga/" method="post">
           {% csrf_token %}
-          <button type="submit" class="btn-child btn-child-primary">
-            <span>📥</span>
-            <span>{% translate "Pune pe raftul meu" %}</span>
-          </button>
+          <button type="submit" class="btn btn-primary btn-block"><svg class="icon" aria-hidden="true"><use href="#i-plus"/></svg><span>{% translate "Pune pe raftul meu" %}</span></button>
         </form>
       {% endif %}
     </div>

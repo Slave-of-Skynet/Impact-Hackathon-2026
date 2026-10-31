@@ -3,14 +3,9 @@
   {% if messages %}
     {% for message in messages %}
       <div class="toast toast-{{ message.tags|default:'info' }}" role="{% if message.tags == 'error' %}alert{% else %}status{% endif %}" aria-live="polite">
-        <span class="toast-icon">
-          {% if message.tags == 'success' %}✓
-          {% elif message.tags == 'error' %}✕
-          {% elif message.tags == 'warning' %}⚠
-          {% else %}ℹ{% endif %}
-        </span>
+        <svg class="icon toast-icon" aria-hidden="true"><use href="#i-{% if message.tags == 'success' %}check{% elif message.tags == 'error' or message.tags == 'warning' %}alert{% else %}info{% endif %}"/></svg>
         <span class="toast-message">{{ message }}</span>
-        <button type="button" class="toast-close" aria-label="{% translate 'Închide notificarea' %}" onclick="this.closest('.toast').remove();">&times;</button>
+        <button type="button" class="toast-close" aria-label="{% translate 'Închide notificarea' %}" onclick="this.closest('.toast').remove();"><svg class="icon" aria-hidden="true"><use href="#i-x"/></svg></button>
       </div>
     {% endfor %}
   {% endif %}
