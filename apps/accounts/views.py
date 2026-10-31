@@ -17,6 +17,7 @@ from apps.club.services import is_member
 from apps.core.viewmodels import BookVM, ChildVM, GrantVM, ShelfEntryVM, percent
 from apps.library.models import ShelfEntry
 from apps.library.stats import reader_stats
+from apps.library.streaks import reading_streak, reading_streaks
 from apps.library.reflections import reader_reflections
 
 from . import throttle
@@ -101,9 +102,12 @@ def _entry_vm(entry):
 @login_required
 @require_GET
 def adult_dashboard(request):
-    """Context: me {display_name}, my_stats StatsVM, children [{child ChildVM, stats StatsVM, current_entry
-    ShelfEntryVM | None}]. Child mode never gets here: ChildModeMiddleware does not allow-list this route."""
-    children = request.user.children.select_related("reader").order_by("created_at", "pk")
+    """Context: me {display_name}, my_stats StatsVM, my_streak StreakVM, children [{child ChildVM, stats StatsVM,
+    streak StreakVM, current_entry ShelfEntryVM | None}]. Child mode never gets here: ChildModeMiddleware does
+    not allow-list this route."""
+    children = list(request.user.children.select_related("reader").order_by("created_at", "pk"))
+    me = current_reader(request)
+    streaks = reading_streaks([me] + [c.reader for c in children])  # one query for the whole family
     # One query for all children: the newest unfinished book per reader wins, pk breaks added_at ties.
     current = {}
     for entry in ShelfEntry.objects.filter(
@@ -112,11 +116,13 @@ def adult_dashboard(request):
         current.setdefault(entry.reader_id, entry)
     return render(request, _templates("dashboard"), {
         "me": {"display_name": request.user.display_name},
-        "my_stats": reader_stats(current_reader(request)),
+        "my_stats": reader_stats(me),
+        "my_streak": streaks[me.pk],
         "children": [
             {
                 "child": _child_vm(c),
                 "stats": reader_stats(c.reader),
+                "streak": streaks[c.reader.pk],
                 "current_entry": _entry_vm(current[c.reader.pk]) if c.reader.pk in current else None,
             }
             for c in children
@@ -128,7 +134,7 @@ def adult_dashboard(request):
 @login_required
 @require_GET
 def child_report(request, child):
-    """Read-only. Context: child ChildVM, stats StatsVM, entries [ShelfEntryVM], grants [GrantVM],
+    """Read-only. Context: child ChildVM, stats StatsVM, streak StreakVM, entries [ShelfEntryVM], grants [GrantVM],
     memberships [{valid_until, status}] (history; a status of "active" may already be expired),
     is_member bool (current entitlement, the only field to trust for "member now")."""
     profile = get_child_for_guardian(request, child)  # foreign and unknown are the same 404
@@ -138,6 +144,7 @@ def child_report(request, child):
     return render(request, _templates("child_report"), {
         "child": _child_vm(profile),
         "stats": reader_stats(reader),
+        "streak": reading_streak(reader),
         "entries": [_entry_vm(e) for e in entries],
         "grants": [
             GrantVM(g.achievement.code, g.achievement.title, g.achievement.icon, g.granted_at, g.achievement.members_only)

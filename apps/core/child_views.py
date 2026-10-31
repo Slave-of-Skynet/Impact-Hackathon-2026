@@ -17,6 +17,7 @@ from apps.club.services import is_member
 from apps.core.mascot import get_mascot_line
 from apps.core.viewmodels import BookVM, ChildVM, GrantVM, ShelfEntryVM, percent
 from apps.library.models import ShelfEntry
+from apps.library.streaks import reading_streak
 
 
 @require_GET
@@ -30,6 +31,7 @@ def child_home(request):
     - mascot: MascotLine
     - is_member: bool
     - recent_grants: list[GrantVM]
+    - streak: StreakVM (#65)
 
     Security:
     - Fails closed for adult mode (403 Forbidden).
@@ -114,6 +116,7 @@ def child_home(request):
         "mascot": get_mascot_line("welcome"),
         "is_member": is_member(reader),
         "recent_grants": recent_grants,
+        "streak": reading_streak(reader),
     }
 
     response = render(request, "child/home.html", context)
