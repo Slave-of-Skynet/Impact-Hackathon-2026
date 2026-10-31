@@ -17,6 +17,7 @@ from apps.club.services import is_member
 from apps.core.viewmodels import BookVM, ChildVM, GrantVM, ShelfEntryVM, percent
 from apps.library.models import ShelfEntry
 from apps.library.stats import reader_stats
+from apps.library.reflections import reader_reflections
 
 from . import throttle
 from .authz import (
@@ -144,6 +145,7 @@ def child_report(request, child):
         ],
         "memberships": list(reader.memberships.order_by("-valid_until", "-pk").values("valid_until", "status")),
         "is_member": is_member(reader),
+        "book_reflections": reader_reflections(reader),
     })
 
 

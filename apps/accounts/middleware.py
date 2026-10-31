@@ -9,6 +9,7 @@ from .authz import ACTIVE_CHILD_KEY, MODE_KEY, active_child_reader, is_child_mod
 CHILD_ALLOWED = frozenset({
     "child_home", "catalog", "book_detail", "add_to_shelf", "my_shelf", "shelf_entry", "record_progress",
     "finish_book", "rate_book", "achievements", "club_corner", "pin_gate", "logout", "offline", "manifest", "sw",
+    "book_reflection", "start_reflection", "save_reflection",
 })
 # Reachable even when the session's child is gone: the guardian must still be able to unlock or sign out.
 ALWAYS_ALLOWED = frozenset({"pin_gate", "logout"})

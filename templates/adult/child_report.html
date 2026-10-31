@@ -175,4 +175,21 @@
     </div>
   </div>
 </div>
+<section aria-labelledby="child-reflections-title" style="margin-top:32px;">
+  <h2 id="child-reflections-title">Gânduri despre cărți</h2>
+  <p>Răspunsurile copilului sunt private. Le poți citi aici, fără a le modifica.</p>
+  {% for reflection in book_reflections %}
+    <article class="card" style="padding:20px;margin-top:16px;overflow-wrap:anywhere;">
+      <h3>{{ reflection.book_title }}</h3>
+      <ol style="padding-left:24px;">
+        {% for row in reflection.questions %}
+          <li style="margin-top:16px;">
+            <p><strong>{{ row.question }}</strong></p>
+            <p style="white-space:pre-wrap;">{% if row.answer %}{{ row.answer }}{% else %}Încă fără răspuns.{% endif %}</p>
+          </li>
+        {% endfor %}
+      </ol>
+    </article>
+  {% empty %}<p style="margin-top:16px;">Încă nu sunt răspunsuri despre lectură.</p>{% endfor %}
+</section>
 {% endblock %}
