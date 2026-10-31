@@ -5,6 +5,7 @@ Reguli:
   înregistrare / output) și de către owner-ul indicat. CI verde **nu** înseamnă browser-verificat.
 - `#43 SYNTHETIC PASS` (`docs/qa/issue-43-synthetic-persistence.md`) dovedește persistența doar pe SQLite
   disposable, cross-proces. **Nu** este persistență reală Render/PostgreSQL după restart/redeploy.
+- [PR #55](https://github.com/Slave-of-Skynet/Impact-Hackathon-2026/pull/55) aduce două capturi **LOCAL SYNTHETIC** și relatarea unui parcurs local cu un singur profil schimbând modurile; nu demonstrează independent două sesiuni sau hostul public. Nu converti din acest motiv rândurile de mai jos din `NOT RUN` în `PASS`.
 - Statusuri: `NOT RUN` · `PASS` · `FAIL(+link la defect)` · `BLOCKED(+motive)`.
 - Fără date personale reale în dovezi: conturi sintetice `@demo.local` doar.
 
