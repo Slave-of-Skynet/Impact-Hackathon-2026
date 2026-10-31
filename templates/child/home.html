@@ -2,6 +2,7 @@
 {% load static i18n %}
 
 {% block title %}Gustul Cărților — Acasă{% endblock %}
+{% block extra_head %}<link rel="stylesheet" href="{% static 'css/streak.css' %}">{% endblock %}
 
 {% block content %}
   <!-- Mascot Welcome / Reaction -->
@@ -13,6 +14,8 @@
       <p class="mascot-text">{{ mascot.text|default:"Salut! Hai să citim ceva frumos!" }}</p>
     </div>
   </section>
+
+  {% include "library/_streak.html" %}
 
   <!-- Recent Achievement Banner (if any) -->
   {% if recent_grants %}

@@ -1,7 +1,8 @@
 {% extends "base.html" %}
-{% load i18n %}
+{% load i18n static %}
 
 {% block title %}{% translate "Panou de control — Gustul Cărților" %}{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/streak.css' %}">{% endblock %}
 
 {% block content %}
 <div class="dashboard-header" style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: var(--space-4); margin-bottom: var(--space-6);">
@@ -25,6 +26,7 @@
     <h2 class="card-title">{% translate "Lectura mea personală" %}</h2>
     <a href="/raft/" class="btn btn-sm btn-outline">{% translate "Vezi raftul meu" %} &rarr;</a>
   </div>
+  {% include "library/_streak.html" with streak=my_streak %}
   {% if my_stats %}
     <div class="stat-grid">
       <div class="stat-card primary">
@@ -94,6 +96,7 @@
               <div style="font-size: var(--text-xs); color: var(--color-text-light);">{% translate "ultimele 7 zile" %}</div>
             </div>
           </div>
+          {% include "library/_streak.html" with streak=item.streak compact=True %}
 
           <!-- Current reading book -->
           <div style="margin-top: var(--space-2);">
