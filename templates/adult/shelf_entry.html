@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load i18n %}
+{% load i18n library_extras %}
 
 {% block title %}{{ entry.book.title }} — {% translate "Jurnal de lectură" %}{% endblock %}
 
@@ -26,7 +26,7 @@
       {% if entry.book.age_band %}
         <span class="badge badge-accent">{{ entry.book.age_band }} {% translate "ani" %}</span>
       {% endif %}
-      <span class="badge badge-primary">{{ entry.book.genre }}</span>
+      <span class="badge badge-primary">{{ entry.book.genre|genre_label }}</span>
       <span class="badge">{{ entry.book.page_count }} {% translate "pagini" %}</span>
     </div>
   </div>

@@ -15,6 +15,11 @@ Windows 10.0.26300, браузер ZCode in-app (Chromium), viewport 1280×900.
 |---|---|
 | `01-local-landing-local-synthetic.png` | Публичный landing `/` (исправление #49) — hero, ссылки «Creează cont gratuit» / «Explorează cărțile», карточки возможностей |
 | `02-local-parent-dashboard-local-synthetic.png` | `/panou/` после входа `parinte1@demo.local` — приветствие, статистика, карточки детей Mia и Alex с кнопками «Raport detaliat» / «Mod Copil» |
+| `04-local-landing-no-brand-emoji-desktop.png` | `/` desktop 1280px (исправление #73 A): бренд `Gustul Cărților` в шапке без эмодзи 📖 |
+| `05-local-landing-no-brand-emoji-390px.png` | `/` mobile 390px (#73 A): бренд без эмодзи, мобильное меню не сломано |
+| `06-local-child-report-dates-desktop.png` | `/familie/<child>/` desktop (#73 B): «Obținută la: 31.10.2026» и «Valabil până la: 19.01.2027» — числовой румынский формат без русских месяцев |
+| `07-local-child-report-dates-390px.png` | `/familie/<child>/` mobile 390px (#73 B): те же даты, мобильная вёрстка целая |
+| `08-local-book-detail-genre-label.png` | `/carti/<book>/` desktop (#73 D): бейдж жанра «Basme» вместо кода `fairy_tale` |
 
 Проверенные шаги без скриншота (подтверждены DOM-снимками, журнал в PR):
 вход в детском режиме → каталог → «Capra cu trei iezi» → добавление на полку →
