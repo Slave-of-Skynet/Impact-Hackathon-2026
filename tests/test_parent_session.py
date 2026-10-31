@@ -352,3 +352,37 @@ def test_csrf_methods_and_anonymous_semantics(guardian, child):
     for path in (LOCK, RETURN):
         assert anonymous.post(path).status_code == 302
         assert anonymous.post(path, **HTMX).status_code == 401
+
+
+def test_compact_presentation_collapsed_adult_and_visible_trusted_lock(adult_client, child):
+    """Issue #81: the intrusive card becomes a collapsed adult disclosure, while a
+    trusted session keeps a compact always-visible status, risk cue and real Lock POST."""
+    html = adult_client.get("/panou/").content.decode()
+    # Adult default: one-line collapsed disclosure; the Lock form lives inside <details>.
+    assert '<details class="parent-session parent-session--adult">' in html
+    assert "Mod Părinte activ" in html
+    assert WARNING in html
+    assert "/parinte/blocheaza/" in html
+    assert 'style="padding:16px' not in html  # the old giant bordered card is gone
+
+    verify(adult_client, child)
+    html = adult_client.get("/panou/").content.decode()
+    # Trusted: compact visible status + short risk cue + discoverable Lock POST.
+    assert "Acces parental deblocat" in html
+    assert WARNING in html
+    assert 'action="/parinte/blocheaza/"' in html
+    assert "Blochează" in html
+    assert '<details class="parent-session parent-session--adult">' not in html
+
+    enter(adult_client, child)
+    html = adult_client.get("/copil/").content.decode()
+    # Trusted child mode: same compact banner; the header quick-return is untouched.
+    assert WARNING in html and "/parinte/revino/" in html
+
+
+def test_child_mode_locked_banner_is_compact_without_lock_form(adult_client, child):
+    enter(adult_client, child)  # child mode without trust
+    html = adult_client.get("/copil/").content.decode()
+    assert 'parent-session--locked' in html
+    assert "Accesul părinților este blocat" in html
+    assert "/parinte/blocheaza/" not in html  # unchanged: no Lock path while locked

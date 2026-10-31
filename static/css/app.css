@@ -1026,3 +1026,50 @@ a:hover {
   color: var(--color-text-light);
   font-style: italic;
 }
+
+/* Compact, collapsible parent-session controls (issue #81). Native <details>,
+   no JS; the trusted status and Lock stay outside the disclosure. */
+.parent-session {
+  margin: 8px 0;
+  padding: 8px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  font-size: var(--text-sm);
+  overflow-wrap: anywhere;
+}
+.parent-session summary {
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  cursor: pointer;
+  font-weight: var(--font-semibold);
+  color: var(--color-primary);
+}
+.parent-session--locked {
+  border: 0;
+  padding: 4px 12px;
+  color: var(--color-text-muted);
+}
+.parent-session-form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+}
+.parent-session-select {
+  min-height: 44px;
+  max-width: 100%;
+  font: inherit;
+}
+.parent-session-details { margin-top: 8px; }
+.parent-session-details summary {
+  min-height: 36px;
+  font-weight: var(--font-medium);
+  color: var(--color-text-muted);
+}
+.parent-session-details p,
+.parent-session-body p {
+  margin: 6px 0;
+  color: var(--color-text-muted);
+}
