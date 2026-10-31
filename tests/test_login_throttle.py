@@ -131,3 +131,17 @@ def test_record_failure_refuses_to_run_inside_a_caller_transaction():
 def test_unknown_scope_rejected():
     with pytest.raises(ValueError):
         throttle.check("other", "7")
+
+
+def test_next_survives_a_failed_attempt(client, guardian):
+    # The form posts to the bare URL, so request.GET.next is gone on the 422 re-render.
+    failed = client.post(LOGIN, {"username": guardian.email, "password": "wrong", "next": "/raft/"})
+    assert failed.status_code == 422
+    assert '<input type="hidden" name="next" value="/raft/">' in failed.content.decode()
+    ok = client.post(LOGIN, {"username": guardian.email, "password": PASSWORD, "next": "/raft/"})
+    assert ok.status_code == 302 and ok["Location"] == "/raft/"
+
+
+def test_unsafe_next_is_not_echoed(client):
+    page = client.get(LOGIN + "?next=https://evil.example/").content.decode()
+    assert "evil.example" not in page

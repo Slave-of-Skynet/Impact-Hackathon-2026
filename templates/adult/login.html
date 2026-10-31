@@ -44,8 +44,9 @@
 
     <form method="post" action="/cont/intrare/" novalidate>
       {% csrf_token %}
-      {% if request.GET.next %}
-        <input type="hidden" name="next" value="{{ request.GET.next }}">
+      {# LoginView's validated `next` (from GET or POST): survives a failed attempt, unlike request.GET.next. #}
+      {% if next %}
+        <input type="hidden" name="next" value="{{ next }}">
       {% endif %}
 
       <div class="form-group">
