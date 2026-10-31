@@ -4,81 +4,52 @@
 {% block title %}{% translate "Realizări și Insigne — Gustul Cărților" %}{% endblock %}
 
 {% block content %}
-<div style="margin-bottom: var(--space-8);">
+<div class="page-title">
   <h1>{% translate "Realizări și Insigne" %}</h1>
-  <p>{% translate "Recompense pentru perseverență, finalizarea cărților și pasiunea pentru lectură." %}</p>
+  <p class="lede">{% translate "Recompense pentru perseverență, finalizarea cărților și pasiunea pentru lectură." %}</p>
 </div>
 
-<!-- Earned Achievements -->
-<div style="margin-bottom: var(--space-10);">
-  <h2 style="font-size: var(--text-2xl); margin-bottom: var(--space-4); display: flex; align-items: center; gap: var(--space-2);">
-    <span>{% translate "Insigne deblocate" %}</span>
-    <span class="badge badge-primary">{% if earned %}{{ earned|length }}{% else %}0{% endif %}</span>
-  </h2>
-
-  {% if earned %}
-    <div class="grid-cards" style="grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));">
-      {% for g in earned %}
-        <div class="achievement-card">
-          <div class="achievement-icon" aria-hidden="true">
-            🏅
-          </div>
-          <div class="achievement-content">
-            <div class="achievement-title">{{ g.title }}</div>
-            <div class="achievement-desc">
-              {% translate "Deblocată la" %}: {{ g.granted_at|date:"d.m.Y" }}
+<div class="report-grid">
+  <section class="section" aria-labelledby="ach-earned">
+    <div class="section-head"><h2 id="ach-earned">{% translate "Insigne deblocate" %}</h2><span class="meta num">{% if earned %}{{ earned|length }}{% else %}0{% endif %}</span></div>
+    {% if earned %}
+      <ul class="ledger">
+        {% for g in earned %}
+          <li class="badge-row achievement-card">
+            <svg class="icon seal" aria-hidden="true"><use href="#i-seal"/></svg>
+            <div>
+              <p class="book-title achievement-title">{{ g.title }}{% if g.members_only %} <span class="label label-green">{% translate "Exclusiv Club" %}</span>{% endif %}</p>
+              <p class="meta num">{% translate "Deblocată la" %}: {{ g.granted_at|date:"d.m.Y" }}</p>
             </div>
-            {% if g.members_only %}
-              <div style="margin-top: 4px;">
-                <span class="badge badge-accent">⭐ {% translate "Exclusiv Club" %}</span>
-              </div>
-            {% endif %}
-          </div>
-        </div>
-      {% endfor %}
-    </div>
-  {% else %}
-    <div class="empty-state" style="padding: var(--space-8) var(--space-4);">
-      <span class="empty-icon" aria-hidden="true">🏅</span>
-      <h3 class="empty-title">{% translate "Nu ai deblocat nicio insignă încă" %}</h3>
-      <p class="empty-desc">{% translate "Citește primele pagini dintr-o carte sau finalizează un volum pentru a câștiga prima insignă." %}</p>
-      <a href="/carti/" class="btn btn-outline">{% translate "Alege o carte" %}</a>
-    </div>
-  {% endif %}
-</div>
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <div class="empty empty-state">
+        <h3 class="empty-title">{% translate "Nu ai deblocat nicio insignă încă" %}</h3>
+        <p class="empty-desc">{% translate "Citește primele pagini dintr-o carte sau finalizează un volum pentru a câștiga prima insignă." %}</p>
+        <a href="/carti/" class="btn">{% translate "Alege o carte" %}</a>
+      </div>
+    {% endif %}
+  </section>
 
-<!-- Locked Achievements -->
-<div>
-  <h2 style="font-size: var(--text-2xl); margin-bottom: var(--space-4);">
-    {% translate "Insigne viitoare" %}
-  </h2>
-
-  {% if locked %}
-    <div class="grid-cards" style="grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));">
-      {% for item in locked %}
-        <div class="achievement-card locked">
-          <div class="achievement-icon" aria-hidden="true">
-            🔒
-          </div>
-          <div class="achievement-content">
-            <div class="achievement-title">{{ item.achievement.title }}</div>
-            <div class="achievement-desc">
-              {{ item.hint|default:"Continuă să citești pentru a descoperi această realizare." }}
+  <section class="section" aria-labelledby="ach-locked">
+    <div class="section-head"><h2 id="ach-locked">{% translate "Insigne viitoare" %}</h2></div>
+    {% if locked %}
+      <ul class="ledger">
+        {% for item in locked %}
+          <li class="badge-row locked achievement-card">
+            <svg class="icon seal seal-locked" aria-hidden="true"><use href="#i-lock"/></svg>
+            <div>
+              <p class="book-title achievement-title">{{ item.achievement.title }}{% if item.members_only %} <span class="label">{% translate "Membri Club" %}</span>{% endif %}</p>
+              <p class="meta">{{ item.hint|default:"Continuă să citești pentru a descoperi această realizare." }}{% if item.members_only %} <a href="/club/cod/">{% translate "Activează cod" %}</a>{% endif %}</p>
             </div>
-            {% if item.members_only %}
-              <div style="margin-top: 6px;">
-                <span class="badge badge-primary">{% translate "Membri Club" %}</span>
-                <a href="/club/cod/" style="font-size: var(--text-xs); margin-left: 6px;">{% translate "Activează cod" %} &rarr;</a>
-              </div>
-            {% endif %}
-          </div>
-        </div>
-      {% endfor %}
-    </div>
-  {% else %}
-    <div class="card" style="padding: var(--space-4); text-align: center; color: var(--color-text-muted);">
-      {% translate "Toate realizările curente au fost deblocate!" %}
-    </div>
-  {% endif %}
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class="status-ok" style="margin-top:var(--s-4)"><svg class="icon" aria-hidden="true"><use href="#i-check"/></svg>{% translate "Toate realizările curente au fost deblocate!" %}</p>
+    {% endif %}
+  </section>
 </div>
 {% endblock %}

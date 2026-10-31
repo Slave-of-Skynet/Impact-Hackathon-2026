@@ -14,7 +14,8 @@ def parent_session_status(context):
     children = list(request.user.children.order_by("created_at", "pk"))
     child_mode = is_child_mode(request)
     until = parent_session.verified_until(request)
-    active = any(str(child.public_id) == request.session.get(ACTIVE_CHILD_KEY) for child in children)
+    active_child = next((c for c in children if str(c.public_id) == request.session.get(ACTIVE_CHILD_KEY)), None)
+    active = active_child is not None
     if child_mode and not active:
         parent_session.revoke(request)
         until = None
@@ -24,4 +25,4 @@ def parent_session_status(context):
     request._parent_controls_rendered = True
     return {"show": True, "trusted": until is not None, "until": until,
             "child_mode": child_mode, "can_return": child_mode and active and until is not None,
-            "children": children}
+            "children": children, "active_child": active_child if child_mode else None}

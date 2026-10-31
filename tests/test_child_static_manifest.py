@@ -90,14 +90,14 @@ def test_child_home_empty_shelf_renders_invitation(adult_client, guardian, manif
     assert manifest_paths(manifest_static)["img/avatars/owl.svg"] in html
 
 
-# --- Înapoi la lectură and the child badge ("Copil" fallback) on the PIN gate --------------------------------------
+# --- Înapoi la lectură and the child badge (active child, not the "Copil" fallback) on the PIN gate --------------------------------------
 
 def test_pin_gate_back_link_returns_to_working_child_home(child_client, manifest_static):
     gate = child_client.get("/parinte/")
     assert gate.status_code == 200
     html = gate.content.decode()
     assert 'href="/copil/"' in html  # "Înapoi la lectură" and the child badge both target /copil/
-    assert ">Copil<" in html  # badge fallback text (the gate context has no child profile)
+    assert ">Copil<" not in html  # the badge names the active child even though the gate view passes no profile
     assert child_client.get("/copil/").status_code == 200  # the link lands on a working page
 
 

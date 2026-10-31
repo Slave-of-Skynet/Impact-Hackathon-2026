@@ -1,89 +1,61 @@
 {% extends "child/base.html" %}
-{% load static i18n library_tags %}
+{% load static i18n library_tags design_tags %}
 
 {% block title %}Gustul Cărților — Raftul Meu{% endblock %}
 
 {% block content %}
-  <div class="child-top-nav">
-    <h1 style="font-size: 1.4rem; font-weight: 800;">📖 {% translate "Raftul meu" %}</h1>
-    <a href="/copil/" class="child-exit-btn">
-      <span>⬅️</span>
-      <span>{% translate "Acasă" %}</span>
-    </a>
-  </div>
+  <h1 class="kid-title"><span class="mark">{% translate "Raftul meu" %}</span></h1>
 
-  <!-- Quick Reading Stats Header -->
-  {% if stats %}
-    <div class="child-stats-grid">
-      <div class="child-stat-card">
-        <span class="child-stat-value" style="color: var(--child-primary);">{{ stats.pages_total }}</span>
-        <p class="child-stat-label">{% translate "pagini citite" %}</p>
-      </div>
-      <div class="child-stat-card">
-        <span class="child-stat-value" style="color: var(--child-success);">{{ stats.books_finished }}</span>
-        <p class="child-stat-label">{% translate "cărți gata" %}</p>
-      </div>
+  {% if entries %}
+    <!-- The shelf: spine height follows the page count, the yellow ribbon marks a book in progress -->
+    <ul class="shelf" aria-label="{% translate 'Raftul meu' %}">
+      {% for entry in entries %}
+        <li><a class="spine {{ entry.book.cover_color|cover_class }}{% if entry.status != 'finished' and entry.current_page %} reading{% endif %}" href="/raft/{{ entry.public_id }}/" style="height:{{ entry.page_count|spine_height }}px" aria-label="{{ entry.book.title }}, {% if entry.status == 'finished' %}{% translate 'Gata' %}{% else %}{{ entry.percent }}%{% endif %}">
+          <span class="st" aria-hidden="true">{{ entry.book.title }}</span>
+          <span class="pct num" aria-hidden="true">{% if entry.status == 'finished' %}<svg class="icon"><use href="#i-check"/></svg>{% else %}{{ entry.percent }}%{% endif %}</span>
+        </a></li>
+      {% endfor %}
+    </ul>
+    {% if stats %}
+      <p class="shelf-legend">
+        <span><i class="ribbon-key"></i> {% translate "semnul de carte: o citești acum" %}</span>
+        <span>{% translate "cărți gata" %}: <b class="num">{{ stats.books_finished }}</b></span>
+        <span>{% translate "pagini citite" %}: <b class="num">{{ stats.pages_total }}</b></span>
+      </p>
+    {% endif %}
+
+    <!-- The same books as a readable list (titles in full, progress, rating) -->
+    <ul class="kid-list child-book-list">
+      {% for entry in entries %}
+        <li><a href="/raft/{{ entry.public_id }}/" class="child-book-item">
+          {% include "library/_cover.html" with book=entry.book size="" %}
+          <div>
+            <h2 class="book-title">{{ entry.book.title }}</h2>
+            <p class="book-author">{{ entry.book.author }}</p>
+            {% if entry.status == 'finished' %}
+              {% include "library/_ruler.html" with current=entry.current_page total=entry.page_count percent=entry.percent done=True %}
+              {% with pr=personal_ratings|get_personal_rating:entry.book.public_id %}
+                {% if pr %}<span class="rating rating-pill"><svg class="icon" aria-hidden="true"><use href="#i-star"/></svg><b>{{ pr }}/5</b></span>{% else %}<span class="label label-green">{% translate "Gata" %}</span>{% endif %}
+              {% endwith %}
+            {% else %}
+              {% include "library/_ruler.html" with current=entry.current_page total=entry.page_count percent=entry.percent %}
+            {% endif %}
+            <span class="visually-hidden">{{ entry.current_page }}/{{ entry.page_count }} pag.</span>
+          </div>
+          <svg class="icon" aria-hidden="true"><use href="#i-next"/></svg>
+        </a></li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <div class="empty">
+      <div class="empty-shelf" aria-hidden="true"><i style="height:90px"></i><i style="height:110px"></i><i style="height:80px"></i></div>
+      <h2>{% translate "Raftul tău este gol" %}</h2>
+      <p>{% translate "Alege o carte din bibliotecă și adaug-o aici!" %}</p>
+      <a href="/carti/" class="btn btn-primary"><svg class="icon" aria-hidden="true"><use href="#i-books"/></svg><span>{% translate "Mergi la bibliotecă" %}</span></a>
     </div>
   {% endif %}
 
-  <!-- Shelf Entries -->
-  <div class="child-book-list" role="list">
-    {% for entry in entries %}
-      <a href="/raft/{{ entry.public_id }}/" class="child-book-item" role="listitem">
-        {% with cover=entry.book|book_cover %}
-          {% if cover %}
-            <img src="{% static cover %}" alt="{{ entry.book.title }}" class="book-cover" aria-hidden="true">
-          {% else %}
-            <div class="book-cover" style="background-color: {{ entry.book.cover_color|default:'#3B82F6' }};" aria-hidden="true">
-              {{ entry.book.cover_emoji|default:"📖" }}
-            </div>
-          {% endif %}
-        {% endwith %}
-        <div style="flex: 1; min-width: 0;">
-          <h2 style="font-size: 1.1rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-            {{ entry.book.title }}
-          </h2>
-          <p style="font-size: 0.95rem; color: var(--child-text-muted);">{{ entry.book.author }}</p>
-
-          <div class="progress-bar-container" style="margin-top: 6px;">
-            <div class="progress-bar-header" style="font-size: 0.8rem;">
-              <span>{{ entry.current_page }}/{{ entry.page_count }} pag.</span>
-              {% if entry.status == 'finished' %}
-                {% with pr=personal_ratings|get_personal_rating:entry.book.public_id %}
-                  {% if pr %}
-                    <span class="rating-pill" style="font-size: 0.75rem; padding: 1px 6px;">⭐ {{ pr }}/5</span>
-                  {% else %}
-                    <span style="font-weight: 700; color: var(--child-success);">✓ {% translate "Gata" %}</span>
-                  {% endif %}
-                {% endwith %}
-              {% else %}
-                <span style="font-weight: 700; color: var(--child-primary);">{{ entry.percent }}%</span>
-              {% endif %}
-            </div>
-            <div class="progress-bar-track" style="height: 12px;">
-              <div class="progress-bar-fill" style="width: {{ entry.percent }}%;"></div>
-            </div>
-          </div>
-        </div>
-        <span style="font-size: 1.2rem; color: var(--child-primary);">➔</span>
-      </a>
-    {% empty %}
-      <div style="text-align: center; padding: 40px 16px;">
-        <span style="font-size: 3rem;">📭</span>
-        <h2 style="font-size: 1.2rem; font-weight: 700; margin-top: 8px;">{% translate "Raftul tău este gol" %}</h2>
-        <p style="font-size: 0.95rem; color: var(--child-text-muted); margin-top: 4px;">{% translate "Alege o carte din bibliotecă și adaug-o aici!" %}</p>
-        <a href="/carti/" class="btn-child btn-child-primary" style="margin-top: 18px;">
-          <span>📚</span>
-          <span>{% translate "Mergi la bibliotecă" %}</span>
-        </a>
-      </div>
-    {% endfor %}
-  </div>
-
-  <div style="margin-top: 8px;">
-    <a href="/carti/" class="btn-child btn-child-subtle">
-      <span>➕</span>
-      <span>{% translate "Adaugă altă carte pe raft" %}</span>
-    </a>
+  <div class="stack">
+    <a href="/carti/" class="btn btn-block"><svg class="icon" aria-hidden="true"><use href="#i-plus"/></svg><span>{% translate "Adaugă altă carte pe raft" %}</span></a>
   </div>
 {% endblock %}

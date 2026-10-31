@@ -4,82 +4,35 @@
 {% block title %}{{ book.title }} — Gustul Cărților{% endblock %}
 
 {% block content %}
-<div style="margin-bottom: var(--space-4);">
-  <a href="/carti/" class="btn btn-outline btn-sm">
-    &larr; {% translate "Înapoi la catalog" %}
-  </a>
-</div>
-
-<div class="card" style="max-width: 800px; margin: 0 auto; padding: var(--space-8);">
-  <div class="grid-2col" style="align-items: center; gap: var(--space-8);">
-    <div>
-      {% with cover=book|book_cover %}
-        {% if cover %}
-          <div style="max-width: 280px; margin: 0 auto;">
-            <img src="{% static cover %}" alt="{{ book.title }}" style="width: 100%; aspect-ratio: 2/3; object-fit: cover; border-radius: var(--radius-lg); box-shadow: var(--shadow-lg); display: block;">
-          </div>
-        {% else %}
-          <div class="book-cover" style="background-color: {{ book.cover_color|default:'#F4A261' }}; border-radius: var(--radius-lg); max-width: 280px; margin: 0 auto; box-shadow: var(--shadow-lg);">
-            <div class="book-cover-title" style="font-size: var(--text-xl);">{{ book.title }}</div>
-            <div class="book-cover-emoji" style="font-size: 5rem;" aria-hidden="true">{{ book.cover_emoji|default:'📖' }}</div>
-            <div class="book-cover-author" style="font-size: var(--text-sm);">{{ book.author }}</div>
-          </div>
-        {% endif %}
-      {% endwith %}
+<a class="backlink" href="/carti/"><svg class="icon" aria-hidden="true"><use href="#i-back"/></svg>{% translate "Înapoi la catalog" %}</a>
+<div class="detail">
+  {% include "library/_cover.html" with book=book size="cover-xl" %}
+  <div>
+    <h1>{{ book.title }}</h1>
+    <p class="book-author" style="font-size:var(--t-md)">{% translate "Autor" %}: {{ book.author }}</p>
+    <div class="labels">
+      {% if book.age_band %}<span class="label">{{ book.age_band }} {% translate "ani" %}</span>{% endif %}
+      <span class="label">{{ book.genre|genre_label }}</span>
+      <span class="label">{{ book.page_count }} {% translate "pagini" %}</span>
     </div>
-
-    <div>
-      <div style="display: flex; align-items: center; gap: var(--space-2); margin-bottom: var(--space-2); flex-wrap: wrap;">
-        {% if book.age_band %}
-          <span class="badge badge-accent">{{ book.age_band }} {% translate "ani" %}</span>
-        {% endif %}
-        <span class="badge badge-primary">{{ book.genre|genre_label }}</span>
-        <span class="badge">{{ book.page_count }} {% translate "pagini" %}</span>
-        {% with r=book_ratings|get_rating:book.public_id %}
-          {% if r and r.count and r.count >= 3 %}
-            <span class="adult-rating-badge" style="font-size: var(--text-sm); padding: var(--space-1) var(--space-3);" title="{% blocktranslate with avg=r.average|format_avg cnt=r.count %}Evaluare: {{ avg }} din 5 ({{ cnt }} evaluări){% endblocktranslate %}">
-              ★ {{ r.average|format_avg }} ({{ r.count }} {% translate "evaluări" %})
-            </span>
-          {% else %}
-            <span class="adult-rating-empty" style="font-size: var(--text-sm);" title="{% translate 'Minim 3 evaluări necesare' %}">
-              {% translate "Fără evaluări încă" %}
-            </span>
-          {% endif %}
-        {% endwith %}
-      </div>
-
-      <h1 style="margin-bottom: var(--space-2); font-size: var(--text-3xl);">{{ book.title }}</h1>
-      <p style="font-size: var(--text-lg); font-weight: var(--font-medium); color: var(--color-text-muted); margin-bottom: var(--space-6);">
-        {% translate "Autor" %}: {{ book.author }}
-      </p>
-
-      <p style="line-height: var(--leading-relaxed); margin-bottom: var(--space-6);">
-        {% translate "O lectură captivantă recomandată pentru dezvoltarea vocabularului, imaginației și dragostei de cărți." %}
-      </p>
-
-      <div style="border-top: 1px solid var(--color-border); padding-top: var(--space-6);">
-        {% if not request.user.is_authenticated %}
-          <div style="display: flex; gap: var(--space-3); align-items: center;">
-            <a href="/cont/intrare/?next=/carti/{{ book.public_id }}/" class="btn btn-primary btn-lg">
-              {% translate "Conectează-te pentru a adăuga pe raft" %}
-            </a>
-          </div>
-        {% elif shelf_book_ids and book.public_id in shelf_book_ids %}
-          <div style="display: flex; gap: var(--space-3); align-items: center;">
-            <a href="/raft/" class="btn btn-outline btn-lg" style="border-color: var(--color-success); color: var(--color-success);">
-              ✓ {% translate "Cartea este pe raftul tău" %}
-            </a>
-          </div>
-        {% else %}
-          <form method="post" action="/carti/{{ book.public_id }}/adauga/">
-            {% csrf_token %}
-            <button type="submit" class="btn btn-primary btn-lg">
-              + {% translate "Adaugă pe raftul meu" %}
-            </button>
-          </form>
-        {% endif %}
-      </div>
-    </div>
+    {% with r=book_ratings|get_rating:book.public_id %}
+      {% if r and r.count and r.count >= 3 %}
+        <p class="rating adult-rating-badge" title="{% blocktranslate with avg=r.average|format_avg cnt=r.count %}Evaluare: {{ avg }} din 5 ({{ cnt }} evaluări){% endblocktranslate %}"><svg class="icon" aria-hidden="true"><use href="#i-star"/></svg><b>{{ r.average|format_avg }}</b> ({{ r.count }} {% translate "evaluări" %})</p>
+      {% else %}
+        <p class="rating adult-rating-empty" title="{% translate 'Minim 3 evaluări necesare' %}">{% translate "Fără evaluări încă" %}</p>
+      {% endif %}
+    {% endwith %}
+    <p class="blurb" style="margin-top:var(--s-4)">{% translate "O lectură captivantă recomandată pentru dezvoltarea vocabularului, imaginației și dragostei de cărți." %}</p>
+    {% if not request.user.is_authenticated %}
+      <a href="/cont/intrare/?next=/carti/{{ book.public_id }}/" class="btn btn-primary">{% translate "Conectează-te pentru a adăuga pe raft" %}</a>
+    {% elif shelf_book_ids and book.public_id in shelf_book_ids %}
+      <a href="/raft/" class="btn"><svg class="icon" aria-hidden="true"><use href="#i-check"/></svg>{% translate "Cartea este pe raftul tău" %}</a>
+    {% else %}
+      <form method="post" action="/carti/{{ book.public_id }}/adauga/">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-primary"><svg class="icon" aria-hidden="true"><use href="#i-plus"/></svg>{% translate "Adaugă pe raftul meu" %}</button>
+      </form>
+    {% endif %}
   </div>
 </div>
 {% endblock %}

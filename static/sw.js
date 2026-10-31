@@ -8,12 +8,19 @@
  */
 
 const CACHE_PREFIX = "gustul-cartilor-static-";
-const CACHE_VERSION = "v2";
+const CACHE_VERSION = "v5";
 const CACHE_NAME = `${CACHE_PREFIX}${CACHE_VERSION}`;
 
 const PRECACHE_ASSETS = [
   "/offline/",
-  "/static/css/child.css",
+  "/static/css/app.css",
+  "/static/fonts/literata-normal-latin.woff2",
+  "/static/fonts/literata-normal-latin-ext.woff2",
+  "/static/fonts/literata-italic-latin.woff2",
+  "/static/fonts/literata-italic-latin-ext.woff2",
+  "/static/fonts/atkinson-hyperlegible-next-normal-latin.woff2",
+  "/static/fonts/atkinson-hyperlegible-next-normal-latin-ext.woff2",
+  "/static/img/logo-gustul-cartilor.png",
   "/static/js/child.js",
   "/static/js/htmx.min.js",
   "/manifest.webmanifest",

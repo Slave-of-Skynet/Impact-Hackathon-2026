@@ -1,73 +1,57 @@
 {% load static i18n %}
-<div id="progress-container" class="progress-section" style="display: flex; flex-direction: column; gap: 18px;">
+<div id="progress-container" class="progress-section">
   <!-- Mascot line for progress/errors -->
   {% if mascot %}
-    <section class="mascot-container" aria-label="Gusti zice">
+    <section class="gusti mascot-container" aria-label="Gusti zice">
       <!-- Strict mood allowlist with complete file names: the static tag must never receive a
            partial path — the production manifest storage raises on partial names (#56). -->
-      <img src="{% if mascot.mood == 'cheer' %}{% static 'img/mascot/mascot-cheer.svg' %}{% elif mascot.mood == 'think' %}{% static 'img/mascot/mascot-think.svg' %}{% elif mascot.mood == 'oops' %}{% static 'img/mascot/mascot-oops.svg' %}{% else %}{% static 'img/mascot/mascot-happy.svg' %}{% endif %}" alt="Mascot" class="mascot-avatar" width="72" height="72">
-      <div class="mascot-bubble">
-        <p class="mascot-text">{{ mascot.text }}</p>
-      </div>
+      <img src="{% if mascot.mood == 'cheer' %}{% static 'img/mascot/mascot-cheer.svg' %}{% elif mascot.mood == 'think' %}{% static 'img/mascot/mascot-think.svg' %}{% elif mascot.mood == 'oops' %}{% static 'img/mascot/mascot-oops.svg' %}{% else %}{% static 'img/mascot/mascot-happy.svg' %}{% endif %}" alt="Mascot" class="mascot-avatar" width="64" height="64">
+      <p class="mascot-text">{{ mascot.text }}</p>
     </section>
   {% endif %}
 
   <!-- Validation errors (422) -->
   {% if errors %}
-    <div class="child-alert-error" role="alert">
-      {% for err in errors %}
-        <p>⚠️ {{ err }}</p>
-      {% endfor %}
+    <div class="notice child-alert-error" role="alert">
+      {% for err in errors %}<p>{{ err }}</p>{% endfor %}
     </div>
   {% endif %}
 
   <!-- New Grants celebration -->
   {% if new_grants %}
     {% for grant in new_grants %}
-      <div class="child-grant-banner" role="status">
-        <span style="font-size: 2rem;">🏆</span>
-        <h3 style="font-size: 1.15rem; margin-top: 4px;">{% translate "Felicitări!" %}</h3>
-        <p>{% translate "Ai primit insigna" %}: <strong>{{ grant.title }}</strong>!</p>
+      <div class="done-band child-grant-banner" role="status">
+        <img src="{% static 'img/mascot/mascot-cheer.svg' %}" alt="" width="72" height="72">
+        <div><h3>{% translate "Felicitări!" %}</h3><p>{% translate "Ai primit insigna" %}: <strong>{{ grant.title }}</strong>!</p></div>
       </div>
     {% endfor %}
   {% endif %}
 
-  <!-- Progress Bar Component -->
-  <div class="progress-bar-container">
-    <div class="progress-bar-header">
-      <span>{% translate "Pagina" %} {{ entry.current_page }} {% translate "din" %} {{ entry.page_count }}</span>
-      <span style="font-weight: 700; color: var(--child-primary);">{{ entry.percent }}%</span>
-    </div>
-    <div class="progress-bar-track" role="progressbar" aria-valuenow="{{ entry.percent }}" aria-valuemin="0" aria-valuemax="100">
-      <div class="progress-bar-fill" style="width: {{ entry.percent }}%;"></div>
-    </div>
-  </div>
+  <!-- Progress ruler -->
+  {% if entry.status == "finished" %}
+    {% include "library/_ruler.html" with current=entry.current_page total=entry.page_count percent=entry.percent done=True %}
+  {% else %}
+    {% include "library/_ruler.html" with current=entry.current_page total=entry.page_count percent=entry.percent %}
+  {% endif %}
+  <p class="visually-hidden">{% translate "Pagina" %} {{ entry.current_page }} {% translate "din" %} {{ entry.page_count }}</p>
 
   {% if entry.status == "finished" %}
-    <div style="background: var(--child-success-light); border: 2px solid var(--child-success); border-radius: var(--radius-lg); padding: 20px; text-align: center;">
-      <span style="font-size: 2.8rem;">🎉 📚</span>
-      <h3 style="color: var(--child-success); margin-top: 8px;">{% translate "Cartea este terminată!" %}</h3>
-      <p style="color: var(--child-text-muted); margin-top: 4px;">{% translate "Bravo, ai fost minunat! Continuă cu o altă carte." %}</p>
-      <a href="/carti/" class="btn-child btn-child-primary" style="margin-top: 16px;">
-        <span>✨</span>
-        <span>{% translate "Alege următoarea carte" %}</span>
-      </a>
+    <div class="done-band" role="status">
+      <img src="{% static 'img/mascot/mascot-cheer.svg' %}" alt="" width="72" height="72">
+      <div>
+        <h2>{% translate "Cartea este terminată!" %}</h2>
+        <p>{% translate "Bravo, ai fost minunat! Continuă cu o altă carte." %}</p>
+      </div>
     </div>
 
     <!-- Rating Card (Refs #62) -->
-    <section class="child-rating-card" style="margin-top: 14px;" aria-labelledby="rating-heading">
-      <h3 id="rating-heading" class="child-rating-title">
-        ⭐ {% translate "Cum ți s-a părut această carte?" %}
-      </h3>
-
+    <section class="child-rating-card" aria-labelledby="rating-heading">
+      <h3 id="rating-heading" class="child-rating-title">{% translate "Cum ți s-a părut această carte?" %}</h3>
       {% if personal_rating %}
-        <div class="child-rating-badge" role="status">
-          <span>✨</span>
-          <span>{% translate "Ai evaluat cartea:" %} <strong>{{ personal_rating }}/5</strong></span>
-        </div>
-        <p class="child-rating-hint">{% translate "Poți schimba nota oricând:" %}</p>
+        <p class="status-ok child-rating-badge" role="status" style="justify-content:center"><svg class="icon" aria-hidden="true"><use href="#i-check"/></svg><span>{% translate "Ai evaluat cartea:" %} <strong>{{ personal_rating }}/5</strong></span></p>
+        <p class="hint child-rating-hint">{% translate "Poți schimba nota oricând:" %}</p>
       {% else %}
-        <p class="child-rating-hint">{% translate "Alege câte stele merită (1 = puțin, 5 = genială!):" %}</p>
+        <p class="hint child-rating-hint">{% translate "Alege câte stele merită (1 = puțin, 5 = genială!):" %}</p>
       {% endif %}
 
       <form method="post"
@@ -76,49 +60,34 @@
             hx-target="#rating-error-box"
             hx-swap="innerHTML"
             hx-on::after-swap="document.getElementById('rating-error-box').style.display='block';"
-            hx-on::response-error="document.getElementById('rating-error-box').style.display='block'; document.getElementById('rating-error-box').innerText=event.detail.xhr.responseText;"
-            style="display: flex; flex-direction: column; align-items: center; gap: 10px;">
+            hx-on::response-error="document.getElementById('rating-error-box').style.display='block'; document.getElementById('rating-error-box').innerText=event.detail.xhr.responseText;">
         {% csrf_token %}
         <div class="child-stars-group" role="radiogroup" aria-label="{% translate 'Evaluare de la 1 la 5 stele' %}">
           <input type="radio" id="star-5" name="rating" value="5" class="child-star-input" {% if personal_rating == 5 %}checked{% endif %} required>
-          <label for="star-5" class="child-star-label" title="5 din 5 stele">
-            <span class="child-star-icon" aria-hidden="true">★</span>
-            <span class="sr-only">5 {% translate "din 5 stele" %}</span>
-          </label>
-
+          <label for="star-5" class="child-star-label" title="5 din 5 stele"><svg class="icon" aria-hidden="true"><use href="#i-star"/></svg><span class="sr-only">5 {% translate "din 5 stele" %}</span></label>
           <input type="radio" id="star-4" name="rating" value="4" class="child-star-input" {% if personal_rating == 4 %}checked{% endif %} required>
-          <label for="star-4" class="child-star-label" title="4 din 5 stele">
-            <span class="child-star-icon" aria-hidden="true">★</span>
-            <span class="sr-only">4 {% translate "din 5 stele" %}</span>
-          </label>
-
+          <label for="star-4" class="child-star-label" title="4 din 5 stele"><svg class="icon" aria-hidden="true"><use href="#i-star"/></svg><span class="sr-only">4 {% translate "din 5 stele" %}</span></label>
           <input type="radio" id="star-3" name="rating" value="3" class="child-star-input" {% if personal_rating == 3 %}checked{% endif %} required>
-          <label for="star-3" class="child-star-label" title="3 din 5 stele">
-            <span class="child-star-icon" aria-hidden="true">★</span>
-            <span class="sr-only">3 {% translate "din 5 stele" %}</span>
-          </label>
-
+          <label for="star-3" class="child-star-label" title="3 din 5 stele"><svg class="icon" aria-hidden="true"><use href="#i-star"/></svg><span class="sr-only">3 {% translate "din 5 stele" %}</span></label>
           <input type="radio" id="star-2" name="rating" value="2" class="child-star-input" {% if personal_rating == 2 %}checked{% endif %} required>
-          <label for="star-2" class="child-star-label" title="2 din 5 stele">
-            <span class="child-star-icon" aria-hidden="true">★</span>
-            <span class="sr-only">2 {% translate "din 5 stele" %}</span>
-          </label>
-
+          <label for="star-2" class="child-star-label" title="2 din 5 stele"><svg class="icon" aria-hidden="true"><use href="#i-star"/></svg><span class="sr-only">2 {% translate "din 5 stele" %}</span></label>
           <input type="radio" id="star-1" name="rating" value="1" class="child-star-input" {% if personal_rating == 1 %}checked{% endif %} required>
-          <label for="star-1" class="child-star-label" title="1 din 5 stele">
-            <span class="child-star-icon" aria-hidden="true">★</span>
-            <span class="sr-only">1 {% translate "din 5 stele" %}</span>
-          </label>
+          <label for="star-1" class="child-star-label" title="1 din 5 stele"><svg class="icon" aria-hidden="true"><use href="#i-star"/></svg><span class="sr-only">1 {% translate "din 5 stele" %}</span></label>
         </div>
 
-        <div id="rating-error-box" class="child-alert-error" style="display: none; width: 100%;" role="alert"></div>
+        <div id="rating-error-box" class="notice child-alert-error" style="display: none;" role="alert"></div>
 
-        <button type="submit" class="btn-child btn-child-primary" style="width: 100%; margin-top: 6px;">
-          <span>⭐</span>
+        <button type="submit" class="btn btn-primary btn-block">
+          <svg class="icon" aria-hidden="true"><use href="#i-star"/></svg>
           <span>{% if personal_rating %}{% translate "Actualizează evaluarea" %}{% else %}{% translate "Salvează evaluarea" %}{% endif %}</span>
         </button>
       </form>
     </section>
+
+    <div class="stack">
+      <a href="{% url 'book_reflection' entry.public_id %}" class="btn btn-block"><svg class="icon" aria-hidden="true"><use href="#i-pencil"/></svg>Gânduri despre carte</a>
+      <a href="/carti/" class="btn btn-quiet btn-block">{% translate "Alege următoarea carte" %}</a>
+    </div>
 
   {% else %}
     <!-- Progress update form -->
@@ -127,38 +96,28 @@
           hx-target="#progress-container"
           hx-swap="outerHTML"
           method="post"
-          style="display: flex; flex-direction: column; gap: 14px;"
+          class="ruled"
           aria-label="Salvează progresul">
       {% csrf_token %}
       <input type="hidden" name="request_id" value="{{ request_id }}">
 
-      <div style="text-align: center;">
-        <label for="page-input" style="display: block; font-size: 1.05rem; font-weight: 700; margin-bottom: 8px;">
-          {% translate "Până la ce pagină ai citit?" %}
-        </label>
+      <label for="page-input">{% translate "Până la ce pagină ai citit?" %}</label>
+      <div class="stepper page-stepper">
+        <button type="button" onclick="incrementPage(-1)" aria-label="{% translate 'O pagină mai puțin' %}"><svg class="icon" aria-hidden="true"><use href="#i-minus"/></svg></button>
+        <input type="number" id="page-input" name="page" class="child-number-input" value="{{ entry.current_page }}" min="0" max="{{ entry.page_count }}" required inputmode="numeric" aria-describedby="page-of-total">
+        <button type="button" onclick="incrementPage(1)" aria-label="{% translate 'O pagină în plus' %}"><svg class="icon" aria-hidden="true"><use href="#i-plus"/></svg></button>
+      </div>
+      <p class="of-total" id="page-of-total">{% translate "din" %} {{ entry.page_count }}</p>
 
-        <div class="page-stepper">
-          <input type="number"
-                 id="page-input"
-                 name="page"
-                 class="child-number-input"
-                 value="{{ entry.current_page }}"
-                 min="0"
-                 max="{{ entry.page_count }}"
-                 required
-                 inputmode="numeric">
-        </div>
-
-        <!-- Quick increment buttons (+1, +5, +10) -->
-        <div style="display: flex; justify-content: center; gap: 8px; margin-top: 6px;">
-          <button type="button" class="step-chip" onclick="incrementPage(1)">+1</button>
-          <button type="button" class="step-chip" onclick="incrementPage(5)">+5</button>
-          <button type="button" class="step-chip" onclick="incrementPage(10)">+10</button>
-        </div>
+      <!-- Quick increment buttons (+1, +5, +10) -->
+      <div class="chips">
+        <button type="button" class="chip step-chip" onclick="incrementPage(1)">+1</button>
+        <button type="button" class="chip step-chip" onclick="incrementPage(5)">+5</button>
+        <button type="button" class="chip step-chip" onclick="incrementPage(10)">+10</button>
       </div>
 
-      <button type="submit" class="btn-child btn-child-primary">
-        <span>💾</span>
+      <button type="submit" class="btn btn-primary btn-block" style="margin-top:var(--s-5)">
+        <svg class="icon" aria-hidden="true"><use href="#i-check"/></svg>
         <span>{% translate "Am citit până aici" %}</span>
       </button>
     </form>
@@ -169,11 +128,11 @@
           hx-target="#progress-container"
           hx-swap="outerHTML"
           method="post"
-          style="margin-top: 8px;">
+          class="stack">
       {% csrf_token %}
       <input type="hidden" name="request_id" value="{{ request_id }}">
-      <button type="submit" class="btn-child btn-child-success">
-        <span>🎉</span>
+      <button type="submit" class="btn btn-pencil btn-block">
+        <svg class="icon" aria-hidden="true"><use href="#i-flag"/></svg>
         <span>{% translate "Am terminat cartea!" %}</span>
       </button>
     </form>
@@ -189,8 +148,5 @@
         }
       }
     </script>
-  {% endif %}
-  {% if entry.status == 'finished' %}
-    <a href="{% url 'book_reflection' entry.public_id %}" class="btn-child btn-child-primary" style="min-height:52px;white-space:normal;">Gânduri despre carte</a>
   {% endif %}
 </div>

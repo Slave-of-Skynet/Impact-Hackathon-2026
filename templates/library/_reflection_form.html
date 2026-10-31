@@ -1,54 +1,54 @@
 {% load i18n %}
-<section id="reflection-region" class="card" aria-labelledby="reflection-title" style="padding:20px;max-width:760px;margin:20px auto;overflow-wrap:anywhere;">
-  <h1 id="reflection-title" style="font-size:1.5rem;margin-bottom:8px;">{% translate "Gânduri despre carte" %}</h1>
-  <p style="margin-bottom:16px;">{{ entry.book.title }} · {{ entry.book.author }}</p>
-  <p style="margin-bottom:20px;">{% translate "Nu există răspunsuri corecte sau greșite. Scrie cât dorești, în ritmul tău. Răspunsurile sunt private." %}{% if is_child_reader %} {% translate "Părintele tău le poate citi în raportul de lectură." %}{% endif %}</p>
+<section id="reflection-region" class="reflection-region" aria-labelledby="reflection-title">
+  <a href="{% url 'shelf_entry' entry.public_id %}" class="backlink"><svg class="icon" aria-hidden="true"><use href="#i-back"/></svg>{% translate "Înapoi la carte" %}</a>
+  <h1 id="reflection-title">{% translate "Gânduri despre carte" %}</h1>
+  <p class="book-author" style="font-size:var(--t-md)">{{ entry.book.title }} · {{ entry.book.author }}</p>
+  <p class="meta" style="margin-top:var(--s-2)">{% translate "Nu există răspunsuri corecte sau greșite. Scrie cât dorești, în ritmul tău. Răspunsurile sunt private." %}{% if is_child_reader %} {% translate "Părintele tău le poate citi în raportul de lectură." %}{% endif %}</p>
   {% for message in reflection_messages %}{% if 'reflection' in message.tags %}
-    <p role="status" style="padding:12px;border:1px solid currentColor;margin-bottom:16px;">{{ message }}</p>
+    <p class="status-ok" role="status" style="margin-top:var(--s-4)"><svg class="icon" aria-hidden="true"><use href="#i-check"/></svg>{{ message }}</p>
   {% endif %}{% endfor %}
   {% if reflection_error %}
-    <div role="alert" style="padding:12px;border:2px solid currentColor;margin-bottom:16px;">
+    <div class="notice" role="alert" style="margin-top:var(--s-4)">
       <p>{{ reflection_error }}</p>
-      <a href="{% url 'book_reflection' entry.public_id %}" style="display:inline-flex;align-items:center;min-height:48px;">{% translate "Reîncarcă după ce ai copiat textul" %}</a>
+      <a href="{% url 'book_reflection' entry.public_id %}">{% translate "Reîncarcă după ce ai copiat textul" %}</a>
     </div>
   {% endif %}
   {% if reflection %}
-    <form method="post" action="{% url 'save_reflection' entry.public_id %}">
+    <form class="qa-form ruled" method="post" action="{% url 'save_reflection' entry.public_id %}">
       {% csrf_token %}{{ reflection_form.revision }}
-      {% if reflection_form.errors %}<div role="alert">{{ reflection_form.non_field_errors }}{{ reflection_form.revision.errors }}</div>{% endif %}
+      {% if reflection_form.errors %}<div class="notice" role="alert">{{ reflection_form.non_field_errors }}{{ reflection_form.revision.errors }}</div>{% endif %}
       {% for row in reflection_form.question_fields %}
-        <div style="margin:20px 0;padding:16px;border:1px solid var(--color-border, #64748b);border-radius:12px;">
+        <div class="field">
           {{ row.id_field }}{{ row.id_field.errors }}
-          <label for="{{ row.answer_field.id_for_label }}" style="display:block;font-weight:700;line-height:1.5;margin-bottom:12px;">
-            {{ row.position }}. {{ row.question }}
-          </label>
+          <label for="{{ row.answer_field.id_for_label }}">{{ row.position }}. {{ row.question }}</label>
           {{ row.answer_field }}
-          <p id="reflection-hint-{{ row.position }}" style="margin-top:8px;font-size:0.9rem;">{% translate "Cel mult 2000 de caractere. Poți reveni pentru a continua." %}</p>
-          {% if row.answer_field.errors %}<div role="alert">{{ row.answer_field.errors }}</div>{% endif %}
+          <p id="reflection-hint-{{ row.position }}" class="hint">{% translate "Cel mult 2000 de caractere. Poți reveni pentru a continua." %}</p>
+          {% if row.answer_field.errors %}<div role="alert" class="field-error">{{ row.answer_field.errors }}</div>{% endif %}
         </div>
       {% endfor %}
-      {% if can_reflect %}<button type="submit" class="btn btn-primary btn-child btn-child-primary" style="min-height:52px;width:100%;white-space:normal;">{% translate "Salvează răspunsurile" %}</button>{% endif %}
+      {% if can_reflect %}<button type="submit" class="btn btn-primary btn-block">{% translate "Salvează răspunsurile" %}</button>{% endif %}
     </form>
     {% if has_answers %}
-      <p style="margin-top:20px;">{% translate "Întrebările rămân aceleași pentru a păstra răspunsurile tale. Le poți edita oricând." %}</p>
+      <p class="meta" style="margin-top:var(--s-5)">{% translate "Întrebările rămân aceleași pentru a păstra răspunsurile tale. Le poți edita oricând." %}</p>
     {% elif can_reflect %}
-      <details style="margin-top:24px;">
-        <summary style="min-height:48px;cursor:pointer;">{% translate "Alte întrebări" %}</summary>
-        <p>{% translate "Se schimbă numai întrebările fără răspunsuri salvate. Copiază mai întâi orice text nesalvat din această pagină." %}</p>
-        <form method="post" action="{% url 'start_reflection' entry.public_id %}" style="margin-top:12px;">
-          {% csrf_token %}{{ start_form.revision }}{{ start_form.errors }}
-          <button type="submit" class="btn btn-outline" style="min-height:52px;white-space:normal;">{% translate "Începe un nou set fără răspunsuri" %}</button>
-        </form>
+      <details class="menu" style="margin-top:var(--s-6)">
+        <summary class="btn btn-quiet">{% translate "Alte întrebări" %}</summary>
+        <div class="menu-panel">
+          <p class="meta">{% translate "Se schimbă numai întrebările fără răspunsuri salvate. Copiază mai întâi orice text nesalvat din această pagină." %}</p>
+          <form method="post" action="{% url 'start_reflection' entry.public_id %}" style="margin-top:var(--s-3)">
+            {% csrf_token %}{{ start_form.revision }}{{ start_form.errors }}
+            <button type="submit" class="btn btn-block">{% translate "Începe un nou set fără răspunsuri" %}</button>
+          </form>
+        </div>
       </details>
     {% endif %}
   {% elif can_reflect %}
-    <p>{% translate "Vei primi patru întrebări. Nu este obligatoriu să răspunzi pentru a termina sau evalua cartea." %}</p>
-    <form method="post" action="{% url 'start_reflection' entry.public_id %}" style="margin-top:20px;">
+    <p style="margin-top:var(--s-5)">{% translate "Vei primi patru întrebări. Nu este obligatoriu să răspunzi pentru a termina sau evalua cartea." %}</p>
+    <form method="post" action="{% url 'start_reflection' entry.public_id %}" class="stack">
       {% csrf_token %}{{ start_form.revision }}{{ start_form.errors }}
-      <button type="submit" class="btn btn-primary btn-child btn-child-primary" style="min-height:52px;width:100%;white-space:normal;">{% translate "Alege patru întrebări" %}</button>
+      <button type="submit" class="btn btn-primary btn-block"><svg class="icon" aria-hidden="true"><use href="#i-pencil"/></svg>{% translate "Alege patru întrebări" %}</button>
     </form>
   {% else %}
-    <p>{% translate "Întrebările te așteaptă după ce termini cartea. Continuă lectura în ritmul tău." %}</p>
+    <p class="empty" style="margin-top:var(--s-5)">{% translate "Întrebările te așteaptă după ce termini cartea. Continuă lectura în ritmul tău." %}</p>
   {% endif %}
-  <a href="{% url 'shelf_entry' entry.public_id %}" style="display:inline-flex;align-items:center;min-height:52px;margin-top:20px;">{% translate "Înapoi la carte" %}</a>
 </section>

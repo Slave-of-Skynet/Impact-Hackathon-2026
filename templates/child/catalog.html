@@ -4,76 +4,43 @@
 {% block title %}Gustul Cărților — Toate Cărțile{% endblock %}
 
 {% block content %}
-  <div class="child-top-nav">
-    <h1 style="font-size: 1.4rem; font-weight: 800;">📚 {% translate "Alege o carte" %}</h1>
-    <a href="/copil/" class="child-exit-btn">
-      <span>⬅️</span>
-      <span>{% translate "Acasă" %}</span>
-    </a>
-  </div>
+  <h1 class="kid-title">{% translate "Alege o carte" %}</h1>
 
-  <!-- Age-band and Genre Filters -->
-  <div class="child-filter-bar" role="navigation" aria-label="Filtrează cărți">
-    <a href="/carti/" class="child-filter-chip {% if not filters.age_band and not filters.genre %}active{% endif %}">
-      {% translate "Toate" %}
-    </a>
-    <a href="/carti/?age_band=7-8" class="child-filter-chip {% if filters.age_band == '7-8' %}active{% endif %}">
-      7–8 ani
-    </a>
-    <a href="/carti/?age_band=9-11" class="child-filter-chip {% if filters.age_band == '9-11' %}active{% endif %}">
-      9–11 ani
-    </a>
-    <a href="/carti/?age_band=12-15" class="child-filter-chip {% if filters.age_band == '12-15' %}active{% endif %}">
-      12–15 ani
-    </a>
-  </div>
+  <!-- Age-band filters -->
+  <nav class="filters" aria-label="{% translate 'Vârstă' %}">
+    <a href="/carti/" class="child-filter-chip{% if not filters.age_band and not filters.genre %} active{% endif %}"{% if not filters.age_band and not filters.genre %} aria-current="true"{% endif %}>{% translate "Toate" %}</a>
+    <a href="/carti/?age_band=7-8" class="child-filter-chip{% if filters.age_band == '7-8' %} active{% endif %}"{% if filters.age_band == '7-8' %} aria-current="true"{% endif %}>7–8 ani</a>
+    <a href="/carti/?age_band=9-11" class="child-filter-chip{% if filters.age_band == '9-11' %} active{% endif %}"{% if filters.age_band == '9-11' %} aria-current="true"{% endif %}>9–11 ani</a>
+    <a href="/carti/?age_band=12-15" class="child-filter-chip{% if filters.age_band == '12-15' %} active{% endif %}"{% if filters.age_band == '12-15' %} aria-current="true"{% endif %}>12–15 ani</a>
+  </nav>
 
   <!-- Books List -->
-  <div class="child-book-list" role="list">
+  <ul class="catalog child-book-list">
     {% for book in books %}
-      <a href="/carti/{{ book.public_id }}/" class="child-book-item" role="listitem">
-        {% with cover=book|book_cover %}
-          {% if cover %}
-            <img src="{% static cover %}" alt="{{ book.title }}" class="book-cover" aria-hidden="true">
-          {% else %}
-            <div class="book-cover" style="background-color: {{ book.cover_color|default:'#F59E0B' }};" aria-hidden="true">
-              {{ book.cover_emoji|default:"📖" }}
-            </div>
-          {% endif %}
-        {% endwith %}
-        <div style="flex: 1; min-width: 0;">
-          <h2 style="font-size: 1.1rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-            {{ book.title }}
-          </h2>
-          <p style="font-size: 0.95rem; color: var(--child-text-muted);">{{ book.author }}</p>
-          <div style="display: flex; align-items: center; gap: 8px; margin-top: 4px; flex-wrap: wrap;">
-            <span style="font-size: 0.85rem; color: var(--child-text-muted);">{{ book.page_count }} pag.</span>
-            {% with r=book_ratings|get_rating:book.public_id %}
-              {% if r and r.count and r.count >= 3 %}
-                <span class="rating-pill" aria-label="{% blocktranslate with avg=r.average|format_avg cnt=r.count %}Evaluare: {{ avg }} din 5 stele, {{ cnt }} evaluări{% endblocktranslate %}">
-                  ★ {{ r.average|format_avg }} ({{ r.count }})
-                </span>
-              {% else %}
-                <span class="rating-pill-empty" title="{% translate 'Minim 3 evaluări necesare' %}">
-                  {% translate 'Fără evaluări' %}
-                </span>
-              {% endif %}
-            {% endwith %}
-            {% if book.public_id in shelf_book_ids %}
-              <span class="child-badge-shelf">{% translate "Pe raftul tău" %} ✓</span>
+      <li>
+        {% include "library/_cover.html" with book=book size="cover-lg" %}
+        <div>
+          <a class="book-title child-book-item" href="/carti/{{ book.public_id }}/">{{ book.title }}</a>
+          <p class="book-author">{{ book.author }} · {{ book.page_count }} pag.</p>
+          {% with r=book_ratings|get_rating:book.public_id %}
+            {% if r and r.count and r.count >= 3 %}
+              <p class="rating rating-pill" aria-label="{% blocktranslate with avg=r.average|format_avg cnt=r.count %}Evaluare: {{ avg }} din 5 stele, {{ cnt }} evaluări{% endblocktranslate %}"><svg class="icon" aria-hidden="true"><use href="#i-star"/></svg><b>{{ r.average|format_avg }}</b> ({{ r.count }})</p>
+            {% else %}
+              <p class="rating rating-pill-empty" title="{% translate 'Minim 3 evaluări necesare' %}">{% translate 'Fără evaluări' %}</p>
             {% endif %}
-          </div>
+          {% endwith %}
+          {% if book.public_id in shelf_book_ids %}
+            <p class="on-shelf child-badge-shelf"><svg class="icon" aria-hidden="true"><use href="#i-check"/></svg>{% translate "Pe raftul tău" %}</p>
+          {% else %}
+            <a href="/carti/{{ book.public_id }}/" class="btn btn-sm">{% translate "Vezi cartea" %} <svg class="icon" aria-hidden="true"><use href="#i-next"/></svg></a>
+          {% endif %}
         </div>
-        <span style="font-size: 1.2rem; color: var(--child-primary);">➔</span>
-      </a>
+      </li>
     {% empty %}
-      <div style="text-align: center; padding: 32px 16px;">
-        <span style="font-size: 2.5rem;">🔍</span>
-        <p style="margin-top: 8px; font-weight: 600;">{% translate "Nu am găsit cărți pentru filtrul ales." %}</p>
-        <a href="/carti/" class="btn-child btn-child-subtle" style="margin-top: 14px;">
-          {% translate "Vezi toate cărțile" %}
-        </a>
-      </div>
+      <li class="empty" style="display:block">
+        <p><strong>{% translate "Nu am găsit cărți pentru filtrul ales." %}</strong></p>
+        <a href="/carti/" class="btn">{% translate "Vezi toate cărțile" %}</a>
+      </li>
     {% endfor %}
-  </div>
+  </ul>
 {% endblock %}

@@ -135,7 +135,10 @@ def test_icon_dimensions_verified():
 def test_precache_assets_all_resolve_and_exist():
     # Verify every static asset in the SW precache list is resolvable by Django finders and non-empty
     static_assets = [
-        "css/child.css",
+        "css/app.css",
+        "fonts/literata-normal-latin.woff2",
+        "fonts/atkinson-hyperlegible-next-normal-latin.woff2",
+        "img/logo-gustul-cartilor.png",
         "js/child.js",
         "js/htmx.min.js",
         "img/icons/icon-192.png",
@@ -168,7 +171,7 @@ def test_manifest_link_on_public_pages(client):
         assert response.status_code == 200
         html = response.content.decode()
         assert '<link rel="manifest" href="/manifest.webmanifest">' in html
-        assert 'name="theme-color" content="#3B82F6"' in html
+        assert 'name="theme-color" content="#F7F5EE"' in html
         assert 'id="pwa-install-btn"' in html
         assert 'id="pwa-install-manual"' in html
 
@@ -203,7 +206,7 @@ def test_manifest_installability_fields(client):
     assert manifest["start_url"] == "/app/"
     assert manifest["scope"] == "/"
     assert manifest["display"] == "standalone"
-    assert manifest["theme_color"] == "#3B82F6"
+    assert manifest["theme_color"] == "#F7F5EE"
     entries = {(icon["sizes"], icon["type"], icon["purpose"]) for icon in manifest["icons"]}
     assert ("192x192", "image/png", "any") in entries
     assert ("512x512", "image/png", "any") in entries

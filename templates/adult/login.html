@@ -4,99 +4,60 @@
 {% block title %}{% translate "Conectare — Gustul Cărților" %}{% endblock %}
 
 {% block content %}
-<div style="max-width: 440px; margin: var(--space-8) auto;">
-  <div class="card">
-    <div style="text-align: center; margin-bottom: var(--space-6);">
-      <img src="{% static 'img/logo-gustul-cartilor.png' %}" alt="Gustul Cărților" width="200" height="112" style="display: block; margin: 0 auto; max-width: 100%; height: auto;">
-      <h1 style="font-size: var(--text-2xl); margin-top: var(--space-2); margin-bottom: var(--space-1);">
-        {% translate "Conectare părinte" %}
-      </h1>
-      <p style="font-size: var(--text-sm);">
-        {% translate "Introdu adresa de email și parola pentru a accesa contul de adult." %}
-      </p>
-    </div>
+<div class="auth-wrap">
+  <div class="auth-side">
+    <img class="logo" src="{% static 'img/logo-gustul-cartilor.png' %}" alt="Gustul Cărților" width="260" height="146">
+    <p class="lede">{% translate "Jurnal de lectură dedicat comunității și bucuriei de a citi." %}</p>
+  </div>
+  <div class="auth-body">
+    <div class="tabs-auth"><a href="/cont/intrare/" aria-current="page">{% translate "Conectare" %}</a><a href="/cont/inregistrare/">{% translate "Înregistrare" %}</a></div>
+    <h1>{% translate "Conectare părinte" %}</h1>
+    <p class="intro">{% translate "Introdu adresa de email și parola pentru a accesa contul de adult." %}</p>
 
     {% if locked_minutes %}
-      <div class="alert alert-error" role="alert">
-        <span aria-hidden="true">⏳</span>
-        <div>{% blocktranslate with minutes=locked_minutes %}Prea multe încercări greșite. Încearcă din nou în {{ minutes }} min.{% endblocktranslate %}</div>
+      <div class="notice notice-warn" role="alert">
+        <p>{% blocktranslate with minutes=locked_minutes %}Prea multe încercări greșite. Încearcă din nou în {{ minutes }} min.{% endblocktranslate %}</p>
       </div>
     {% elif form.errors or error or errors %}
-      <div class="alert alert-error" role="alert">
-        <span aria-hidden="true">⚠</span>
-        <div>
-          {% if form.non_field_errors %}
-            {% for err in form.non_field_errors %}
-              <div>{{ err }}</div>
-            {% endfor %}
-          {% elif error %}
-            <div>{{ error }}</div>
-          {% elif errors %}
-            {% for err in errors %}
-              <div>{{ err }}</div>
-            {% endfor %}
-          {% else %}
-            <div>{% translate "Email sau parolă greșită. Verifică datele și încearcă din nou." %}</div>
-          {% endif %}
-        </div>
+      <div class="notice alert alert-error" role="alert">
+        {% if form.non_field_errors %}
+          {% for err in form.non_field_errors %}<p>{{ err }}</p>{% endfor %}
+        {% elif error %}
+          <p>{{ error }}</p>
+        {% elif errors %}
+          {% for err in errors %}<p>{{ err }}</p>{% endfor %}
+        {% else %}
+          <p>{% translate "Email sau parolă greșită. Verifică datele și încearcă din nou." %}</p>
+        {% endif %}
       </div>
     {% endif %}
 
     <form method="post" action="/cont/intrare/" novalidate>
       {% csrf_token %}
-      {# LoginView's validated `next` (from GET or POST): survives a failed attempt, unlike request.GET.next. #}
       {% if next %}
         <input type="hidden" name="next" value="{{ next }}">
       {% endif %}
 
-      <div class="form-group">
-        <label for="id_username" class="form-label">{% translate "Adresă email" %}</label>
-        <input 
-          type="email" 
-          name="username" 
-          id="id_username" 
-          class="form-control" 
-          autocomplete="email" 
-          required 
-          value="{{ form.username.value|default:'' }}"
-          placeholder="Login"
-          {% if form.username.errors %}aria-invalid="true"{% endif %}
-        >
+      <div class="field">
+        <label for="id_username">{% translate "Adresă email" %}</label>
+        <input type="email" name="username" id="id_username" class="input" autocomplete="email" required value="{{ form.username.value|default:'' }}" placeholder="Login"{% if form.username.errors %} aria-invalid="true" aria-describedby="username-err"{% endif %}>
         {% if form.username.errors %}
-          <div class="field-error">
-            <span>⚠</span> {{ form.username.errors.0 }}
-          </div>
+          <p class="field-error" id="username-err"><svg class="icon" aria-hidden="true"><use href="#i-alert"/></svg><span>{{ form.username.errors.0 }}</span></p>
         {% endif %}
       </div>
 
-      <div class="form-group">
-        <label for="id_password" class="form-label">{% translate "Parolă" %}</label>
-        <input 
-          type="password" 
-          name="password" 
-          id="id_password" 
-          class="form-control" 
-          autocomplete="current-password" 
-          required
-          placeholder="Password"
-          {% if form.password.errors %}aria-invalid="true"{% endif %}
-        >
+      <div class="field">
+        <label for="id_password">{% translate "Parolă" %}</label>
+        <input type="password" name="password" id="id_password" class="input" autocomplete="current-password" required placeholder="Password"{% if form.password.errors %} aria-invalid="true" aria-describedby="password-err"{% endif %}>
         {% if form.password.errors %}
-          <div class="field-error">
-            <span>⚠</span> {{ form.password.errors.0 }}
-          </div>
+          <p class="field-error" id="password-err"><svg class="icon" aria-hidden="true"><use href="#i-alert"/></svg><span>{{ form.password.errors.0 }}</span></p>
         {% endif %}
       </div>
 
-      <button type="submit" class="btn btn-primary btn-block btn-lg" style="margin-top: var(--space-4);">
-        {% translate "Conectează-te" %}
-      </button>
+      <button type="submit" class="btn btn-primary btn-block">{% translate "Conectează-te" %}</button>
     </form>
 
-    <div style="margin-top: var(--space-6); text-align: center; border-top: 1px solid var(--color-border); padding-top: var(--space-4); font-size: var(--text-sm);">
-      {% translate "Nu ai încă un cont?" %} 
-      <a href="/cont/inregistrare/">{% translate "Creează cont nou" %}</a>
-    </div>
+    <p class="auth-switch">{% translate "Nu ai încă un cont?" %} <a href="/cont/inregistrare/">{% translate "Creează cont nou" %}</a></p>
   </div>
 </div>
 {% endblock %}

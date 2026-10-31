@@ -1,13 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100%" height="100%" role="img" aria-label="Arici">
-  <circle cx="50" cy="50" r="48" fill="#ECFDF5"/>
-  <path d="M22 55 L26 40 L34 45 L38 32 L46 40 L52 28 L58 40 L66 32 L70 45 L78 40 L80 55 L82 70 L72 78 L50 82 L28 78 L20 70 Z" fill="#78350F"/>
-  <ellipse cx="50" cy="62" rx="24" ry="20" fill="#FED7AA"/>
-  <circle cx="41" cy="58" r="3" fill="#1E293B"/>
-  <circle cx="59" cy="58" r="3" fill="#1E293B"/>
-  <circle cx="40" cy="57" r="1" fill="#FFFFFF"/>
-  <circle cx="58" cy="57" r="1" fill="#FFFFFF"/>
-  <ellipse cx="50" cy="66" rx="4" ry="3" fill="#1E293B"/>
-  <path d="M47 70 Q50 73 53 70" stroke="#78350F" stroke-width="1.5" fill="none" stroke-linecap="round"/>
-  <circle cx="33" cy="66" r="3.5" fill="#FCA5A5"/>
-  <circle cx="67" cy="66" r="3.5" fill="#FCA5A5"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Arici"><rect width="64" height="64" fill="#FCFBF7"/>
+<path d="M32 8 L36 14 L42 9 L44 16 L51 13 L50 20 L57 20 L53 26 L59 30 L53 33 L57 39 L50 40 L52 47 L45 46 L44 53 L38 49 L32 55 L26 49 L20 53 L19 46 L12 47 L14 40 L7 39 L11 33 L5 30 L11 26 L7 20 L14 20 L13 13 L20 16 L22 9 L28 14 Z" fill="#8C7A5B" stroke="#1C261E" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+<circle cx="32" cy="34" r="13" fill="#F3E3C3" stroke="#1C261E" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+<circle cx="27" cy="31" r="2.2" fill="#1C261E"/><circle cx="37" cy="31" r="2.2" fill="#1C261E"/>
+<circle cx="32" cy="38" r="2.8" fill="#1C261E"/><path d="M28 42 Q32 44.5 36 42" fill="none" stroke="#1C261E" stroke-width="1.8" stroke-linecap="round"/>
 </svg>

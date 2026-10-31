@@ -1,0 +1,7 @@
+{% load i18n %}{# Reading progress as a ruler. Context: current, total, percent, done (bool). #}<div class="ruler{% if done %} is-done{% endif %}">
+  <div class="ruler-track" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{ percent|default:0 }}" aria-label="{% translate 'Pagina' %} {{ current|default:0 }} {% translate 'din' %} {{ total }}">
+    <div class="ruler-fill progress-bar-fill" style="width: {{ percent|default:0 }}%;"></div>
+    <div class="ruler-ticks" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+  </div>
+  <div class="ruler-labels num"><span>pag. <strong>{{ current|default:0 }}</strong> {% translate "din" %} {{ total }}</span><span>{% if done %}{% translate "Finalizată" %}{% else %}{{ percent|default:0 }}%{% endif %}</span></div>
+</div>
