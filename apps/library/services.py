@@ -144,3 +144,22 @@ def record_progress(reader, entry, page, request_id):
 def finish_book(reader, entry, request_id):
     """Finish once; only an identical request can replay a terminal entry."""
     return _record(reader, entry, None, request_id, ProgressEvent.FINISH)
+
+
+def rate_book(reader, entry, rating):
+    """Replace the current reader's finished-book rating; last commit wins.
+
+    Repeating a value has the same effect, with no progress events or grants.
+    Callers must obtain reader through accounts.authz, as for progress writes.
+    """
+    if not ((type(rating) is int and 1 <= rating <= 5)
+            or (isinstance(rating, str) and rating in {"1", "2", "3", "4", "5"})):
+        raise ValidationError(_("Alege o evaluare între 1 și 5."))
+    with _write_transaction():
+        Reader.objects.select_for_update().get(pk=reader.pk)
+        current = ShelfEntry.objects.select_for_update().get(public_id=entry.public_id, reader=reader)
+        if current.status != ShelfEntry.FINISHED:
+            raise ValidationError(_("Poți evalua doar o carte terminată."))
+        current.rating = int(rating)
+        current.save(update_fields=["rating"])
+    return current

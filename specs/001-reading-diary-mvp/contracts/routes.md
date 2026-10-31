@@ -94,3 +94,18 @@ View models (plain dataclasses in `core/viewmodels.py`):
 | `offline` | offline / send error | "Nu am internet acum. Încercăm mai târziu?" |
 
 No pressure or guilt lines (FR-032).
+
+## Issue #62 additive ratings contract
+
+POST `/raft/<entry>/evaluare/`, name `rate_book`, accepts strict `rating=1..5`
+plus CSRF for the current reader's finished entry only. Normal success 302 PRG;
+HTMX 204 empty + HX-Redirect to shelf_entry + HX-Trigger:saved after commit.
+Invalid/unfinished 422 UTF-8 plain text (explicit exception to progress HTML
+partials); foreign/unknown 404; GET 405; database lock 503. Atomic replacement,
+last commit wins, no progress request_id/event. Unauthenticated 302/HTMX 401.
+
+Exact form/errors, thresholded UUID-keyed book_ratings and owner-only
+personal_ratings maps, personal_rating/can_rate entry keys are defined in
+[Backend contract for Denis #62B](../../../docs/contracts/issue-62-ratings.md).
+Frozen VMs unchanged; authenticated catalog/detail no-store for personal context. Star UI is
+Denis's follow-up #62B.
