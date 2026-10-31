@@ -148,7 +148,7 @@ def test_child_home_shows_active_child_streak_after_real_save(child_client, chil
     entry, _ = add_to_shelf(child.reader, book())
     record_progress(child.reader, entry, 12, uuid.uuid4())
     body = child_client.get("/copil/").content.decode()
-    assert "1 zi consecutivă" in body and "css/streak" in body
+    assert "1 zi consecutivă" in body and "css/app" in body  # streak styles live in the single app.css (design v2)
     assert body.count('<li class="streak-day') == 7
 
 
