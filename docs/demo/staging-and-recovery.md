@@ -38,7 +38,7 @@ nimic; verifică:
 ## 2. Pregătirea de rezervă (backup paths)
 
 - **Carte de rezervă pe raft:** înainte de repetiție, adaugă din contul părintelui (sau în mod copil) o a
-  doua carte pe raftul Miei; dacă „Capra" e deja terminată, demonstrezi progresul pe cartea de rezervă.
+  doua carte pe raftul Miei; dacă „Capra" e deja terminată, demonstrezi progresul pe cartea de rezervă. **Afișează numărul real de pagini al cărții de rezervă:** „Punguța cu doi bani" are 40 de pagini în seed, deci 35/40, nu 35/120. Dacă exact 35/120 este obligatoriu pe scenă, pregătește o altă carte de 120 pagini pe un cititor curat, fără resetarea producției.
 - **Cont de rezervă:** dacă starea Miei/Alex e complicată, operatorul creează prin UI un cont nou
   („Familia rezervă"), un copil și un PIN demo — 2 minute, fără DB access. Folosește contul rezervă pe scenă.
 - **Coduri de rezervă:** staff-ul emite **2–3 coduri unice** înainte de ziua demo-ului; fiecare merge la un
@@ -81,6 +81,6 @@ host. Recreezi codul de club local doar pentru a repeta pasul 8 (admin local →
 
 ## 6. Jurnal de repetiție (completează manual la fiecare rulare)
 
-| Data | Traseu (complet/rapid/fallback) | Durată | Problema întâmpinată | Cod folosit | Stare lăsată |
+| Data | Traseu (complet/rapid/fallback) | Durată | Problema întâmpinată | Eticheta codului (NICIODATĂ plaintext) | Stare lăsată |
 |---|---|---|---|---|---|
 | | | | | | |
