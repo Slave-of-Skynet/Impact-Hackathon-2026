@@ -1,18 +1,7 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100%" height="100%" role="img" aria-label="Pisică">
-  <circle cx="50" cy="50" r="48" fill="#FEF3C7"/>
-  <polygon points="24,28 40,46 20,48" fill="#F59E0B"/>
-  <polygon points="26,32 37,44 23,45" fill="#FDE68A"/>
-  <polygon points="76,28 60,46 80,48" fill="#F59E0B"/>
-  <polygon points="74,32 63,44 77,45" fill="#FDE68A"/>
-  <circle cx="50" cy="56" r="30" fill="#FBBF24"/>
-  <circle cx="38" cy="52" r="4" fill="#1E293B"/>
-  <circle cx="62" cy="52" r="4" fill="#1E293B"/>
-  <circle cx="36" cy="50" r="1.5" fill="#FFFFFF"/>
-  <circle cx="60" cy="50" r="1.5" fill="#FFFFFF"/>
-  <polygon points="47,60 53,60 50,64" fill="#EC4899"/>
-  <path d="M46 66 Q50 69 54 66" stroke="#1E293B" stroke-width="1.5" fill="none" stroke-linecap="round"/>
-  <line x1="22" y1="58" x2="34" y2="60" stroke="#1E293B" stroke-width="1.5" stroke-linecap="round"/>
-  <line x1="22" y1="64" x2="34" y2="63" stroke="#1E293B" stroke-width="1.5" stroke-linecap="round"/>
-  <line x1="78" y1="58" x2="66" y2="60" stroke="#1E293B" stroke-width="1.5" stroke-linecap="round"/>
-  <line x1="78" y1="64" x2="66" y2="63" stroke="#1E293B" stroke-width="1.5" stroke-linecap="round"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Pisică"><rect width="64" height="64" fill="#FCFBF7"/>
+<path d="M13 24 L17 8 L27 18 Q32 16.5 37 18 L47 8 L51 24 Q55 44 32 54 Q9 44 13 24 Z" fill="#ECE8DA" stroke="#1C261E" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M28 21 V26 M32 20 V26 M36 21 V26" fill="none" stroke="#5F6A5F" stroke-width="2" stroke-linecap="round"/>
+<ellipse cx="24" cy="34" rx="2.4" ry="3.2" fill="#1C261E"/><ellipse cx="40" cy="34" rx="2.4" ry="3.2" fill="#1C261E"/>
+<path d="M29.5 41 H34.5 L32 44 Z" fill="#F6E1DC" stroke="#1C261E" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M32 44 Q30 47 27 46 M32 44 Q34 47 37 46 M8 38 L19 40 M8 44 L19 43 M56 38 L45 40 M56 44 L45 43" fill="none" stroke="#1C261E" stroke-width="1.8" stroke-linecap="round"/>
 </svg>
