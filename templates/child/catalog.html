@@ -32,9 +32,15 @@
   <div class="child-book-list" role="list">
     {% for book in books %}
       <a href="/carti/{{ book.public_id }}/" class="child-book-item" role="listitem">
-        <div class="book-cover" style="background-color: {{ book.cover_color|default:'#F59E0B' }};" aria-hidden="true">
-          {{ book.cover_emoji|default:"📖" }}
-        </div>
+        {% with cover=book|book_cover %}
+          {% if cover %}
+            <img src="{% static cover %}" alt="{{ book.title }}" class="book-cover" aria-hidden="true">
+          {% else %}
+            <div class="book-cover" style="background-color: {{ book.cover_color|default:'#F59E0B' }};" aria-hidden="true">
+              {{ book.cover_emoji|default:"📖" }}
+            </div>
+          {% endif %}
+        {% endwith %}
         <div style="flex: 1; min-width: 0;">
           <h2 style="font-size: 1.1rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
             {{ book.title }}

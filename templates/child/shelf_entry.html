@@ -1,5 +1,5 @@
 {% extends "child/base.html" %}
-{% load static i18n %}
+{% load static library_tags i18n %}
 
 {% block title %}Gustul Cărților — {{ entry.book.title }}{% endblock %}
 
@@ -15,9 +15,15 @@
   <!-- Book Header Card -->
   <div class="current-book-card">
     <div class="current-book-header">
-      <div class="book-cover" style="background-color: {{ entry.book.cover_color|default:'#3B82F6' }}; font-size: 3rem;" aria-hidden="true">
-        {{ entry.book.cover_emoji|default:"📖" }}
-      </div>
+      {% with cover=entry.book|book_cover %}
+        {% if cover %}
+          <img src="{% static cover %}" alt="{{ entry.book.title }}" class="book-cover" aria-hidden="true">
+        {% else %}
+          <div class="book-cover" style="background-color: {{ entry.book.cover_color|default:'#3B82F6' }}; font-size: 3rem;" aria-hidden="true">
+            {{ entry.book.cover_emoji|default:"📖" }}
+          </div>
+        {% endif %}
+      {% endwith %}
       <div class="current-book-info">
         <h1 class="current-book-title" style="font-size: 1.35rem;">{{ entry.book.title }}</h1>
         <p class="current-book-author" style="font-size: 1.05rem;">{{ entry.book.author }}</p>
