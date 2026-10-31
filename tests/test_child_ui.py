@@ -458,3 +458,42 @@ def test_node_child_js_runner():
     test_file = Path(settings.BASE_DIR) / "tests" / "test_child_js.js"
     res = subprocess.run([node_path, str(test_file)], capture_output=True, text=True)
     assert res.returncode == 0, f"Node.js tests failed:\n{res.stdout}\n{res.stderr}"
+
+
+@pytest.mark.django_db
+def test_child_grant_notices_render_with_accessible_close_and_preserve_grants(client, family_setup):
+    """#83: permanent AchievementGrant rows must not be consumed by page visits."""
+    guardian, child, reader = family_setup
+    award = Achievement.objects.create(
+        code="new-visual-test", title="Un trofeu", description="Demo",
+        rule=Achievement.BOOKS_FINISHED_GTE, threshold=1, icon="first-book.svg",
+    )
+    AchievementGrant.objects.create(reader=reader, achievement=award)
+    client.force_login(guardian)
+    session = client.session
+    session["mode"] = "child"
+    session["active_child"] = str(child.public_id)
+    session.save()
+
+    for _ in range(2):
+        response = client.get("/copil/")
+        assert response.status_code == 200
+        assert "private" in response["Cache-Control"] and "no-store" in response["Cache-Control"]
+        html = response.content.decode("utf-8")
+        assert 'id="child-grant-notices"' in html
+        assert f'data-reader-id="{child.public_id}"' in html
+        assert 'data-grant-code="new-visual-test"' in html
+        assert 'class="child-grant-dismiss"' in html
+        assert "Închide notificarea" in html
+        assert "js/achievement_notices" in html
+    assert AchievementGrant.objects.filter(reader=reader, achievement=award).count() == 1
+
+
+def test_node_achievement_notice_lifecycle():
+    """Run actual notification JS with a mocked DOM/storage, not just markup assertions."""
+    node_path = shutil.which("node")
+    if not node_path:
+        pytest.skip("Node.js not installed on system")
+    test_file = Path(settings.BASE_DIR) / "tests" / "test_child_achievement_notices.js"
+    result = subprocess.run([node_path, str(test_file)], capture_output=True, text=True)
+    assert result.returncode == 0, f"Node grant notice test failed:\n{result.stdout}\n{result.stderr}"

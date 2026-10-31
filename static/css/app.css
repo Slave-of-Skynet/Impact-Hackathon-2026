@@ -419,7 +419,7 @@ html:has(.has-tabbar) { scroll-padding-bottom: calc(64px + var(--s-4)); }
 .on-shelf { display: inline-flex; gap: var(--s-1); align-items: center; margin-top: var(--s-3); font-weight: 700; color: var(--green); font-size: var(--t-sm); }
 
 /* reduced motion */
-@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
 
 /* =====================================================================
    v2.1 — components for the remaining screens
@@ -467,11 +467,6 @@ textarea.input { min-height: 8rem; resize: vertical; line-height: 32px; padding-
 .menu-panel form + form { margin-top: var(--s-4); padding-top: var(--s-4); border-top: 1px solid var(--rule); }
 
 /* parent-session strip (accounts/_parent_session.html) */
-.session-strip { border-bottom: 1px solid var(--ink); background: var(--pencil-tint); }
-.session-strip .inner { max-width: 1080px; margin: 0 auto; padding: var(--s-3) var(--s-5); display: flex; gap: var(--s-3); align-items: center; flex-wrap: wrap; font-size: var(--t-sm); }
-.session-strip .inner > div { flex: 1 1 16rem; }
-.session-strip form { display: flex; gap: var(--s-2); align-items: center; flex-wrap: wrap; }
-.session-strip select.input { min-height: 36px; width: auto; font-size: var(--t-sm); padding-top: 0; padding-bottom: 0; }
 
 /* site footer */
 .site-footer { border-top: 1px solid var(--rule); margin-top: var(--s-12); }
@@ -635,8 +630,6 @@ textarea.input { min-height: 8rem; resize: vertical; line-height: 32px; padding-
 .masthead nav a.active { color: var(--ink); border-bottom-color: var(--green); }
 .who { display: inline-flex; gap: var(--s-1); align-items: center; }
 .who form { display: inline; }
-.page > .session-strip, .page > section.session-strip { margin: 0 calc(-1 * var(--s-5)) var(--s-4); }
-.session-strip p + p { margin-top: var(--s-1); }
 
 /* real cover images (library_tags.book_cover) sit inside the same cover frame */
 .cover.has-img { padding: 0; background: var(--shelf); }
@@ -671,8 +664,6 @@ textarea.input { min-height: 8rem; resize: vertical; line-height: 32px; padding-
 .checkout-head .meta { text-align: right; }
 .checkout + *, * + .checkout { margin-top: var(--s-6); }
 .kid-top .me { color: var(--ink); text-decoration: none; }
-.session-strip select.input { min-height: 44px; }
-.mode-child .session-strip .inner { padding: var(--s-3) var(--s-4); }
 /* auth inside base.html (masthead stays) */
 .auth-wrap { display: grid; gap: var(--s-6); padding: var(--s-6) 0; }
 .auth-wrap .auth-side { text-align: center; padding-bottom: var(--s-6); border-bottom: 1px solid var(--rule); }
@@ -740,7 +731,6 @@ html, body { overflow-x: clip; }
 /* D08 kid mode on wide screens: header, strip and tab bar line up with the 34rem content column */
 @media (min-width: 720px) {
   .kid-top, .mode-child .tabbar { padding-left: max(var(--s-4), calc((100% - 34rem) / 2 + var(--s-4))); padding-right: max(var(--s-4), calc((100% - 34rem) / 2 + var(--s-4))); }
-  .mode-child .session-strip .inner { max-width: 34rem; }
 }
 /* D09 child report: avatar stays beside the name on phones */
 .report-head > div:not(.actions) { flex: 1 1 10rem; min-width: 0; }
@@ -763,3 +753,33 @@ html, body { overflow-x: clip; }
 /* D19 short adult pages: footer sits at the bottom of the screen */
 body.mode-adult { min-height: 100vh; display: flex; flex-direction: column; }
 body.mode-adult > main { flex: 1 0 auto; width: 100%; }
+
+/* Parent-session controls (accounts/_parent_session.html, issue #81): a quiet one-line disclosure in
+   adult mode, a pencil-yellow strip while parent access is unlocked, a thin status row when locked. */
+.parent-session { border-bottom: 1px solid var(--rule); font-size: var(--t-sm); overflow-wrap: anywhere; }
+.parent-session--adult > summary { max-width: 1080px; margin: 0 auto; padding: 0 var(--s-5); min-height: 44px; display: flex; align-items: center; gap: var(--s-2); cursor: pointer; color: var(--ink-2); font-weight: 700; list-style: none; }
+.parent-session--adult > summary::-webkit-details-marker { display: none; }
+.parent-session--adult > summary::after { content: ""; width: 7px; height: 7px; border-right: 2px solid currentColor; border-bottom: 2px solid currentColor; transform: rotate(45deg); margin: -3px 0 0 var(--s-1); }
+.parent-session--adult[open] > summary::after { transform: rotate(-135deg); margin-top: 3px; }
+.parent-session-body { max-width: 1080px; margin: 0 auto; padding: 0 var(--s-5) var(--s-4); color: var(--ink-2); }
+.parent-session--trusted { background: var(--pencil-tint); border-bottom-color: var(--ink); }
+.parent-session--trusted .inner { max-width: 1080px; margin: 0 auto; padding: var(--s-3) var(--s-5); display: flex; flex-wrap: wrap; gap: var(--s-2) var(--s-4); align-items: center; }
+.parent-session-status { display: flex; gap: var(--s-2); align-items: flex-start; flex: 1 1 18rem; }
+.parent-session-risk { display: block; color: var(--ink-2); }
+.parent-session--locked { display: flex; gap: var(--s-2); align-items: center; margin: 0; padding: var(--s-2) var(--s-4); color: var(--ink-2); }
+.parent-session-form { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-2); margin-top: var(--s-2); }
+.parent-session--trusted .parent-session-form { margin-top: 0; }
+.parent-session-select.input { width: auto; min-height: 44px; padding-top: 0; padding-bottom: 0; font-size: var(--t-sm); }
+.parent-session-details { flex-basis: 100%; }
+.parent-session-details summary { min-height: 36px; display: inline-flex; align-items: center; cursor: pointer; color: var(--green); text-decoration: underline; }
+.parent-session-details p, .parent-session-body p { margin: var(--s-1) 0; }
+.mode-child .parent-session--trusted .inner, .mode-child .parent-session--adult > summary, .mode-child .parent-session-body { padding-left: var(--s-4); padding-right: var(--s-4); }
+
+/* Transient trophy notices on the child home (#84, static/js/achievement_notices.js) */
+#child-grant-notices { display: grid; gap: var(--s-2); margin-top: var(--s-4); }
+.grant-notice { display: flex; align-items: center; gap: var(--s-3); padding: var(--s-2) var(--s-2) var(--s-2) var(--s-4); background: var(--paper-hi); border: 2px solid var(--green); box-shadow: 0 3px 0 var(--green); animation: grant-pop .4s ease-out; }
+.grant-notice .child-grant-icon { width: 28px; height: 28px; color: var(--green); flex: none; }
+.child-grant-message { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.child-grant-dismiss { display: grid; place-items: center; flex: none; width: 44px; height: 44px; border: 0; border-radius: 10px; background: transparent; color: var(--ink); cursor: pointer; }
+.child-grant-dismiss:hover, .child-grant-dismiss:focus-visible { background: var(--shelf); }
+@keyframes grant-pop { from { transform: translateY(6px); opacity: 0; } to { transform: none; opacity: 1; } }

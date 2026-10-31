@@ -24,6 +24,7 @@
   <!-- HTMX & Child Controller -->
   <script src="{% static 'js/htmx.min.js' %}" defer></script>
   <script src="{% static 'js/child.js' %}" defer></script>
+  <script src="{% static 'js/achievement_notices.js' %}" defer></script>
   {% block extra_head %}{% endblock %}
 </head>
 <body class="mode-child{% block body_class %} has-tabbar{% endblock %} child-app" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>

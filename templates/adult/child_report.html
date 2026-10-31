@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load static i18n library_tags %}
+{% load static i18n library_tags club_extras %}
 
 {% block title %}{% translate "Raport lectură" %} {{ child.nickname }} — Gustul Cărților{% endblock %}
 
@@ -87,8 +87,8 @@
           {% for m in memberships %}
             <li style="display:flex;justify-content:space-between;gap:var(--s-3);padding:var(--s-3) 0">
               <span>{% translate "Valabil până la" %}: <b class="num">{{ m.valid_until|date:"d.m.Y" }}</b></span>
-              <span class="label{% if m.status == 'active' and is_member %} label-green{% endif %}">
-                {% if m.status == 'active' and is_member %}✓ {% translate "Activ" %}{% elif m.status == 'active' %}{% translate "Înregistrat" %}{% elif m.status == 'expired' %}{% translate "Expirat" %}{% elif m.status == 'revoked' %}{% translate "Revocat" %}{% else %}{{ m.status }}{% endif %}
+              <span class="label{% if m|membership_is_current and is_member %} label-green{% endif %}">
+                {% if m|membership_is_current and is_member %}✓ {% translate "Activ" %}{% elif m.status == 'active' %}{% translate "Înregistrat" %}{% elif m.status == 'revoked' %}{% translate "Revocat" %}{% else %}{{ m.status }}{% endif %}
               </span>
             </li>
           {% endfor %}
