@@ -33,9 +33,11 @@ Mode legend: **pub** = anonymous OK · **adult** = signed-in, adult mode · **ch
 | 13 | `/realizari/` | `achievements` | adult, child | Earned + locked achievements of the current reader |
 | 14 | `/clubul-meu/` | `club_corner` | adult, child — **member only** | Club activities |
 | 15 | `/copil/` | `child_home` | child | Child home: mascot, current book, big buttons |
-| 16 | `/parinte/` | `pin_gate` | child → adult | "Ask a parent" PIN screen; exit child mode; link "Am uitat PIN-ul — ieși din cont" (POST `logout`) |
+| 16 | `/parinte/` | `pin_gate` | child → adult | GET renders PIN form or explicit Return button if short verification is valid; GET never changes mode. Recovery "Am uitat PIN-ul — ieși din cont" POSTs `logout` |
 | 17 | `/admin/` | Django admin | staff | Catalog, membership codes, activation/revocation |
 | 18 | `/offline/`, `/manifest.webmanifest`, `/sw.js` | PWA | pub | Offline page, manifest, service worker (served at root scope) |
+| 19 | `/parinte/revino/` | `parent_return` | adult, child (POST only) | Explicit return to fixed adult dashboard with valid same-session short PIN verification; never replays another request |
+| 20 | `/parinte/blocheaza/` | `parent_lock` | adult, child (POST only) | Revoke verification and protect device in owned child mode, or logout if no safe child/PIN |
 
 "Current reader" = the adult's own reader in adult mode, or the active child's reader in child mode. **Routes 11–14 never take a reader ID from the URL or form**; a guardian views a child's data only via route 8 (read-only in P0).
 
@@ -49,7 +51,9 @@ Mode legend: **pub** = anonymous OK · **adult** = signed-in, adult mode · **ch
 | `family` rename/delete | POST `/familie/<child>/editeaza/`, `/familie/<child>/sterge/` | nickname / confirm | adult + owns child | redirect | 404 foreign | delete is naturally idempotent (2nd → 404) |
 | PIN set | POST `/familie/pin/` | `pin` 4–6 digits ×2, `password` (re-auth) | adult | redirect | 422 | — |
 | `child_mode_start` | POST | — | adult + owns child + PIN set | session `mode=child`, `active_child=<id>`; redirect `child_home` | 404 foreign; redirect PIN setup | repeat = same state |
-| `pin_gate` | POST | `pin` only (4–6 digits; the password is not accepted here) | session in child mode | clears child mode, resets the `pin` throttle; redirect `adult_dashboard` | 422 wrong PIN (failure counted); 429 locked 5 min after 5 failures, even for the correct PIN | — |
+| `pin_gate` | POST | `pin` only (4–6 digits; the password is not accepted here) | session in child mode | clears child mode, resets PIN throttle, rotates session key, grants absolute 30-minute session-bound verification; redirect `adult_dashboard` | 422 wrong PIN (failure counted); 429 locked 5 min after 5 failures, even for correct PIN; existing trust never accepts a wrong submitted PIN | — |
+| `parent_return` | POST + CSRF | none; `next` ignored | signed in; child mode requires revalidated owned active reader + unexpired verification + no PIN lock | clears child-mode keys without extending verification; normal302 or HTMX204 + `HX-Redirect: /panou/`, no `saved` trigger | GET405; unverified child normal302 PIN gate / HTMX403 empty; anonymous normal302 login / HTMX401 | repeat in adult mode redirects dashboard |
+| `parent_lock` | POST + CSRF | adult: optional owned child UUID `child`; child mode ignores posted IDs | signed in; fail-safe logout available even for invalid active child | revokes verification and rotates session into selected/active child mode; no safe child or PIN → logout; normal302 or HTMX204 + fixed `HX-Redirect`, no `saved` trigger | GET405; foreign/unknown adult child404 without state change; anonymous normal302 login / HTMX401 | repeats stay protected; no PIN throttle reset |
 | `logout` | POST | — | adult or child mode | ends the whole session; redirect `login` | — | repeat = same state |
 | add to shelf | POST `/carti/<book>/adauga/` | — | adult/child, current reader | 200 partial "Pe raftul tău" (HTMX) or redirect `shelf_entry` | 404 unknown/inactive book | `get_or_create` |
 | record progress | POST `/raft/<entry>/progres/` | `page` int, `request_id` UUID | entry.reader == current reader | 200 partial + `HX-Trigger: saved`: progress bar, mascot line, new achievement toasts | 422 out of range / finished; 404 foreign; 409 `request_id` reused with other data; 503 database busy | `(reader, request_id)` unique → same data replays the stored result (`replayed=true`, no new grants) |
@@ -94,6 +98,10 @@ View models (plain dataclasses in `core/viewmodels.py`):
 | `offline` | offline / send error | "Nu am internet acum. Încercăm mai târziu?" |
 
 No pressure or guilt lines (FR-032).
+
+## Issue #60 shared parent controls
+
+The `parent_session_status` template tag supplies `parent_access` to the shared layouts without changing frozen VMs: `show`, `trusted`, `until`, `child_mode`, `can_return`, and the guardian's owned `children`. The PIN view adds `parent_verified` for its native Return form. The banner shows the fixed expiry, Romanian same-device warning and explicit Lock. Pages with these personal controls are private/no-store, including otherwise public pages. The standalone public offline shell remains free of personal controls/data. Full security semantics and residual handoff risk are in [authorization.md](authorization.md#child-mode-on-a-shared-device).
 
 ## Issue #62 additive ratings contract
 

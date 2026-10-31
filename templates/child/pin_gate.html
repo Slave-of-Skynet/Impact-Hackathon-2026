@@ -16,7 +16,7 @@
     <div>
       <h1 style="font-size: 1.35rem; font-weight: 800;">{% translate "Zonă pentru părinți" %}</h1>
       <p style="font-size: 0.95rem; color: var(--child-text-muted); margin-top: 4px;">
-        {% translate "Introdu codul PIN pentru a accesa panoul de control." %}
+        {% if parent_verified %}{% translate "PIN-ul a fost deja verificat pentru acest interval scurt." %}{% else %}{% translate "Introdu codul PIN pentru a accesa panoul de control." %}{% endif %}
       </p>
     </div>
 
@@ -47,6 +47,12 @@
       </div>
     {% endif %}
 
+    {% if parent_verified %}
+    <form method="post" action="{% url 'parent_return' %}">
+      {% csrf_token %}
+      <button type="submit" class="btn-child btn-child-primary" style="min-height:52px;">{% translate "Revino la Mod Părinte fără PIN" %}</button>
+    </form>
+    {% else %}
     <!-- PIN Form -->
     <form action="/parinte/" method="post" id="pin-form" style="display: flex; flex-direction: column; gap: 16px;">
       {% csrf_token %}
@@ -88,6 +94,7 @@
       </button>
     </form>
 
+    {% endif %}
     <!-- Emergency PIN Recovery (Logout) -->
     <div style="margin-top: 14px; border-top: 1px solid var(--child-border); padding-top: 16px;">
       <form action="/cont/iesire/" method="post">
