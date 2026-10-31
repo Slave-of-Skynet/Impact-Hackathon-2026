@@ -4,6 +4,7 @@ from django.db import OperationalError, connection
 from django.http import Http404, HttpResponse
 from django.shortcuts import redirect, render
 from django.urls import reverse
+from django.utils import timezone
 from django.utils.formats import date_format
 from django.views.decorators.cache import never_cache
 from django.views.decorators.http import require_GET, require_http_methods
@@ -67,7 +68,7 @@ def redeem_code(request):
         response = HttpResponse("Serviciu ocupat. Reîncearcă.", status=503)
         response["Retry-After"] = "5"
         return response
-    messages.success(request, f"Membru al clubului până la {date_format(membership.valid_until, 'DATE_FORMAT')}.")
+    messages.success(request, f"Membru al clubului până la {date_format(timezone.localtime(membership.valid_until), 'DATE_FORMAT')}.")
     if authz.is_htmx(request):
         return HttpResponse(status=200, headers={"HX-Redirect": reverse("redeem_code")})
     return redirect("redeem_code")

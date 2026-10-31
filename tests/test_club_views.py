@@ -1,5 +1,5 @@
 """Real authz/middleware + club HTTP. No fake URLconf or template replacements."""
-from datetime import timedelta
+from datetime import datetime, timedelta, timezone as dt_timezone
 from unittest.mock import patch
 from uuid import uuid4
 
@@ -233,3 +233,13 @@ def test_service_and_club_http_vertical_slice(client, family):
     library.record_progress(adult, adult_entry, 35, uuid4())
     library.finish_book(adult, adult_entry, uuid4())
     assert "first-book" in {g.code for g in adult_client.get("/realizari/").context["earned"]}
+
+
+def test_redeem_message_shows_local_expiry_date(client, family, clock):
+    # 22:30 UTC is already the next day in Chisinau: the confirmation must name the local date.
+    actor, _, child, _ = family
+    clock.now = datetime(2026, 11, 1, 22, 30, tzinfo=dt_timezone.utc)
+    _, raw = code_for(actor)
+    client.post(URL, {"reader": str(child.public_id), "code": raw})
+    content = client.get(URL).content.decode()
+    assert "până la 31 Ianuarie 2027." in content
