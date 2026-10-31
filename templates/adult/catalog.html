@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load i18n library_tags %}
+{% load static i18n library_tags %}
 
 {% block title %}{% translate "Catalog de Cărți — Gustul Cărților" %}{% endblock %}
 
@@ -54,13 +54,23 @@
     {% for b in books %}
       <div class="book-card">
         <a href="/carti/{{ b.public_id }}/" style="text-decoration: none;" aria-label="{{ b.title }} - {{ b.author }}">
-          <div class="book-cover" style="background-color: {{ b.cover_color|default:'#F4A261' }};">
-            <div class="book-cover-title">{{ b.title }}</div>
-            <div class="book-cover-emoji" aria-hidden="true">{{ b.cover_emoji|default:'📖' }}</div>
-            <div class="book-cover-author">{{ b.author }}</div>
-          </div>
+          {% with cover=b|book_cover %}
+            {% if cover %}
+              <div class="book-cover has-img">
+                <img src="{% static cover %}" alt="{{ b.title }}" class="book-cover-img" loading="lazy">
+              </div>
+            {% else %}
+              <div class="book-cover" style="background-color: {{ b.cover_color|default:'#F4A261' }};">
+                <div class="book-cover-title">{{ b.title }}</div>
+                <div class="book-cover-emoji" aria-hidden="true">{{ b.cover_emoji|default:'📖' }}</div>
+                <div class="book-cover-author">{{ b.author }}</div>
+              </div>
+            {% endif %}
+          {% endwith %}
         </a>
         <div class="book-body">
+          <div style="font-weight: 700; font-size: var(--text-sm); color: var(--color-text); margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="{{ b.title }}">{{ b.title }}</div>
+          <div style="font-size: var(--text-xs); color: var(--color-text-muted); margin-bottom: var(--space-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ b.author }}</div>
           <div class="book-meta">
             {% if b.age_band %}
               <span class="badge badge-accent">{{ b.age_band }} {% translate "ani" %}</span>

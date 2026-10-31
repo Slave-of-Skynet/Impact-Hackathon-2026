@@ -13,9 +13,15 @@
 
   <article class="current-book-card" style="text-align: center; align-items: center; padding: 24px 20px;">
     <!-- Large colorful book cover -->
-    <div class="book-cover" style="width: 120px; height: 160px; font-size: 5rem; background-color: {{ book.cover_color|default:'#F59E0B' }};" aria-hidden="true">
-      {{ book.cover_emoji|default:"📖" }}
-    </div>
+    {% with cover=book|book_cover %}
+      {% if cover %}
+        <img src="{% static cover %}" alt="{{ book.title }}" class="book-cover" style="width: 120px; height: 160px;" aria-hidden="true">
+      {% else %}
+        <div class="book-cover" style="width: 120px; height: 160px; font-size: 5rem; background-color: {{ book.cover_color|default:'#F59E0B' }};" aria-hidden="true">
+          {{ book.cover_emoji|default:"📖" }}
+        </div>
+      {% endif %}
+    {% endwith %}
 
     <h1 style="font-size: 1.4rem; font-weight: 800; margin-top: 14px;">{{ book.title }}</h1>
     <p style="font-size: 1.1rem; color: var(--child-text-muted); margin-top: 4px;">{{ book.author }}</p>

@@ -285,6 +285,11 @@ body {
   flex-shrink: 0;
   box-shadow: var(--shadow-sm);
   border: 2px solid rgba(0, 0, 0, 0.06);
+  overflow: hidden;
+}
+img.book-cover {
+  padding: 0;
+  object-fit: cover;
 }
 
 .current-book-info {

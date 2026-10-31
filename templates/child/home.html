@@ -1,5 +1,5 @@
 {% extends "child/base.html" %}
-{% load static i18n %}
+{% load static library_tags i18n %}
 
 {% block title %}Gustul Cărților — Acasă{% endblock %}
 {% block extra_head %}<link rel="stylesheet" href="{% static 'css/streak.css' %}">{% endblock %}
@@ -32,9 +32,15 @@
     {% if current_entry %}
       <div class="current-book-card">
         <div class="current-book-header">
-          <div class="book-cover" style="background-color: {{ current_entry.book.cover_color|default:'#F59E0B' }};" aria-hidden="true">
-            {{ current_entry.book.cover_emoji|default:"📖" }}
-          </div>
+          {% with cover=current_entry.book|book_cover %}
+            {% if cover %}
+              <img src="{% static cover %}" alt="{{ current_entry.book.title }}" class="book-cover" aria-hidden="true">
+            {% else %}
+              <div class="book-cover" style="background-color: {{ current_entry.book.cover_color|default:'#F59E0B' }};" aria-hidden="true">
+                {{ current_entry.book.cover_emoji|default:"📖" }}
+              </div>
+            {% endif %}
+          {% endwith %}
           <div class="current-book-info">
             <h2 id="current-book-heading" class="current-book-title">{{ current_entry.book.title }}</h2>
             <p class="current-book-author">{{ current_entry.book.author }}</p>

@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load i18n static %}
+{% load static i18n library_tags %}
 
 {% block title %}{% translate "Raport lectură" %} {{ child.nickname }} — Gustul Cărților{% endblock %}
 {% block extra_css %}<link rel="stylesheet" href="{% static 'css/streak.css' %}">{% endblock %}
@@ -78,9 +78,15 @@
         {% for entry in entries %}
           <div class="card" style="padding: var(--space-4);">
             <div style="display: flex; gap: var(--space-3); align-items: center;">
-              <div style="width: 50px; height: 70px; background-color: {{ entry.book.cover_color|default:'#F4A261' }}; border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; font-size: 1.75rem; flex-shrink: 0;" aria-hidden="true">
-                {{ entry.book.cover_emoji|default:'📖' }}
-              </div>
+              {% with cover=entry.book|book_cover %}
+                {% if cover %}
+                  <img src="{% static cover %}" alt="{{ entry.book.title }}" style="width: 50px; height: 70px; border-radius: var(--radius-sm); object-fit: cover; flex-shrink: 0; box-shadow: var(--shadow-xs);" aria-hidden="true">
+                {% else %}
+                  <div style="width: 50px; height: 70px; background-color: {{ entry.book.cover_color|default:'#F4A261' }}; border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; font-size: 1.75rem; flex-shrink: 0;" aria-hidden="true">
+                    {{ entry.book.cover_emoji|default:'📖' }}
+                  </div>
+                {% endif %}
+              {% endwith %}
               <div style="flex: 1; min-width: 0;">
                 <div style="font-weight: var(--font-bold); font-size: var(--text-base); color: var(--color-text);">
                   {{ entry.book.title }}
