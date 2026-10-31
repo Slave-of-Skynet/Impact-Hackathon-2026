@@ -19,7 +19,7 @@
   <header class="site-header">
     <div class="container header-inner">
       <a href="{% if request.session.mode == 'child' %}/copil/{% elif request.user.is_authenticated or me %}/panou/{% else %}/{% endif %}" class="brand-link" aria-label="{% translate 'Pagina principală Gustul Cărților' %}">
-        <span class="brand-icon" aria-hidden="true">📖</span>
+        <img src="{% static 'img/brand/logo.png' %}" alt="Gustul Cărților" class="brand-logo-img" width="36" height="36">
         <span>Gustul Cărților</span>
       </a>
 
