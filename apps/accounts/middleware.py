@@ -8,7 +8,7 @@ from .authz import ACTIVE_CHILD_KEY, MODE_KEY, active_child_reader, is_child_mod
 # so admin's "admin:login" never matches; every route not listed here, including future ones, is refused.
 CHILD_ALLOWED = frozenset({
     "child_home", "catalog", "book_detail", "add_to_shelf", "my_shelf", "shelf_entry", "record_progress",
-    "finish_book", "achievements", "club_corner", "pin_gate", "logout", "offline", "manifest", "sw",
+    "finish_book", "rate_book", "achievements", "club_corner", "pin_gate", "logout", "offline", "manifest", "sw",
 })
 # Reachable even when the session's child is gone: the guardian must still be able to unlock or sign out.
 ALWAYS_ALLOWED = frozenset({"pin_gate", "logout"})

@@ -10,6 +10,7 @@ from django.core.exceptions import ValidationError
 from django.http import Http404, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
+from django.utils.cache import add_never_cache_headers
 from django.utils.translation import gettext as _
 from django.views.decorators.cache import never_cache
 from django.views.decorators.csrf import csrf_protect
@@ -19,6 +20,7 @@ from apps.accounts import authz
 from apps.core.viewmodels import BookVM, GrantVM, MascotLine, ShelfEntryVM, percent
 from apps.library import services
 from apps.library.models import Book, ShelfEntry
+from apps.library.ratings import rating_context
 from apps.library.stats import reader_stats
 
 
@@ -38,7 +40,12 @@ def _with_reader(*, optional=False):
         @wraps(view)
         def wrapped(request, *args, **kwargs):
             reader = authz.current_reader(request) if request.user.is_authenticated else None
-            return view(request, reader, *args, **kwargs)
+            response = view(request, reader, *args, **kwargs)
+            if optional and reader is not None:
+                # Catalog/detail contain owner-only shelf markers and ratings.
+                # Anonymous metadata responses retain their public cache policy.
+                add_never_cache_headers(response)
+            return response
         return wrapped if optional else authz.login_required(wrapped)
     return decorate
 
@@ -78,8 +85,9 @@ def _shelf_book_ids(reader):
 
 
 def _catalog_context(reader, books, filters):
+    books = list(books)
     return {"books": [_book_vm(book) for book in books], "filters": filters,
-            "shelf_book_ids": _shelf_book_ids(reader)}
+            "shelf_book_ids": _shelf_book_ids(reader), **rating_context(books, reader)}
 
 
 @require_GET
@@ -99,7 +107,8 @@ def book_detail(request, reader, book):
     metadata = get_object_or_404(Book, public_id=book, is_active=True)
     # Context matches the owner-provided adult/child book_detail templates;
     # no additional fields are introduced on the shared BookVM.
-    context = {"book": _book_vm(metadata), "shelf_book_ids": _shelf_book_ids(reader)}
+    context = {"book": _book_vm(metadata), "shelf_book_ids": _shelf_book_ids(reader),
+               **rating_context([metadata], reader)}
     return render(request, f"{_mode(request)}/book_detail.html", context)
 
 
@@ -107,8 +116,9 @@ def book_detail(request, reader, book):
 @require_GET
 @_with_reader()
 def my_shelf(request, reader):
-    entries = ShelfEntry.objects.filter(reader=reader).select_related("book").order_by("-added_at", "pk")
-    context = {"entries": [_entry_vm(entry) for entry in entries], "stats": reader_stats(reader)}
+    entries = list(ShelfEntry.objects.filter(reader=reader).select_related("book").order_by("-added_at", "pk"))
+    context = {"entries": [_entry_vm(entry) for entry in entries], "stats": reader_stats(reader),
+               **rating_context([entry.book for entry in entries], reader)}
     return render(request, f"{_mode(request)}/shelf.html", context)
 
 
@@ -116,6 +126,7 @@ def _progress_context(request, entry, *, request_id=None, new_grants=(), errors=
     context = {
         "entry": _entry_vm(entry), "request_id": uuid4() if request_id is None else request_id,
         "new_grants": [_grant_vm(grant) for grant in new_grants], "errors": list(errors),
+        "personal_rating": entry.rating, "can_rate": entry.status == ShelfEntry.FINISHED,
     }
     if _mode(request) == "child":
         # Fixed script and MascotLine shape from routes.md. No dependency on
@@ -214,3 +225,23 @@ def record_progress(request, reader, entry):
 @_with_reader()
 def finish_book(request, reader, entry):
     return _write_progress(request, reader, entry, finish=True)
+
+
+@never_cache
+@require_POST
+@csrf_protect
+@_with_reader()
+def rate_book(request, reader, entry):
+    current = _get_entry(reader, entry)
+    try:
+        current = services.rate_book(reader, current, request.POST.get("rating"))
+    except ValidationError as error:
+        return HttpResponse(" ".join(error.messages), status=422, content_type="text/plain; charset=utf-8")
+    except ShelfEntry.DoesNotExist:
+        raise Http404 from None
+    except services.LockTimeout:
+        return _unsaved(503)
+    target = reverse("shelf_entry", args=[current.public_id])
+    if _htmx(request):
+        return HttpResponse(status=204, headers={"HX-Redirect": target, "HX-Trigger": "saved"})
+    return redirect(target)

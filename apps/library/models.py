@@ -1,5 +1,6 @@
 import uuid
 
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.utils import timezone
 
@@ -54,10 +55,21 @@ class ShelfEntry(models.Model):
     status = models.CharField(max_length=8, choices=STATUSES, default=READING)
     added_at = models.DateTimeField(default=timezone.now)
     finished_at = models.DateTimeField(null=True, blank=True)
+    rating = models.SmallIntegerField(
+        null=True, blank=True, validators=[MinValueValidator(1), MaxValueValidator(5)],
+    )
 
     class Meta:
         constraints = [
             models.UniqueConstraint(fields=["reader", "book"], name="shelf_reader_book_unique"),
+            models.CheckConstraint(
+                condition=models.Q(rating__isnull=True) | models.Q(rating__gte=1, rating__lte=5),
+                name="shelf_rating_range",
+            ),
+            models.CheckConstraint(
+                condition=models.Q(rating__isnull=True) | models.Q(status="finished"),
+                name="shelf_rating_finished_only",
+            ),
             models.CheckConstraint(
                 condition=(
                     models.Q(status="reading", finished_at__isnull=True)

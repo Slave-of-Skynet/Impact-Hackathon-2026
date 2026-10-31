@@ -10,4 +10,5 @@ urlpatterns = [
     path("raft/<uuid:entry>/", views.shelf_entry, name="shelf_entry"),
     path("raft/<uuid:entry>/progres/", views.record_progress, name="record_progress"),
     path("raft/<uuid:entry>/terminat/", views.finish_book, name="finish_book"),
+    path("raft/<uuid:entry>/evaluare/", views.rate_book, name="rate_book"),
 ]
