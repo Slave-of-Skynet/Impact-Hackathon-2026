@@ -5,12 +5,16 @@ unstyled placeholder in apps/accounts/templates/accounts/. Context keys are list
 """
 
 from django.conf import settings
-from django.contrib.auth import login
+from django.contrib.auth import login, logout
 from django.contrib.auth.hashers import check_password, make_password
 from django.contrib.auth.views import LoginView
 from django.db import transaction
+from django.http import HttpResponse
 from django.shortcuts import redirect, render
+from django.urls import reverse
 from django.views.decorators.cache import never_cache
+from django.views.decorators.csrf import csrf_protect
+from django.views.decorators.debug import sensitive_post_parameters
 from django.views.decorators.http import require_GET, require_http_methods, require_POST
 
 from apps.club.services import is_member
@@ -19,9 +23,10 @@ from apps.library.models import ShelfEntry
 from apps.library.stats import reader_stats
 from apps.library.reflections import reader_reflections
 
-from . import throttle
+from . import parent_session, throttle
 from .authz import (
-    ACTIVE_CHILD_KEY, MODE_KEY, current_reader, get_child_for_guardian, is_child_mode, login_required,
+    ACTIVE_CHILD_KEY, MODE_KEY, active_child_reader, current_reader, get_child_for_guardian,
+    is_child_mode, is_htmx, login_required,
 )
 from .forms import ChildForm, LoginForm, PinGateForm, PinSetForm, RenameChildForm, SignupForm
 from .models import MAX_CHILDREN_PER_GUARDIAN, Account, Reader, Throttle, normalize_email
@@ -221,11 +226,13 @@ def pin_set(request):
             return render(request, _templates("pin_set"), {"form": form}, status=422)
         request.user.pin_hash = make_password(form.cleaned_data["pin"])
         request.user.save(update_fields=["pin_hash"])
+        parent_session.revoke(request)
         throttle.reset(Throttle.PIN, str(request.user.pk))  # the password re-auth proves the guardian
         return redirect("family")
     return render(request, _templates("pin_set"), {"form": form})
 
 
+@never_cache
 @login_required
 @require_POST
 def child_mode_start(request, child):
@@ -237,6 +244,8 @@ def child_mode_start(request, child):
     return redirect(CHILD_HOME_URL)
 
 
+@sensitive_post_parameters("pin")
+@never_cache
 @login_required
 @require_http_methods(["GET", "POST"])
 def pin_gate(request):
@@ -246,7 +255,11 @@ def pin_gate(request):
     template, key = _templates("pin_gate", ui="child"), str(request.user.pk)
     form = PinGateForm(request.POST or None)
     if request.method == "GET":
-        return render(request, template, {"form": form})
+        return render(request, template, {"form": form, "parent_verified": bool(
+            parent_session.verified_until(request) and active_child_reader(request)
+        )})
+    # A real PIN POST always verifies the PIN, even if short trust already exists.
+    parent_session.revoke(request)
     try:
         throttle.check(Throttle.PIN, key)
     except throttle.Locked as locked:
@@ -254,10 +267,62 @@ def pin_gate(request):
     # Fail closed when the hash is missing (abnormal out-of-band state, #40): count the failure
     # instead of calling check_password with None, which would 500. Never unlocks adult mode.
     if form.is_valid() and request.user.pin_hash and check_password(form.cleaned_data["pin"], request.user.pin_hash):
+        # A second device may have locked this account during the expensive hash.
+        try:
+            throttle.check(Throttle.PIN, key)
+        except throttle.Locked as locked:
+            return _locked(request, template, {"form": PinGateForm()}, locked)
         throttle.reset(Throttle.PIN, key)
+        parent_session.grant_after_pin(request)
         request.session.pop(MODE_KEY, None)
         request.session.pop(ACTIVE_CHILD_KEY, None)
         return redirect(settings.LOGIN_REDIRECT_URL)
     throttle.record_failure(Throttle.PIN, key)
     form.add_error(None, "PIN greșit.")
     return render(request, template, {"form": form}, status=422)
+
+
+def _mode_redirect(request, name):
+    if is_htmx(request):
+        return HttpResponse(status=204, headers={"HX-Redirect": reverse(name)})
+    return redirect(name)
+
+
+@never_cache
+@require_POST
+@csrf_protect
+@login_required
+def parent_return(request):
+    """Explicit quick switch only; never authorize or replay another adult URL."""
+    if not is_child_mode(request):
+        return _mode_redirect(request, "adult_dashboard")
+    if active_child_reader(request) is None or parent_session.verified_until(request) is None:
+        if is_htmx(request):
+            return HttpResponse(status=403)
+        return redirect("pin_gate")
+    request.session.pop(MODE_KEY, None)
+    request.session.pop(ACTIVE_CHILD_KEY, None)
+    return _mode_redirect(request, "adult_dashboard")
+
+
+@never_cache
+@require_POST
+@csrf_protect
+@login_required
+def parent_lock(request):
+    """Revoke verification AND protect the device: child mode or full logout."""
+    if is_child_mode(request):
+        reader = active_child_reader(request)
+        profile = reader.child if reader else None
+    else:
+        child = request.POST.get("child")
+        profile = get_child_for_guardian(request, child) if child else None
+    parent_session.revoke(request)
+    if profile is None or not request.user.pin_hash:
+        logout(request)
+        return _mode_redirect(request, "login")
+    request.session[MODE_KEY] = "child"
+    request.session[ACTIVE_CHILD_KEY] = str(profile.public_id)
+    # Deleting the old session prevents an in-flight old save reviving adult mode.
+    request.session.cycle_key()
+    return _mode_redirect(request, "child_home")

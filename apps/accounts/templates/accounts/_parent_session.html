@@ -1,0 +1,29 @@
+{% load i18n %}
+{% if parent_access.show %}
+<section aria-label="Accesul părinților" style="padding:16px;margin:16px 0;border:1px solid currentColor;border-radius:12px;overflow-wrap:anywhere;">
+  {% if parent_access.trusted %}
+    <p role="status"><strong>{% translate "Accesul părinților este deblocat" %}</strong> — {% translate "până la" %} {{ parent_access.until|date:"H:i" }}.</p>
+    <p style="margin-top:8px;">{% translate "Blochează accesul înainte de a oferi dispozitivul copilului." %}</p>
+    <p style="margin-top:8px;">{% translate "În acest interval, copilul poate reveni fără PIN în modul părinte pe același dispozitiv." %}</p>
+  {% elif parent_access.child_mode %}
+    <p role="status"><strong>{% translate "Accesul părinților este blocat. Pentru revenire este necesar PIN-ul." %}</strong></p>
+  {% else %}
+    <p><strong>{% translate "Mod Părinte activ" %}</strong></p>
+    <p style="margin-top:8px;">{% translate "Blochează accesul înainte de a oferi dispozitivul copilului." %}</p>
+  {% endif %}
+  {% if parent_access.trusted or not parent_access.child_mode %}
+    <form action="{% url 'parent_lock' %}" method="post" style="margin-top:12px;">
+      {% csrf_token %}
+      {% if not parent_access.child_mode and parent_access.children %}
+        <label for="parent-lock-child">{% translate "Continuă în modul copil pentru" %}</label>
+        <select name="child" id="parent-lock-child" style="display:block;min-height:52px;width:100%;font:inherit;margin:8px 0;" required>
+          {% for child_option in parent_access.children %}<option value="{{ child_option.public_id }}">{{ child_option.nickname }}</option>{% endfor %}
+        </select>
+      {% elif not parent_access.child_mode %}
+        <p>{% translate "Blocarea încheie sesiunea, deoarece nu există un profil de copil disponibil." %}</p>
+      {% endif %}
+      <button type="submit" class="btn btn-outline" style="min-height:52px;max-width:100%;white-space:normal;font:inherit;cursor:pointer;padding:12px;">{% translate "Blochează accesul părinților" %}</button>
+    </form>
+  {% endif %}
+</section>
+{% endif %}
