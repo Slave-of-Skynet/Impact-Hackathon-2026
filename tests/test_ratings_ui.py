@@ -326,3 +326,19 @@ def test_catalog_and_detail_displays_verified_average(test_setup, client):
     detail_html = detail_resp.content.decode("utf-8")
     assert "4.0" in detail_html
     assert "(3" in detail_html
+
+
+def test_rating_422_error_box_is_revealed_after_swap(test_setup, adult_client):
+    """app.js/child.js swap 422 as a non-error (no htmx:responseError), so the hidden
+    error box must also be revealed on after-swap, or the 422 text stays invisible."""
+    adult = test_setup["adult_entry"]
+    services.finish_book(adult.reader, adult, uuid.uuid4())
+    html = adult_client.get(reverse("shelf_entry", args=[adult.public_id])).content.decode()
+    assert "hx-on::after-swap=\"document.getElementById('adult-rating-error-box').style.display='block';\"" in html
+
+    kid = test_setup["child_entry"]
+    services.finish_book(kid.reader, kid, uuid.uuid4())
+    child_client = Client()
+    enter_child_mode(child_client, test_setup)
+    html = child_client.get(reverse("shelf_entry", args=[kid.public_id])).content.decode()
+    assert "hx-on::after-swap=\"document.getElementById('rating-error-box').style.display='block';\"" in html

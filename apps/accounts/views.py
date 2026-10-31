@@ -8,7 +8,7 @@ from django.conf import settings
 from django.contrib.auth import login, logout
 from django.contrib.auth.hashers import check_password, make_password
 from django.contrib.auth.views import LoginView
-from django.db import transaction
+from django.db import IntegrityError, transaction
 from django.http import HttpResponse
 from django.shortcuts import redirect, render
 from django.urls import reverse
@@ -80,11 +80,17 @@ def signup(request):
     if request.method == "POST":
         if not form.is_valid():
             return render(request, _templates("signup"), {"form": form}, status=422)
-        with transaction.atomic():
-            account = Account.objects.create_user(
-                form.cleaned_data["email"], form.cleaned_data["password"], display_name=form.cleaned_data["display_name"]
-            )
-            Reader.objects.create(kind=Reader.ADULT, account=account)
+        try:
+            with transaction.atomic():
+                account = Account.objects.create_user(
+                    form.cleaned_data["email"], form.cleaned_data["password"],
+                    display_name=form.cleaned_data["display_name"],
+                )
+                Reader.objects.create(kind=Reader.ADULT, account=account)
+        except IntegrityError:
+            # A parallel submit (double tap) created the same email after clean_email passed.
+            form.add_error("email", "Există deja un cont cu acest email.")
+            return render(request, _templates("signup"), {"form": form}, status=422)
         login(request, account, backend="django.contrib.auth.backends.ModelBackend")
         return redirect(settings.LOGIN_REDIRECT_URL)
     return render(request, _templates("signup"), {"form": form})
