@@ -13,6 +13,9 @@ CHILD_ALLOWED = frozenset({
     "finish_book", "rate_book", "achievements", "club_corner", "pin_gate", "logout", "offline", "manifest", "sw",
     "book_reflection", "start_reflection", "save_reflection",
     "parent_return", "parent_lock",
+    # Installed-PWA launch dispatcher (issue #58): only redirects to /copil/, whose
+    # access still requires an owned active child via active_child_reader below.
+    "pwa_launch",
 })
 # Reachable even when the child is gone: PIN recovery, safe Lock (logout), or sign out.
 ALWAYS_ALLOWED = frozenset({"pin_gate", "parent_lock", "logout"})

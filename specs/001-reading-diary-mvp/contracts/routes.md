@@ -38,6 +38,7 @@ Mode legend: **pub** = anonymous OK · **adult** = signed-in, adult mode · **ch
 | 18 | `/offline/`, `/manifest.webmanifest`, `/sw.js` | PWA | pub | Offline page, manifest, service worker (served at root scope) |
 | 19 | `/parinte/revino/` | `parent_return` | adult, child (POST only) | Explicit return to fixed adult dashboard with valid same-session short PIN verification; never replays another request |
 | 20 | `/parinte/blocheaza/` | `parent_lock` | adult, child (POST only) | Revoke verification and protect device in owned child mode, or logout if no safe child/PIN |
+| 21 | `/app/` | `pwa_launch` | pub (session-aware redirect) | Installed-PWA launch: anonymous → `/`, adult mode → `/panou/`, child mode → `/copil/` (middleware fails closed to the PIN gate for stale/deleted active children). Manifest `start_url`; `Cache-Control: private, no-store`. |
 
 "Current reader" = the adult's own reader in adult mode, or the active child's reader in child mode. **Routes 11–14 never take a reader ID from the URL or form**; a guardian views a child's data only via route 8 (read-only in P0).
 

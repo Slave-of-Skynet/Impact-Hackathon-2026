@@ -13,6 +13,7 @@ from . import child_views, pwa, views
 urlpatterns = [
     path("", views.home, name="home"),
     path("copil/", child_views.child_home, name="child_home"),
+    path("app/", pwa.pwa_launch, name="pwa_launch"),
     path("manifest.webmanifest", pwa.manifest_view, name="manifest"),
     path("sw.js", pwa.service_worker_view, name="sw"),
     path("offline/", pwa.offline_view, name="offline"),

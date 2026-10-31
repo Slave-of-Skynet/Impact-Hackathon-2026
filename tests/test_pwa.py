@@ -42,6 +42,7 @@ def test_pwa_url_reverses():
     assert reverse("manifest") == "/manifest.webmanifest"
     assert reverse("sw") == "/sw.js"
     assert reverse("offline") == "/offline/"
+    assert reverse("pwa_launch") == "/app/"
 
 
 def test_manifest_endpoint(client):
@@ -50,7 +51,9 @@ def test_manifest_endpoint(client):
     assert "application/manifest+json" in response["Content-Type"]
     manifest = json.loads(response.content.decode("utf-8"))
     assert manifest["name"] == "Gustul Cărților"
-    assert manifest["start_url"] == "/copil/"
+    # Identity stays /copil/ (existing installs); launch goes through the dispatcher.
+    assert manifest["id"] == "/copil/"
+    assert manifest["start_url"] == "/app/"
     assert manifest["scope"] == "/"
     assert manifest["display"] == "standalone"
     assert len(manifest["icons"]) >= 2
@@ -194,9 +197,10 @@ def test_manifest_installability_fields(client):
     """Chrome installability contract: stable identity, standalone display, PNG 192/512 any+maskable."""
     response = client.get("/manifest.webmanifest")
     manifest = json.loads(response.content.decode("utf-8"))
-    # Identity and start_url must not drift: existing installs key on them.
+    # Identity must not drift (existing installs key on it); start_url is the
+    # session-aware launch dispatcher, never a route that can 403 a signed-in adult.
     assert manifest["id"] == "/copil/"
-    assert manifest["start_url"] == "/copil/"
+    assert manifest["start_url"] == "/app/"
     assert manifest["scope"] == "/"
     assert manifest["display"] == "standalone"
     assert manifest["theme_color"] == "#3B82F6"
@@ -204,6 +208,64 @@ def test_manifest_installability_fields(client):
     assert ("192x192", "image/png", "any") in entries
     assert ("512x512", "image/png", "any") in entries
     assert ("512x512", "image/png", "maskable") in entries
+
+
+def test_launch_anonymous_gets_public_landing(client):
+    """P0 acceptance: the manifest start_url must open a usable public entry, not 403/500/loop."""
+    resp = client.get("/app/")
+    assert resp.status_code == 302
+    assert resp["Location"] == "/"
+    landing = client.get(resp["Location"])
+    assert landing.status_code == 200
+
+
+def test_launch_adult_mode_gets_own_dashboard(adult_client):
+    """Signed-in adult launching the app lands on /panou/, never the forbidden child home."""
+    resp = adult_client.get("/app/")
+    assert resp.status_code == 302
+    assert resp["Location"] == "/panou/"
+    dashboard = adult_client.get(resp["Location"])
+    assert dashboard.status_code == 200
+
+
+def test_launch_child_mode_gets_child_home(child_session):
+    """Valid owned child session launches straight into real child content."""
+    client, guardian, child = child_session
+    resp = client.get("/app/")
+    assert resp.status_code == 302
+    assert resp["Location"] == "/copil/"
+    home = client.get(resp["Location"])
+    assert home.status_code == 200
+    assert "Matei" in home.content.decode()  # real child content, not the adult dashboard
+
+
+def test_launch_with_stale_child_fails_closed_to_pin_gate(child_session):
+    """Stale/deleted active child: middleware PIN gate, no adult dashboard and no leakage."""
+    client, guardian, child = child_session
+    session = client.session
+    session["active_child"] = "00000000-0000-0000-0000-000000000000"
+    session.save()
+    resp = client.get("/app/")
+    assert resp.status_code == 302
+    assert resp["Location"] == "/parinte/"
+    gate = client.get(resp["Location"])
+    assert gate.status_code == 200
+    gate_html = gate.content.decode()
+    assert "Zonă pentru părinți" in gate_html  # the PIN gate renders, recovery path intact
+    assert "Raftul meu" not in gate_html  # no adult-only navigation or data leaks
+
+
+def test_launch_response_is_no_store(client):
+    """The dispatch depends on the session cookie: the redirect itself must never be cached."""
+    resp = client.get("/app/")
+    assert "no-store" in resp["Cache-Control"]
+    assert "private" in resp["Cache-Control"]
+
+
+def test_direct_child_home_stays_403_for_adult_mode(adult_client):
+    """Fail-closed invariant kept untouched: /copil/ directly still forbids adult-mode sessions."""
+    resp = adult_client.get("/copil/")
+    assert resp.status_code == 403
 
 
 def test_sw_never_caches_private_html(client):

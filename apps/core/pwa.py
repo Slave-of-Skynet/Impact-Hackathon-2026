@@ -6,13 +6,17 @@ Provides:
 - /manifest.webmanifest: Web App Manifest with correct MIME type
 - /sw.js: Service Worker served at root scope with Service-Worker-Allowed: /
 - /offline/: Static unauthenticated offline fallback page
+- /app/: Installed-PWA launch dispatcher (P0 fix, review of issue #58)
 """
 
 from pathlib import Path
 from django.conf import settings
 from django.http import HttpResponse
-from django.shortcuts import render
+from django.shortcuts import redirect, render
+from django.urls import reverse
 from django.views.decorators.http import require_GET
+
+from apps.accounts.authz import is_child_mode
 
 from .mascot import get_mascot_line
 
@@ -59,4 +63,30 @@ def offline_view(request):
     }
     response = render(request, "child/offline.html", context)
     response["Cache-Control"] = "public, max-age=3600"
+    return response
+
+
+@require_GET
+def pwa_launch(request):
+    """Installed-PWA launch dispatcher (P0 fix for issue #58).
+
+    The manifest start_url points here so a tapped app icon never lands on a
+    route that would 403 or redirect-loop. Dispatch uses only existing session
+    state; every authorization decision stays with ChildModeMiddleware:
+
+    - anonymous -> public landing (login/registration CTAs);
+    - authenticated adult in adult mode -> own dashboard /panou/;
+    - child mode -> /copil/, which the middleware serves only for a valid owned
+      active child and fails closed to the PIN gate for stale/deleted/foreign
+      ones. No adult data can leak through this route.
+    """
+    if not request.user.is_authenticated:
+        target = reverse("home")
+    elif is_child_mode(request):
+        target = reverse("child_home")
+    else:
+        target = reverse("adult_dashboard")
+    response = redirect(target)
+    # The redirect target depends on the session cookie: never cache it.
+    response["Cache-Control"] = "private, no-store, must-revalidate"
     return response
