@@ -150,6 +150,7 @@
             hx-post="/raft/{{ entry.public_id }}/evaluare/"
             hx-target="#adult-rating-error-box"
             hx-swap="innerHTML"
+            hx-on::after-swap="document.getElementById('adult-rating-error-box').style.display='block';"
             hx-on::response-error="document.getElementById('adult-rating-error-box').style.display='block'; document.getElementById('adult-rating-error-box').innerText=event.detail.xhr.responseText;">
         {% csrf_token %}
         <div class="adult-stars-group" role="radiogroup" aria-label="{% translate 'Evaluare de la 1 la 5 stele' %}">
