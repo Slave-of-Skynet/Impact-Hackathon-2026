@@ -7,7 +7,7 @@ al familiei, iar membrii clubului deblochează activități speciale printr-un c
 - **Cine:** familii cu copii (7–15 ani) și cluburile de lectură care le însoțesc.
 - **De ce:** lectura copilului merită urmărită cu blândețe — fără presiune, cu insigni și cu părintele
   mereu în câmp vizual, iar clubul de lectură rămâne conectat la familii.
-- **Cum:** o singură aplicație web (instalabilă ca PWA) în limba română, cu mod copil protejat de PIN.
+- **Cum:** o singură aplicație web în limba română, cu mod copil și suport PWA (instalarea pe Android este încă **NOT VERIFIED**).
 
 > [!NOTE]
 > **Stack aprobat de echipă (G7, 2026-10-30):** Django 5.2 LTS + HTMX 2.x + PWA instalabilă, Python 3.12.
@@ -19,14 +19,14 @@ al familiei, iar membrii clubului deblochează activități speciale printr-un c
 - **Aplicația live:** <https://gustul-cartilor.onrender.com>
   - **Conectare:** [`/cont/intrare/`](https://gustul-cartilor.onrender.com/cont/intrare/)
   - **Catalog public:** [`/carti/`](https://gustul-cartilor.onrender.com/carti/)
-  - Pagina de landing `/` este reparate în [PR #51](https://github.com/Slave-of-Skynet/Impact-Hackathon-2026/pull/51);
-    devine disponibilă pe host doar după merge + deploy automat. Până atunci, intrarea publică corectă este
+  - Ruta de landing `/` a fost adăugată în [PR #51](https://github.com/Slave-of-Skynet/Impact-Hackathon-2026/pull/51);
+    verificarea sa în browser pe host rămâne **NOT RUN** până la un smoke test real. Dacă `/` nu răspunde, intră direct la
     `/cont/intrare/` sau `/carti/`.
 - Conturi demo sintetice (`seed_demo`, toate fictive): `parinte1@demo.local` (părintele lui **Mia** și **Alex**),
   `parinte2@demo.local` (părinte fără copii), `cititor@demo.local` (cititor adult), `admin@demo.local` (staff).
   Parola și PIN-ul demo se setează la seed (variabilele `DEMO_PASSWORD` / `DEMO_PIN`); **nu se publică niciodată**.
 
-### Ce demostrează MVP-ul azi
+### Ce demonstrează MVP-ul azi
 
 - **Familie și copii:** părintele creează profiluri de copii (poreclă, vârstă, avatar) în contul său.
 - **Progres de lectură:** copilul alege o carte din catalog și salvează pagina curentă (ex. 35/120) —
