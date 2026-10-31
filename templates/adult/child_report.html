@@ -127,7 +127,7 @@
             <div class="achievement-content">
               <div class="achievement-title">{{ grant.title }}</div>
               <div class="achievement-desc">
-                {% translate "Obținută la" %}: {{ grant.granted_at|date:"d M Y" }}
+                {% translate "Obținută la" %}: {{ grant.granted_at|date:"d.m.Y" }}
                 {% if grant.members_only %} &middot; <span class="badge badge-primary">Club</span>{% endif %}
               </div>
             </div>
@@ -147,7 +147,7 @@
         <div style="display: flex; flex-direction: column; gap: var(--space-2); margin-bottom: var(--space-4);">
           {% for m in memberships %}
             <div style="font-size: var(--text-sm); display: flex; justify-content: space-between; align-items: center; padding: var(--space-2); background: var(--color-surface); border-radius: var(--radius-sm); border: 1px solid var(--color-border);">
-              <span>{% translate "Valabil până la" %}: {{ m.valid_until|date:"d M Y" }}</span>
+              <span>{% translate "Valabil până la" %}: {{ m.valid_until|date:"d.m.Y" }}</span>
               <span class="badge {% if m.status == 'active' and is_member %}badge-primary{% elif m.status == 'active' %}badge-accent{% else %}badge-outline{% endif %}">
                 {% if m.status == 'active' and is_member %}
                   ✓ {% translate "Activ" %}

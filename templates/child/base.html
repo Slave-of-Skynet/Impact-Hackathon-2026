@@ -1,4 +1,5 @@
-{% load static i18n %}
+{% load static i18n parent_session_tags %}
+{% parent_session_status as parent_access %}
 <!DOCTYPE html>
 <html lang="ro">
 <head>
@@ -35,13 +36,21 @@
         <span class="child-nickname">{{ child.nickname|default:"Copil" }}</span>
       </a>
 
+      {% if parent_access.can_return %}
+      <form action="{% url 'parent_return' %}" method="post">
+        {% csrf_token %}
+        <button type="submit" class="child-exit-btn" style="min-height:52px;font:inherit;cursor:pointer;">{% translate "Mod Părinte" %}</button>
+      </form>
+      {% else %}
       <a href="/parinte/" class="child-exit-btn" aria-label="Zonă pentru părinți">
         <span>🔒</span>
         <span>{% translate "Părinți" %}</span>
       </a>
+      {% endif %}
     </header>
 
     <main class="child-content" id="main-content">
+      {% include "accounts/_parent_session.html" %}
       {% block content %}{% endblock %}
     </main>
 

@@ -16,4 +16,6 @@ urlpatterns = [
     path("familie/<uuid:child>/sterge/", views.child_delete, name="child_delete"),
     path("familie/<uuid:child>/mod-copil/", views.child_mode_start, name="child_mode_start"),
     path("parinte/", views.pin_gate, name="pin_gate"),
+    path("parinte/revino/", views.parent_return, name="parent_return"),
+    path("parinte/blocheaza/", views.parent_lock, name="parent_lock"),
 ]
