@@ -124,6 +124,77 @@
         </p>
       </div>
     </div>
+
+    <!-- Adult Rating Card (Refs #62) -->
+    <div class="adult-rating-card">
+      <h3 style="font-size: var(--text-base); font-weight: var(--font-bold); margin-bottom: var(--space-2);">
+        ⭐ {% translate "Evaluarea ta pentru această carte" %}
+      </h3>
+
+      {% if personal_rating %}
+        <div style="display: flex; align-items: center; gap: var(--space-2); margin-bottom: var(--space-3); font-size: var(--text-sm); color: var(--color-success); font-weight: var(--font-semibold);">
+          <span>✓</span>
+          <span>{% translate "Ai evaluat cartea:" %} <strong>{{ personal_rating }}/5</strong> {% translate "stele" %}</span>
+        </div>
+        <p style="font-size: var(--text-xs); color: var(--color-text-muted); margin-bottom: var(--space-3);">
+          {% translate "Poți schimba nota oricând:" %}
+        </p>
+      {% else %}
+        <p style="font-size: var(--text-sm); color: var(--color-text-muted); margin-bottom: var(--space-3);">
+          {% translate "Acordă o notă de la 1 la 5 stele pentru a ține minte cât de mult ți-a plăcut." %}
+        </p>
+      {% endif %}
+
+      <form method="post"
+            action="/raft/{{ entry.public_id }}/evaluare/"
+            hx-post="/raft/{{ entry.public_id }}/evaluare/"
+            hx-target="#adult-rating-error-box"
+            hx-swap="innerHTML"
+            hx-on::response-error="document.getElementById('adult-rating-error-box').style.display='block'; document.getElementById('adult-rating-error-box').innerText=event.detail.xhr.responseText;">
+        {% csrf_token %}
+        <div class="adult-stars-group" role="radiogroup" aria-label="{% translate 'Evaluare de la 1 la 5 stele' %}">
+          <input type="radio" id="adult-star-5" name="rating" value="5" class="adult-star-input" {% if personal_rating == 5 %}checked{% endif %} required>
+          <label for="adult-star-5" class="adult-star-label" title="5 din 5 stele">
+            <span class="adult-star-icon" aria-hidden="true">★</span>
+            <span class="sr-only">5 {% translate "din 5 stele" %}</span>
+          </label>
+
+          <input type="radio" id="adult-star-4" name="rating" value="4" class="adult-star-input" {% if personal_rating == 4 %}checked{% endif %} required>
+          <label for="adult-star-4" class="adult-star-label" title="4 din 5 stele">
+            <span class="adult-star-icon" aria-hidden="true">★</span>
+            <span class="sr-only">4 {% translate "din 5 stele" %}</span>
+          </label>
+
+          <input type="radio" id="adult-star-3" name="rating" value="3" class="adult-star-input" {% if personal_rating == 3 %}checked{% endif %} required>
+          <label for="adult-star-3" class="adult-star-label" title="3 din 5 stele">
+            <span class="adult-star-icon" aria-hidden="true">★</span>
+            <span class="sr-only">3 {% translate "din 5 stele" %}</span>
+          </label>
+
+          <input type="radio" id="adult-star-2" name="rating" value="2" class="adult-star-input" {% if personal_rating == 2 %}checked{% endif %} required>
+          <label for="adult-star-2" class="adult-star-label" title="2 din 5 stele">
+            <span class="adult-star-icon" aria-hidden="true">★</span>
+            <span class="sr-only">2 {% translate "din 5 stele" %}</span>
+          </label>
+
+          <input type="radio" id="adult-star-1" name="rating" value="1" class="adult-star-input" {% if personal_rating == 1 %}checked{% endif %} required>
+          <label for="adult-star-1" class="adult-star-label" title="1 din 5 stele">
+            <span class="adult-star-icon" aria-hidden="true">★</span>
+            <span class="sr-only">1 {% translate "din 5 stele" %}</span>
+          </label>
+        </div>
+
+        <div id="adult-rating-error-box" class="alert alert-error" style="display: none; margin-top: var(--space-3);" role="alert"></div>
+
+        <div style="margin-top: var(--space-3);">
+          <button type="submit" class="btn btn-primary btn-sm">
+            <span>⭐</span>
+            <span>{% if personal_rating %}{% translate "Actualizează evaluarea" %}{% else %}{% translate "Salvează evaluarea" %}{% endif %}</span>
+          </button>
+        </div>
+      </form>
+    </div>
+
   {% endif %}
   {% if entry.status == 'finished' %}
     <a href="{% url 'book_reflection' entry.public_id %}" class="btn btn-primary" style="min-height:52px;margin-top:16px;white-space:normal;">Gânduri despre carte</a>

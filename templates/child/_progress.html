@@ -53,6 +53,72 @@
         <span>{% translate "Alege următoarea carte" %}</span>
       </a>
     </div>
+
+    <!-- Rating Card (Refs #62) -->
+    <section class="child-rating-card" style="margin-top: 14px;" aria-labelledby="rating-heading">
+      <h3 id="rating-heading" class="child-rating-title">
+        ⭐ {% translate "Cum ți s-a părut această carte?" %}
+      </h3>
+
+      {% if personal_rating %}
+        <div class="child-rating-badge" role="status">
+          <span>✨</span>
+          <span>{% translate "Ai evaluat cartea:" %} <strong>{{ personal_rating }}/5</strong></span>
+        </div>
+        <p class="child-rating-hint">{% translate "Poți schimba nota oricând:" %}</p>
+      {% else %}
+        <p class="child-rating-hint">{% translate "Alege câte stele merită (1 = puțin, 5 = genială!):" %}</p>
+      {% endif %}
+
+      <form method="post"
+            action="/raft/{{ entry.public_id }}/evaluare/"
+            hx-post="/raft/{{ entry.public_id }}/evaluare/"
+            hx-target="#rating-error-box"
+            hx-swap="innerHTML"
+            hx-on::response-error="document.getElementById('rating-error-box').style.display='block'; document.getElementById('rating-error-box').innerText=event.detail.xhr.responseText;"
+            style="display: flex; flex-direction: column; align-items: center; gap: 10px;">
+        {% csrf_token %}
+        <div class="child-stars-group" role="radiogroup" aria-label="{% translate 'Evaluare de la 1 la 5 stele' %}">
+          <input type="radio" id="star-5" name="rating" value="5" class="child-star-input" {% if personal_rating == 5 %}checked{% endif %} required>
+          <label for="star-5" class="child-star-label" title="5 din 5 stele">
+            <span class="child-star-icon" aria-hidden="true">★</span>
+            <span class="sr-only">5 {% translate "din 5 stele" %}</span>
+          </label>
+
+          <input type="radio" id="star-4" name="rating" value="4" class="child-star-input" {% if personal_rating == 4 %}checked{% endif %} required>
+          <label for="star-4" class="child-star-label" title="4 din 5 stele">
+            <span class="child-star-icon" aria-hidden="true">★</span>
+            <span class="sr-only">4 {% translate "din 5 stele" %}</span>
+          </label>
+
+          <input type="radio" id="star-3" name="rating" value="3" class="child-star-input" {% if personal_rating == 3 %}checked{% endif %} required>
+          <label for="star-3" class="child-star-label" title="3 din 5 stele">
+            <span class="child-star-icon" aria-hidden="true">★</span>
+            <span class="sr-only">3 {% translate "din 5 stele" %}</span>
+          </label>
+
+          <input type="radio" id="star-2" name="rating" value="2" class="child-star-input" {% if personal_rating == 2 %}checked{% endif %} required>
+          <label for="star-2" class="child-star-label" title="2 din 5 stele">
+            <span class="child-star-icon" aria-hidden="true">★</span>
+            <span class="sr-only">2 {% translate "din 5 stele" %}</span>
+          </label>
+
+          <input type="radio" id="star-1" name="rating" value="1" class="child-star-input" {% if personal_rating == 1 %}checked{% endif %} required>
+          <label for="star-1" class="child-star-label" title="1 din 5 stele">
+            <span class="child-star-icon" aria-hidden="true">★</span>
+            <span class="sr-only">1 {% translate "din 5 stele" %}</span>
+          </label>
+        </div>
+
+        <div id="rating-error-box" class="child-alert-error" style="display: none; width: 100%;" role="alert"></div>
+
+        <button type="submit" class="btn-child btn-child-primary" style="width: 100%; margin-top: 6px;">
+          <span>⭐</span>
+          <span>{% if personal_rating %}{% translate "Actualizează evaluarea" %}{% else %}{% translate "Salvează evaluarea" %}{% endif %}</span>
+        </button>
+      </form>
+    </section>
+
   {% else %}
     <!-- Progress update form -->
     <form action="/raft/{{ entry.public_id }}/progres/"

@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load i18n %}
+{% load i18n library_tags %}
 
 {% block title %}{% translate "Raftul meu de cărți — Gustul Cărților" %}{% endblock %}
 
@@ -59,7 +59,13 @@
               <span>{{ entry.current_page }} / {{ entry.page_count }} pag.</span>
               <span>
                 {% if entry.status == 'finished' %}
-                  <strong style="color: var(--color-success);">✓ {% translate "Gata" %}</strong>
+                  {% with pr=personal_ratings|get_personal_rating:entry.book.public_id %}
+                    {% if pr %}
+                      <span class="adult-rating-badge" style="font-size: 0.75rem;">⭐ {{ pr }}/5</span>
+                    {% else %}
+                      <strong style="color: var(--color-success);">✓ {% translate "Gata" %}</strong>
+                    {% endif %}
+                  {% endwith %}
                 {% else %}
                   {{ entry.percent }}%
                 {% endif %}

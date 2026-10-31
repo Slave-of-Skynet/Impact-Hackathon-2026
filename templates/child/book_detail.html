@@ -1,5 +1,5 @@
 {% extends "child/base.html" %}
-{% load static i18n %}
+{% load static i18n library_tags %}
 
 {% block title %}Gustul Cărților — {{ book.title }}{% endblock %}
 
@@ -20,7 +20,7 @@
     <h1 style="font-size: 1.4rem; font-weight: 800; margin-top: 14px;">{{ book.title }}</h1>
     <p style="font-size: 1.1rem; color: var(--child-text-muted); margin-top: 4px;">{{ book.author }}</p>
 
-    <div style="display: flex; gap: 10px; margin-top: 12px; flex-wrap: wrap; justify-content: center;">
+    <div style="display: flex; gap: 10px; margin-top: 12px; flex-wrap: wrap; justify-content: center; align-items: center;">
       <span class="child-filter-chip">📄 {{ book.page_count }} {% translate "pagini" %}</span>
       {% if book.age_band %}
         <span class="child-filter-chip">🎯 {{ book.age_band }} {% translate "ani" %}</span>
@@ -28,6 +28,17 @@
       {% if book.genre %}
         <span class="child-filter-chip">✨ {{ book.genre }}</span>
       {% endif %}
+      {% with r=book_ratings|get_rating:book.public_id %}
+        {% if r and r.count and r.count >= 3 %}
+          <span class="rating-pill" style="font-size: 0.95rem; padding: 6px 12px;" aria-label="{% blocktranslate with avg=r.average|format_avg cnt=r.count %}Evaluare: {{ avg }} din 5 stele, {{ cnt }} evaluări{% endblocktranslate %}">
+            ⭐ {{ r.average|format_avg }} ({{ r.count }} {% translate "evaluări" %})
+          </span>
+        {% else %}
+          <span class="rating-pill-empty" style="font-size: 0.9rem;" title="{% translate 'Minim 3 evaluări necesare' %}">
+            {% translate 'Fără evaluări' %}
+          </span>
+        {% endif %}
+      {% endwith %}
     </div>
 
     <!-- Action area: Add to shelf (POST with redirect to entry) or Open entry -->

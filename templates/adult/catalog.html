@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load i18n %}
+{% load i18n library_tags %}
 
 {% block title %}{% translate "Catalog de Cărți — Gustul Cărților" %}{% endblock %}
 
@@ -66,6 +66,17 @@
               <span class="badge badge-accent">{{ b.age_band }} {% translate "ani" %}</span>
             {% endif %}
             <span class="badge">{{ b.page_count }} {% translate "pag." %}</span>
+            {% with r=book_ratings|get_rating:b.public_id %}
+              {% if r and r.count and r.count >= 3 %}
+                <span class="adult-rating-badge" title="{% blocktranslate with avg=r.average|format_avg cnt=r.count %}Evaluare: {{ avg }} din 5 ({{ cnt }} evaluări){% endblocktranslate %}">
+                  ★ {{ r.average|format_avg }} ({{ r.count }})
+                </span>
+              {% else %}
+                <span class="adult-rating-empty" title="{% translate 'Minim 3 evaluări necesare' %}">
+                  {% translate "Fără evaluări" %}
+                </span>
+              {% endif %}
+            {% endwith %}
           </div>
 
           <div style="margin-top: var(--space-3);">
