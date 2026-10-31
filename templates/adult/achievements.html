@@ -26,7 +26,7 @@
           <div class="achievement-content">
             <div class="achievement-title">{{ g.title }}</div>
             <div class="achievement-desc">
-              {% translate "Deblocată la" %}: {{ g.granted_at|date:"d M Y" }}
+              {% translate "Deblocată la" %}: {{ g.granted_at|date:"d.m.Y" }}
             </div>
             {% if g.members_only %}
               <div style="margin-top: 4px;">

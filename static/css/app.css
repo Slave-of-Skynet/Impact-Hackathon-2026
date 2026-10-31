@@ -202,9 +202,6 @@ a:hover {
   text-decoration: none;
   white-space: nowrap;
 }
-.brand-icon {
-  font-size: 1.5rem;
-}
 .nav-menu {
   display: flex;
   align-items: center;

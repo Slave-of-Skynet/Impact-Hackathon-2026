@@ -1,5 +1,5 @@
 {% extends "child/base.html" %}
-{% load static i18n %}
+{% load static i18n library_extras %}
 
 {% block title %}Gustul Cărților — {{ book.title }}{% endblock %}
 
@@ -26,7 +26,7 @@
         <span class="child-filter-chip">🎯 {{ book.age_band }} {% translate "ani" %}</span>
       {% endif %}
       {% if book.genre %}
-        <span class="child-filter-chip">✨ {{ book.genre }}</span>
+        <span class="child-filter-chip">✨ {{ book.genre|genre_label }}</span>
       {% endif %}
     </div>
 

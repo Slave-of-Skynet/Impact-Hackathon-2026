@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load i18n %}
+{% load i18n library_extras %}
 
 {% block title %}{{ book.title }} — Gustul Cărților{% endblock %}
 
@@ -25,7 +25,7 @@
         {% if book.age_band %}
           <span class="badge badge-accent">{{ book.age_band }} {% translate "ani" %}</span>
         {% endif %}
-        <span class="badge badge-primary">{{ book.genre }}</span>
+        <span class="badge badge-primary">{{ book.genre|genre_label }}</span>
         <span class="badge">{{ book.page_count }} {% translate "pagini" %}</span>
       </div>
 

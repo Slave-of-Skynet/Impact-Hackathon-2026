@@ -3,7 +3,7 @@ from uuid import UUID
 
 from django.conf import settings
 from django.db import connection
-from django.http import Http404, JsonResponse
+from django.http import Http404, HttpResponse, JsonResponse
 from django.shortcuts import render
 from django.template import TemplateDoesNotExist
 from django.views.decorators.http import require_GET
@@ -80,3 +80,18 @@ def template_preview(request, template_name):
         return render(request, template_name, _sample_context())
     except TemplateDoesNotExist:
         raise Http404
+
+
+def csrf_failure(request, reason="", template_name="403.html"):
+    """Branded Romanian replacement for Django's default CSRF failure page (issue #73).
+
+    The HTTP status stays 403 and CSRF protection itself is untouched; `reason` is
+    deliberately not rendered because it can contain technical detail. Error pages
+    must never raise themselves: when the branded template cannot load (e.g. test
+    sandboxes that restrict template loaders), fall back to a minimal 403 body.
+    """
+    try:
+        return render(request, template_name, status=403)
+    except Exception:
+        return HttpResponse("403 — Acces interzis.", status=403,
+                            content_type="text/plain; charset=utf-8")

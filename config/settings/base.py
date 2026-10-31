@@ -53,6 +53,9 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = "config.urls"
+
+# Branded Romanian CSRF failure page (issue #73); status stays 403, protection unchanged.
+CSRF_FAILURE_VIEW = "apps.core.views.csrf_failure"
 WSGI_APPLICATION = "config.wsgi.application"
 
 TEMPLATES = [
@@ -95,7 +98,13 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 LANGUAGE_CODE = "ro"
-LANGUAGES = [("ro", "Română"), ("ru", "Русский")]
+# MVP language policy (issue #73): the rendered UI is Romanian-only. With "ru" offered
+# here, LocaleMiddleware activated Russian for browsers sending Accept-Language: ru,
+# flipping locale-sensitive rendering (month names via |date:"d M Y"/"E", Django's own
+# validation strings) to Russian while template literals stayed Romanian. Russian
+# support returns together with a full translation and an explicit in-app switcher;
+# Account.ui_language / ChildProfile.ui_language are kept untouched for that future.
+LANGUAGES = [("ro", "Română")]
 LOCALE_PATHS = [BASE_DIR / "locale"]
 TIME_ZONE = "Europe/Chisinau"
 USE_I18N = True
