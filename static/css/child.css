@@ -5,29 +5,29 @@
    ========================================================================== */
 
 :root {
-  /* Child theme color palette */
-  --child-bg: #F8FAFC;
+  /* Child theme color palette — Warm Storybook Kids (Refs #61) */
+  --child-bg: #F7F4EE;
   --child-surface: #FFFFFF;
-  --child-surface-subtle: #F1F5F9;
+  --child-surface-subtle: #EFE9DD;
 
-  --child-primary: #2563EB;
-  --child-primary-hover: #1D4ED8;
-  --child-primary-active: #1E40AF;
-  --child-primary-light: #EFF6FF;
+  --child-primary: #3548B8;
+  --child-primary-hover: #283896;
+  --child-primary-active: #1F2D78;
+  --child-primary-light: #EEF2FF;
 
-  --child-success: #16A34A;
-  --child-success-hover: #15803D;
-  --child-success-light: #F0FDF4;
+  --child-success: #0D8268;
+  --child-success-hover: #0A6B55;
+  --child-success-light: #E6F7F2;
 
-  --child-accent: #F59E0B;
+  --child-accent: #D97706;
   --child-accent-light: #FEF3C7;
 
-  --child-danger: #DC2626;
-  --child-danger-light: #FEF2F2;
+  --child-danger: #BE123C;
+  --child-danger-light: #FFE4E6;
 
-  --child-text: #0F172A;
-  --child-text-muted: #475569;
-  --child-border: #E2E8F0;
+  --child-text: #1A2035;
+  --child-text-muted: #4E5569;
+  --child-border: #E5DDD0;
 
   /* Touch & sizing standards (Child-friendly ergonomics) */
   --tap-min-size: 48px;
@@ -40,7 +40,7 @@
   --font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
   --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
-  --shadow-lg: 0 10px 25px rgba(37, 99, 235, 0.12);
+  --shadow-lg: 0 10px 25px rgba(53, 72, 184, 0.12);
 }
 
 /* Reset & Box Sizing */
@@ -368,7 +368,7 @@ body {
 .btn-child-primary {
   background: var(--child-primary);
   color: #FFFFFF;
-  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.3);
+  box-shadow: 0 4px 14px rgba(53, 72, 184, 0.28);
 }
 
 .btn-child-primary:hover {
@@ -378,7 +378,7 @@ body {
 .btn-child-success {
   background: var(--child-success);
   color: #FFFFFF;
-  box-shadow: 0 4px 14px rgba(22, 163, 74, 0.3);
+  box-shadow: 0 4px 14px rgba(13, 130, 104, 0.28);
 }
 
 .btn-child-success:hover {
@@ -706,5 +706,15 @@ body {
   to {
     transform: translate(-50%, 0);
     opacity: 1;
+  }
+}
+
+/* Accessibility: prefers-reduced-motion (Refs #61) */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }

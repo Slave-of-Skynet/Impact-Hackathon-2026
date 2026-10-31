@@ -317,3 +317,46 @@ def test_anonymous_catalog_and_detail_cta():
     })
     assert "Conectează-te pentru a adăuga pe raft" in html
     assert f"/carti/{book.public_id}/adauga/" not in html
+
+
+# ==============================================================================
+# 6. Issue #61: Login/Password Placeholders & Auth form integrity
+# ==============================================================================
+
+@pytest.mark.django_db
+def test_login_placeholders_and_form_contract(client: Client):
+    """Verify login form renders Login and Password placeholders without leaking password (Refs #61)."""
+    response = client.get("/cont/intrare/")
+    assert response.status_code == 200
+    content = response.content.decode("utf-8")
+
+    # 1. Placeholders
+    assert 'placeholder="Login"' in content
+    assert 'placeholder="Password"' in content
+    assert 'placeholder="exemplu@familie.ro"' not in content
+    assert 'placeholder="••••••••"' not in content
+
+    # 2. Visible labels preserved
+    assert "Adresă email" in content
+    assert "Parolă" in content
+
+    # 3. Input attributes and CSRF
+    assert 'name="username"' in content
+    assert 'type="email"' in content
+    assert 'name="password"' in content
+    assert 'type="password"' in content
+    assert 'autocomplete="email"' in content
+    assert 'autocomplete="current-password"' in content
+    assert 'csrfmiddlewaretoken' in content
+
+    # 4. Failed login does not restore/leak password
+    post_resp = client.post("/cont/intrare/", {
+        "username": "test@familie.ro",
+        "password": "wrong-secret-password-12345",
+    })
+    assert post_resp.status_code in (200, 422)
+    post_content = post_resp.content.decode("utf-8")
+    assert "wrong-secret-password-12345" not in post_content
+    assert 'placeholder="Login"' in post_content
+    assert 'placeholder="Password"' in post_content
+    assert 'value="test@familie.ro"' in post_content
