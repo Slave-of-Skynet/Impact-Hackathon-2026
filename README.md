@@ -14,7 +14,7 @@ liberă, direct din browser. Prima încărcare după o pauză poate dura ~30 s (
 
 | Mod copil — acasă | Momentul de lectură |
 |---|---|
-| <img src="docs/demo/screenshots/readme-89/01-child-home-mobile-390.png" alt="Modul copil: mascota Gusti, seria „3 zile consecutive", cartea curentă 35/120 (29%)" width="270"> | <img src="docs/demo/screenshots/readme-89/02-child-progress-saved-mobile-390.png" alt="Copilul salvează pagina 35 din 120; mascota felicită: „Bravo! Ai ajuns la pagina 35."" width="270"> |
+| <img src="docs/demo/screenshots/readme-89/01-child-home-mobile-390.png" alt="Modul copil: mascota Gusti, seria de 3 zile consecutive, cartea curentă 35 din 120, 29 la sută" width="270"> | <img src="docs/demo/screenshots/readme-89/02-child-progress-saved-mobile-390.png" alt="Copilul salvează pagina 35 din 120, iar mascota felicită: Bravo, ai ajuns la pagina 35" width="270"> |
 
 *Capturi locale cu date sintetice — proveniența completă în [`docs/demo/screenshots/readme-89/`](docs/demo/screenshots/readme-89/README.md).*
 
@@ -30,7 +30,7 @@ Catalogul de cărți e [public](https://gustul-cartilor.onrender.com/carti/) —
 
 ## Cum arată raportul părintelui
 
-<img src="docs/demo/screenshots/readme-89/03-parent-dashboard-desktop.png" alt="Panoul părintelui: cardul Miei cu 35 de pagini citite, seria de 3 zile și cartea curentă 35/120 (29%); Alex fără lectură" width="720">
+<img src="docs/demo/screenshots/readme-89/03-parent-dashboard-desktop.png" alt="Panoul părintelui: cardul Miei cu 35 de pagini citite, seria de 3 zile consecutive și cartea curentă 35 din 120, 29 la sută; Alex fără lectură" width="720">
 
 *Același progres (35/120, 29%) și seria de zile, vizibile imediat în sesiunea separată a părintelui.*
 
