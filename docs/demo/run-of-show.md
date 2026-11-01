@@ -1,8 +1,22 @@
-# Run of show — demonstrația live (2–3 minute)
+# Run of show — repetiția funcțională extinsă + felia de scenă
 
-Pereche cu [`pitch-ro.md`](pitch-ro.md) (ce se spune) și [`staging-and-recovery.md`](staging-and-recovery.md)
-(pregătirea, codurile, recuperarea). **Verificat de E2E**: același traseu rulează automat în
-`tests/test_demo_flow.py::test_guardian_child_reading_report_finish_and_real_club` (CI verde pe `main@3f2bb62`).
+Pereche cu [`pitch-ro.md`](pitch-ro.md) (pitch-ul de juriu **4:00**) și
+[`staging-and-recovery.md`](staging-and-recovery.md) (pregătirea, codurile, recuperarea).
+
+**Două artifacte distincte — nu le confunda:**
+1. **Felia de scenă (în pitch-ul de 4:00, secțiunile 3–4):** doar **B copil salvează 35/120 → A adult
+   actualizează și vede 35/120**, din sesiuni pregătite înainte. ~75 s în total.
+2. **Repetiția funcțională extinsă (acest document):** traseul complet cu 9 pași, pentru repetiții și
+   Q&A — **nu** se încearcă pe scenă în cele 75 s. Același traseu rulează automat în
+   `tests/test_demo_flow.py::test_guardian_child_reading_report_finish_and_real_club`
+   (CI verde pe `main@28b7030`: [579 passed, 4 skipped](https://github.com/Slave-of-Skynet/Impact-Hackathon-2026/actions/runs/41205782111)).
+
+> **Verificat live pe hostul public (01.11.2026, cont sintetic de verificare):** înregistrare cont prin UI,
+> adăugare copii, setare PIN, intrare în mod copil, adăugare „Capra cu trei iezi" (120 pag.), salvare 35/120,
+> vizibilitate în sesiunea adult independentă, terminare + insigne + 4 întrebări private + evaluare 5/5 +
+> „1 zi consecutivă", PIN greșit → refuz, fereastră de încredere 30 min, Blocare explicită, `/clubul-meu/`
+> → 403 pentru non-membru. Detalii: [`acceptance-ledger.md`](acceptance-ledger.md). Răscumpărarea codului de
+> club pe host rămâne `NOT RUN` (necesită cod emis de staff).
 
 ## Pregătit ÎNAINTE de scenă (obligatoriu)
 
@@ -12,9 +26,9 @@ Pereche cu [`pitch-ro.md`](pitch-ro.md) (ce se spune) și [`staging-and-recovery
 2. Starea raftului copilului demo este verificată conform [`staging-and-recovery.md`](staging-and-recovery.md).
 3. Hostul este „încălzit" (un `GET /carti/` cu 1–2 minute înainte — serviciul gratuit doarme după 15 min
    de inactivitate; măsoară trezirea reală, nu o presupune).
-4. Două **profiluri de browser separate** pe același laptop (sau laptop + telefon), AUTENTIFICATE INDEPENDENT cu **același cont guardian** `parinte1@demo.local`: **A = „Părinte”**, rămas în modul adult pe `/panou/`; **B = „Copil”**, autentificat separat, inițial în modul adult, pregătit să intre în `mod-copil` pentru Mia. Verifică distincte cookie-uri/sesiuni; nu două tab-uri în același profil. Dacă B nu e autentificat, pasul 2 NU funcționează; dacă A intră în mod copil, pasul 5 NU poate citi raportul părintelui. Pentru prezentarea de 3 minute pregătește ambele sesiuni ÎNAINTE de cronometru.
+4. Două **profiluri de browser separate** pe același laptop (sau laptop + telefon), AUTENTIFICATE INDEPENDENT cu **același cont guardian** (cont demo sintetic sau cont guardian creat prin UI înainte de scenă — vezi [`staging-and-recovery.md`](staging-and-recovery.md)): **A = „Părinte”**, rămas în modul adult pe `/panou/`; **B = „Copil”**, autentificat separat, inițial în modul adult, pregătit să intre în `mod-copil` pentru copilul demo. Verifică distincte cookie-uri/sesiuni; nu două tab-uri în același profil. Dacă B nu e autentificat, pasul 2 NU funcționează; dacă A intră în mod copil, pasul 5 NU poate citi raportul părintelui. Pregătește ambele sesiuni ÎNAINTE de cronometru.
 
-## Traseul principal (țintă 2:30)
+## Traseul principal — repetiția extinsă (țintă 2:30; NU este pitch-ul de 4:00)
 
 | # | Timp | Fereastra | Acțiune exactă | Rezultat așteptat |
 |---|---|---|---|---|
@@ -28,7 +42,7 @@ Pereche cu [`pitch-ro.md`](pitch-ro.md) (ce se spune) și [`staging-and-recovery
 | 8 | 2:00–2:15 | Părinte **A** | `/club/cod/` → copil: **Mia**, un cod unic preemis de staff (nu proiecta plaintext-ul) | Confirmare „Membru al clubului până la …”; codul este consumat o singură dată |
 | 9 | 2:15–2:35 | Adult **B** → copil **B** | Din B, repetă pasul 2 → `/clubul-meu/` → `/realizari/` | Activități member-only; `club-reader` depinde de finish + membership și reevaluarea efectivă a regulilor |
 
-**Atenție la timp:** pașii 1–9 sunt varianta EXTINSĂ de ~2:35 doar pentru demo/repetiție, fără întregul pitch verbal. În pitch-ul TOTAL de 3:00 (`pitch-ro.md`) segmentul 1:00–1:55 arată numai **B salvează 35/120 → A vede 35/120** din stări pregătite; finish/insigne/cod sunt explicate sau arătate separat dacă timpul permite. Măsoară timpul real, nu presupune că toate nouă acțiuni încap în 55 s. Pasul 5 este dovada centrală de cross-session (nu de redeploy).
+**Atenție la timp:** pașii 1–9 sunt varianta EXTINSĂ de ~2:35 doar pentru demo/repetiție, fără întregul pitch verbal. În pitch-ul TOTAL de **4:00** (`pitch-ro.md`) secțiunile 3–4 (0:40–1:55) arată numai **B salvează 35/120 → A vede 35/120** din stări pregătite; finish/insigne/cod sunt explicate sau arătate în repetiția extinsă / Q&A, nu pe scenă. Măsoară timpul real, nu presupune că toate nouă acțiuni încap în 75 s. Pasul 5 este dovada centrală de cross-session (nu de redeploy).
 
 ## Traseul rapid de rezervă (~1:00, dacă ceva se blochează)
 

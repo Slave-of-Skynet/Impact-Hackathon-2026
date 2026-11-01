@@ -1,10 +1,13 @@
 # Quickstart, demo script and verification plan
 
-> **Status (2026-10-31, updated against `main@3f2bb62`):** the MVP is implemented and merged; CI on
-> `main` reports [374 passed, 4 skipped, 0 failed](https://github.com/Slave-of-Skynet/Impact-Hackathon-2026/actions/runs/41153120922)
+> **Status (2026-11-01, updated against `main@28b7030`):** the MVP is implemented and merged; CI on
+> `main` reports [579 passed, 4 skipped, 0 failed](https://github.com/Slave-of-Skynet/Impact-Hackathon-2026/actions/runs/41205782111)
 > (Ubuntu). The automated tests named in §3 exist and run in CI; their names evolved since this file was
-> written — `tests/` is the source of truth. The **manual** column of §3 and all device/browser/host
-> checks remain **NOT RUN** and are tracked in [`docs/demo/acceptance-ledger.md`](../../docs/demo/acceptance-ledger.md).
+> written — `tests/` is the source of truth. The **manual** column of §3 is partially executed on the
+> public host (2026-11-01: two-session 35/120, child finish→reflections→rating flow, PIN/trust/Lock,
+> non-member 403 — see [`docs/demo/acceptance-ledger.md`](../../docs/demo/acceptance-ledger.md)); the
+> remaining rows (physical Android, club code on host, back/bfcache second browser, session-expiry manual)
+> stay **NOT RUN** and are tracked in the ledger.
 
 ## 1. Local setup (works today)
 
