@@ -230,9 +230,10 @@ implementare dacă nu te întreabă nimeni.
    parental. După PIN există o fereastră de încredere de 30 de minute cu buton explicit de **Blocare**,
    care o închide imediat. PIN-ul protejează ieșirea din modul copil — **nu verifică vârsta sau
    identitatea** — și acest lucru îl spunem deschis."
-7. **„GDPR / consimțământ pentru copii?"** — „MVP-ul nu are date reale de copii; totul e sintetic.
-   Consimțământul, însușirea conturilor de minor și retenția sunt porți explicite din pilotul propus
-   (G1–G6), nu presupuneri rezolvate."
+7. **„GDPR / consimțământ pentru copii?"** — „În demonstrație folosim doar conturi și profiluri
+   sintetice. Platforma are înregistrare publică, deci nu presupunem că toate înscrierile sunt fictive.
+   Consimțământul parental, protecția datelor și retenția necesită reguli aprobate înainte de pilot
+   (G1–G6); nu le prezentăm drept rezolvate."
 8. **„Copertile cărților sunt licențiate?"** — „Onest: nu am încă confirmare de drepturi fișier cu
    fișier pentru cele 12 coperte publicate. E o decizie de conținut deschisă, cu plan de rezervă
    (fallback fără imagini) pregătit. Nu afirmăm că sunt licențiate."
