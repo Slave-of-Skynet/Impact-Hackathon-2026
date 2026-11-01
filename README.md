@@ -17,11 +17,10 @@ al familiei, iar membrii clubului deblochează activități speciale printr-un c
 ## Vezi produsul (demo public)
 
 - **Aplicația live:** <https://gustul-cartilor.onrender.com>
-  - **Conectare:** [`/cont/intrare/`](https://gustul-cartilor.onrender.com/cont/intrare/)
+  - **Landing `/`** · **Conectare:** [`/cont/intrare/`](https://gustul-cartilor.onrender.com/cont/intrare/)
   - **Catalog public:** [`/carti/`](https://gustul-cartilor.onrender.com/carti/)
-  - Ruta de landing `/` a fost adăugată în [PR #51](https://github.com/Slave-of-Skynet/Impact-Hackathon-2026/pull/51);
-    verificarea sa în browser pe host rămâne **NOT RUN** până la un smoke test real. Dacă `/` nu răspunde, intră direct la
-    `/cont/intrare/` sau `/carti/`.
+  - Verificate prin HTTP real pe 01.11.2026: `/`, `/carti/`, `/healthz/`, `/offline/`, manifest, service
+    worker și coperte răspund 200 (vezi [`docs/demo/acceptance-ledger.md`](docs/demo/acceptance-ledger.md)).
 - Conturi demo sintetice (`seed_demo`, toate fictive): `parinte1@demo.local` (părintele lui **Mia** și **Alex**),
   `parinte2@demo.local` (părinte fără copii), `cititor@demo.local` (cititor adult), `admin@demo.local` (staff).
   Parola și PIN-ul demo se setează la seed (variabilele `DEMO_PASSWORD` / `DEMO_PIN`); **nu se publică niciodată**.
@@ -43,14 +42,17 @@ DM/mesagerie, schimb de cărți între utilizatori, profiluri publice ale copiil
 întâlnirilor offline, generare AI, plăți, verificare de identitate/vârstă. Vezi [`docs/demo/pitch-ro.md`](docs/demo/pitch-ro.md)
 pentru roadmap-ul condiționat.
 
-## Status onest (2026-10-31)
+## Status onest (2026-11-01)
 
 | Domeniu | Stare |
 |---|---|
-| Cod pe `main` | [`3f2bb62`](https://github.com/Slave-of-Skynet/Impact-Hackathon-2026/commit/3f2bb62c5387f3120a6529aa4218adf3dc9b2cbb), CI: [374 passed, 4 skipped, 0 failed](https://github.com/Slave-of-Skynet/Impact-Hackathon-2026/actions/runs/41153120922) (Ubuntu) |
+| Cod pe `main` | [`28b7030`](https://github.com/Slave-of-Skynet/Impact-Hackathon-2026/commit/28b7030ee412139d550dace27a24cb8fa976dfa4) (#87), CI: [579 passed, 4 skipped, 0 failed](https://github.com/Slave-of-Skynet/Impact-Hackathon-2026/actions/runs/41205782111) (Ubuntu) |
+| Host public | LIVE pe Render (`dep-dbiuqdivcj2c73edhvug`, `main@28b7030`); `/healthz/` → `{"status": "ok", "db": true}` (01.11.2026) |
+| **Verificat în browser pe host public (01.11.2026)** | **B1 trecut**: două sesiuni independente (copil salvează 35/120 → adult vede la refresh) · **B2 trecut**: signup UI → copii → PIN → mod copil → terminare → insigne → 4 întrebări private → evaluare 5/5 → „1 zi consecutivă” · **B3 trecut**: PIN la ieșire, fereastră de încredere 30 min cu **Blochează**, 403 non-membru. Dovezi: [`docs/demo/acceptance-ledger.md`](docs/demo/acceptance-ledger.md) |
+| Rămâne neverificat (`NOT RUN`) | Cod de club pe host (necesită cod emis de staff) · telefon **fizic** Android + instalare PWA + offline · back/bfcache în al doilea browser · persistență după restart/redeploy real Render · repetiție cronometrată pitch 4:00 · fiabilitate 5 dispozitive — vezi ledger |
 | Persistența datelor | **SINTETIC DOAR** — [`docs/qa/issue-43-synthetic-persistence.md`](docs/qa/issue-43-synthetic-persistence.md) dovedește 35/120 peste o graniță de proces pe SQLite disposable. **Persistența reală pe Render/PostgreSQL după restart/redeploy: NOT VERIFIED.** |
-| Browser/telefon real, PWA instalată, offline | **NOT VERIFIED** — se urmărește în [#35](https://github.com/Slave-of-Skynet/Impact-Hackathon-2026/issues/35) (ledger: [`docs/demo/acceptance-ledger.md`](docs/demo/acceptance-ledger.md)) |
 | Siguranța copiilor | Fără DM deschise / profiluri publice de copii; **PIN-ul protejează ieșirea din modul copil, nu verifică vârsta sau identitatea** — audit: [`docs/reviews/2026-10-31-issue-44-child-safeguarding-igor.md`](docs/reviews/2026-10-31-issue-44-child-safeguarding-igor.md) |
+| Drepturi de conținut | **`RIGHTS_UNVERIFIED`**: cele 12 coperte din `static/img/covers/` sunt publicate **fără** dovadă fișier-cu-fișier a permisiunii de rehosting (decizie deschisă; #67 închis ≠ licențiat) |
 | Licență | **De confirmat** (`DECISION_REQUIRED: licensing`) — nu etichetați proiectul „open-source" până la decizia echipei/partenerului |
 
 ## Rulare locală (Python 3.12 + uv)

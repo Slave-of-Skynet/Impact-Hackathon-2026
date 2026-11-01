@@ -41,6 +41,8 @@ nimic; verifică:
   doua carte pe raftul Miei; dacă „Capra" e deja terminată, demonstrezi progresul pe cartea de rezervă. **Afișează numărul real de pagini al cărții de rezervă:** „Punguța cu doi bani" are 40 de pagini în seed, deci 35/40, nu 35/120. Dacă exact 35/120 este obligatoriu pe scenă, pregătește o altă carte de 120 pagini pe un cititor curat, fără resetarea producției.
 - **Cont de rezervă:** dacă starea Miei/Alex e complicată, operatorul creează prin UI un cont nou
   („Familia rezervă"), un copil și un PIN demo — 2 minute, fără DB access. Folosește contul rezervă pe scenă.
+  **Verificat real pe host (01.11.2026):** înregistrare prin `/cont/inregistrare/`, 2 copii prin `/familie/`,
+  setare PIN prin `/familie/pin/` (cu re-autentificare parolă) — totul funcționează din UI, fără admin.
 - **Coduri de rezervă:** staff-ul emite **2–3 coduri unice** înainte de ziua demo-ului; fiecare merge la un
   singur copil/familie. Ține evidența privată a celui folosit.
 - **Record backup:** după o rulare reușită, înregistrează ecranul (fiecare pas din run-of-show) ca rezervă
@@ -50,6 +52,10 @@ nimic; verifică:
 
 Serviciul Render gratuit intră în sleep după inactivitate (documentația Render: ~15 min idle, trezire de
 ordinul minutului — **măsoară trezirea reală în ziua demo-ului, nu o presupune**).
+
+> **Măsurătoare reală (01.11.2026, 02:44 +02):** după **960 s (16 min) fără niciun request**, primul
+> `GET /healthz/` a răspuns HTTP 200 în **32,36 s**; al doilea (`GET /`) în 0,17 s; al treilea (warm)
+> în 0,10 s. Trezirea reală e de ordinul ~0,5 min. Repetă măsurătoarea în ziua demo-ului.
 
 - Cu **10–15 minute înainte** de prezentare: `GET https://gustul-cartilor.onrender.com/carti/` din browser
   (read-only) și apoi încă un `GET` la ~1–2 minute înainte de intrare pe scenă. Verifică `/healthz/`

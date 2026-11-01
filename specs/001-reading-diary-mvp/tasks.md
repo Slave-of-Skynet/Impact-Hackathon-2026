@@ -10,7 +10,7 @@ description: "Task list for the Gustul Cărților P0 reading-diary slice"
 
 **Status rule**: `[x]` only for work merged or in an open PR **with executed checks reported in that PR**. Everything else is `[ ]`. Planned tests are NOT RUN until their PR reports real output.
 
-> **Status update 2026-10-31 (against `main@3f2bb62`, CI [374 passed, 4 skipped, 0 failed](https://github.com/Slave-of-Skynet/Impact-Hackathon-2026/actions/runs/41153120922)):** the M1–M3 implementation tasks below are merged (actual PRs: M1 accounts #26, library services #19, club services #20, library views #21, club views #31, adult UI #22, child UX #29, E2E #37). Implementation checkboxes are now marked accordingly. T013/T020 stay unchecked (review/host-proof acceptance not evidenced here); T070–T072 stay **NOT RUN** — manual demo, device and security-counterexample checks are tracked in [`docs/demo/acceptance-ledger.md`](../../docs/demo/acceptance-ledger.md).
+> **Status update 2026-11-01 (against `main@28b7030`, CI [579 passed, 4 skipped, 0 failed](https://github.com/Slave-of-Skynet/Impact-Hackathon-2026/actions/runs/41205782111)):** the M1–M3 implementation tasks below are merged (actual PRs: M1 accounts #26, library services #19, club services #20, library views #21, club views #31, adult UI #22, child UX #29, E2E #37). Implementation checkboxes are now marked accordingly. T013/T020 stay unchecked (review/host-proof acceptance not evidenced here); T070–T072 stay **NOT RUN** — manual demo, device and security-counterexample checks are tracked in [`docs/demo/acceptance-ledger.md`](../../docs/demo/acceptance-ledger.md) (partially executed on the public host 2026-11-01; see ledger rows 1–8).
 
 ## Format: `[ID] [P?] [Story] Description — owner (PR)`
 
