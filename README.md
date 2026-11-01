@@ -32,7 +32,7 @@ Catalogul de cărți e [public](https://gustul-cartilor.onrender.com/carti/) —
 
 <img src="docs/demo/screenshots/readme-89/03-parent-dashboard-desktop.png" alt="Panoul părintelui: cardul Miei cu 35 de pagini citite, seria de 3 zile consecutive și cartea curentă 35 din 120, 29 la sută; Alex fără lectură" width="720">
 
-*Același progres (35/120, 29%) și seria de zile, vizibile imediat în sesiunea separată a părintelui.*
+*Captură locală sintetică: panoul părintelui arată progresul 35/120 (29%) și seria de lectură. Sincronizarea între două sesiuni independente pe hostul public este documentată separat în [ledger](docs/demo/acceptance-ledger.md); această captură nu reprezintă acea verificare.*
 
 ## Ce funcționează azi
 
