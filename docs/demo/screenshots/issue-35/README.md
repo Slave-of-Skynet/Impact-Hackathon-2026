@@ -23,3 +23,7 @@ Notes:
   committed at `static/img/covers/` (see the rights caveat in the ledger: `RIGHTS_UNVERIFIED`).
 - The synthetic test account remains on the host as harmless disposable data; it is not the stage
   account. Do not reuse it for the live demo.
+- **Reviewer scope note:** the independent reviewer (PR #88 review `5725788524`) inspected these
+  screenshots, but did **not** independently replay the authorized two-session flow; the adult-session
+  A side of the B→A proof is executor-reported HTML evidence (`35 / 120 pag. (29%)` fetched by an
+  independent curl login), pending an independently reproduced or redacted-logged acceptance run.

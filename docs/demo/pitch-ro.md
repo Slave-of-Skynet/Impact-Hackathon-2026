@@ -75,22 +75,25 @@ două sesiuni independente autentificate în **același cont guardian** — **A 
   alt login, făcut dinainte." *(refresh)* „Aceleași **35 din 120** — salvate de copil, văzute de părinte,
   aceeași bază de date."
 - **Replică exactă (RO), Vladimir:** „În spatele demo-ului: produs funcțional pe `main`, **579 de teste
-  automate verzi**, aplicație reală pe Render. Ce nu avem **încă**: utilizatori reali și validare de
-  impact — exact asta cerem la pilot."
+  automate verzi**, aplicație reală pe Render. Ce nu avem **încă**: utilizatori reali verificați și
+  tracțiune măsurată — exact asta ne propunem să verificăm la pilotul pe care îl propunem."
 - **Tranziție/fallback:** dacă A nu se reîmprospătează: „Actualizăm din nou sesiunea părintelui…" și
   reîncarcă o dată; dacă tot nu merge → traseul rapid de rezervă.
-- **Statut:** B→A `FACT` (verificat pe hostul public la 01.11.2026, două sesiuni independente);
-  „579 teste" `FACT` (CI Ubuntu pe `main@28b7030`); „utilizatori reali: zero" — spus explicit.
+- **Statut:** B→A `FACT` (verificat pe hostul public la 01.11.2026, două sesiuni independente;
+  **independent reviewer a inspectat dovezile, dar nu a reprodus singur fluxul autentificat**);
+  „579 teste" `FACT` (CI Ubuntu pe `main@28b7030`); „nu avem utilizatori reali verificați și nici
+  tracțiune măsurată" — spus explicit.
 
 ### 5. Model de sustenabilitate — 1:55–2:25 (30 s)
 
 - **Cine:** Vladimir.
 - **Vizual:** slide „Model de sustenabilitate" sau ecran A (panoul părintelui) pe fundal.
 - **Replică exactă (RO):** „Cum susținem produsul? Astăzi rulează pe planul gratuit Render + PostgreSQL,
-  deci costul curent e aproximativ zero. Când pilotul crește, trecem la un plan plătit de găzduire —
-  câțiva dolari pe lună, **estimare de confirmat**, nu ofertă — și întreținerea rămâne la echipă: remedieri,
-  securitate, configurare. Moderarea costă puțin **prin construcție**: fără mesagerie, fără profiluri
-  publice de copii. **Nu promitem găzduire gratuită pentru totdeauna.**"
+  deci demo-ul costă aproximativ zero — **un fapt curent, limitat**. Când pilotul crește, **costul
+  găzduirii și al bazei de date va fi bugetat după tarifele curente, trafic și necesarul de mentenanță**.
+  Întreținerea e muncă reală a echipei: remedieri, securitate, configurare; moderarea rămâne mică
+  **prin construcție** — fără mesagerie, fără profiluri publice — dar **nu e gratuită**: e timp de
+  oameni. **Nu promitem găzduire gratuită pentru totdeauna.**"
 - **Tranziție/fallback:** „Deci modelul e realist: cost mic, responsabilitate clară."
 - **Statut:** planul gratuit + degradare/cold-start `FACT`; cifrele de cost viitoare `HYPOTHESIS`
   (marcate „estimare").
@@ -100,18 +103,21 @@ două sesiuni independente autentificate în **același cont guardian** — **A 
 - **Cine:** Vladimir.
 - **Vizual:** slide „Oportunitatea".
 - **Replică exactă (RO):** „Oportunitatea e locală și concretă: clubul partener a raportat **în jur de
-  70 de familii** implicate. Pilotul începe cu **10 familii**. Nu pretindem că știm mărimea pieței —
-  știm doar că publicul acesta există și e la un telefon distanță."
+  70 de familii** implicate — familiile **clubului**, nu utilizatori ai platformei noastre. Propunem să
+  începem pilotul cu **10 familii**. Nu pretindem că știm mărimea pieței — știm doar că publicul acesta
+  există și e la un telefon distanță."
 - **Tranziție/fallback:** „Și ce ne trebuie ca să atingem aceste familii?"
 - **Statut:** „70 de familii" = `FACT` ca *raport al partenerului* (aproximativ, din transcriere);
-  nu-l folosi ca TAM sau ca tracțiune a produsului nostru.
+  nu-l folosi ca TAM sau ca tracțiune a produsului nostru. „Pilot cu 10 familii" = `PROPOSAL` —
+  propunerea noastră, subiect de acord cu partenerul/owner-ul, nu termeni acceptați.
 
 ### 7. Resurse financiare — 2:40–2:55 (15 s)
 
 - **Cine:** Vladimir.
 - **Vizual:** slide „Resurse".
 - **Replică exactă (RO):** „Resursele de azi: timpul celor cinci membri, infrastructură gratuită și cod
-  propriu, scris de la zero. Pentru pilot **nu cerem bani** — cerem partenerul."
+  propriu, scris de la zero. Pentru pilot **propunem să nu cerem bani** — cerem partenerul
+  (`PROPOSAL`, nu decizie deja aprobată de toți stakeholders)."
 - **Tranziție/fallback:** direct la „Echipa".
 - **Statut:** `FACT` (plan gratuit în uz); licențierea codului rămâne nehotărâtă — nu numiți proiectul
   „open-source".
@@ -143,11 +149,12 @@ două sesiuni independente autentificate în **același cont guardian** — **A 
 
 - **Cine:** Vladimir.
 - **Vizual:** slide „Cererea".
-- **Replică exactă (RO):** „Cererea noastră nu e o sumă de bani. E un pilot: **10 familii, o lună**,
-  împreună definim regulile de siguranță și măsurăm dacă cititul crește."
+- **Replică exactă (RO):** „Vă **propunem** un pilot: **10 familii, o lună**, împreună definim regulile
+  de siguranță și măsurăm dacă cititul crește."
 - **Tranziție/fallback:** „Asta e tot ce cerem — și tot ce ne trebuie."
-- **Statut:** `FACT` ca poziție actuală a echipei. **Dacă un stakeholder cere o sumă numerică:** decizie
-  de owner înainte de scenă; **nu inventa niciodată o sumă pe scenă**.
+- **Statut:** `PROPOSAL / HYPOTHESIS` — **propunerea echipei, subiect de acord cu partenerul și
+  owner-ul**, nu termeni deja acceptați. **Dacă un stakeholder cere o sumă numerică:** decizie de owner
+  înainte de scenă; **nu inventa niciodată o sumă pe scenă**.
 
 ### 11. Concluzie — 3:50–4:00 (10 s)
 
@@ -186,14 +193,18 @@ ulterior, doar împreună cu partenerul și cu regulile lui de siguranță."
 
 ## Pitch de urgență — 30 de secunde (RO)
 
-„Gustul Cărților e jurnalul de lectură al familiei, în română. Copilul salvează pagina curentă din carte —
-acum ați văzut: 35 din 120 salvate de copil și vizibile imediat în sesiunea separată a părintelui, pe
-aceeași bază de date. Modul copil e protejat la ieșire printr-un PIN parental, fără profiluri publice
-sau mesagerie. Terminarea cărții dă insigne; un cod unic de club deblochează activitățile pentru membri.
-Testele automate sunt verzi și aplicația rulează public, pe Render. Cererea noastră: un pilot cu clubul —
-10 familii, o lună — ca să măsurăm împreună dacă cititul crește. Persistența după un redeploy real și
-instalarea pe Android sunt încă neverificate onest — și tocmai de asta cerem pilotul: să testăm pe
-familii reale, cu regulile partenerului."
+> **64 de cuvinte** (≈ 130 cuv./min — ritm real de prezentare, cu timp pentru comutarea ecranului).
+> Trei suporturi: (a) produs + problemă, (b) demo B→A + modul familial privat, (c) propunerea de pilot.
+
+„Gustul Cărților e jurnalul de lectură al familiei, în română — pentru copiii care citesc pe hârtie și
+pentru cluburile lor. Ați văzut demo-ul: copilul salvează pagina 35 din 120, iar părintele, în altă
+sesiune independentă, o vede imediat. Ieșirea din modul copil e protejată de PIN; fără profiluri
+publice, fără mesagerie. Vă propunem un pilot: zece familii, o lună, împreună măsurăm dacă cititul crește."
+
+- `(a)` = fraza 1 · `(b)` = fraza 2–3 (arată B copil, apoi comută pe A adult în timpul frazei despre părinte)
+  · `(c)` = fraza finală.
+- Pilotul „zece familii, o lună" este `PROPOSAL` — **propunerea noastră**, nu termeni deja acceptați de
+  partener; acordul aparține partenerului și owner-ului.
 
 ## Banca de răspunsuri Q&A — până la 120 s (RO)
 
@@ -201,14 +212,17 @@ Prieteni de ordine: răspuns scurt (15–20 s), onest, cu distincția fapt/ipote
 implementare dacă nu te întreabă nimeni.
 
 1. **„Aveți dovezi de la partener? Impact real?"** — „Am avut o întâlnire cu un club de lectură local la
-   30.10.2026: au numit jurnalul de lectură scop central și au raportat în jur de 70 de familii. Aceasta
-   e informație raportată, nu validare. Pilotul de 10 familii e exact pasul de validare pe care îl cerem."
-2. **„Câți utilizatori reali aveți?"** — „Zero. Toate datele din demo sunt sintetice. Spunem asta
-   public, în pitch."
+   30.10.2026: au numit jurnalul de lectură scop central și au raportat în jur de 70 de familii — familiile
+   *clubului lor*, nu utilizatori ai platformei noastre. Aceasta e informație raportată, nu validare.
+   Pilotul propus de 10 familii e exact pasul de validare pe care îl propunem (`PROPOSAL`, subiect de
+   acord cu partenerul)."
+2. **„Câți utilizatori reali aveți?"** — „**Nu avem utilizatori reali verificați și nici tracțiune
+   măsurată.** Toate datele din demo sunt sintetice. Spunem asta public, în pitch."
 3. **„De ce nu Goodreads / Discord?"** — răspunsul pregătit de mai sus (20–30 s).
-4. **„Cât costă? Cine plătește?"** — „Acum: aproape zero, plan gratuit Render + PostgreSQL. După pilot:
-   plan de găzduire plătit — câțiva dolari pe lună, estimare de confirmat — și timpul echipei pentru
-   întreținere. Nu promitem gratuit pentru totdeauna."
+4. **„Cât costă? Cine plătește?"** — „Acum: aproape zero — planul gratuit Render + PostgreSQL (**fapt
+   curent, limitat**). După pilot: **costul găzduirii și al bazei de date se bugetează după tarifele
+   curente, trafic și mentenanță** — nu dăm cifre de-a gata. Plus timpul echipei: **întreținerea și
+   moderarea nu sunt gratuite — sunt timp de oameni**. Nu promitem gratuit pentru totdeauna."
 5. **„Cine vede evaluările cu stele ale copilului?"** — „Evaluarea aparține cititorului. Media publică
    apare doar de la 3 evaluări; sub atât catalogul arată «Fără evaluări». Nu există evaluări false
    decorative."
@@ -230,8 +244,9 @@ implementare dacă nu te întreabă nimeni.
     OK de atunci). Testul cu 5 dispozitive simultane rămâne pe lista zilei de demo — nu pretindem că e făcut."
 11. **„Cât de capabilă e echipa?"** — „Cinci membri, fiecare cu livrări reale fuzionate prin review
     independent; 579 de teste verzi în CI. Nu afirmăm experiență în afara dovezilor din repo."
-12. **„Cereți finanțare?"** — „Nicio sumă astăzi: cerem pilotul nefinanciar (10 familii, o lună, feedback).
-    O cerere monetară ar fi o decizie separată a echipei, nu o inventăm pe scenă."
+12. **„Cereți finanțare?"** — „Nicio sumă astăzi: **propunem** pilotul nefinanciar (10 familii, o lună,
+    feedback) — `PROPOSAL`, nu termeni deja acceptați de partener. O cerere monetară ar fi o decizie
+    separată a echipei, nu o inventăm pe scenă."
 
 **Interdicții Q&A (hard):** PIN ≠ verificare de vârstă/identitate · fără copii reali în demo · fără
 profiluri publice de copii sau DM · fără „securitate de nivel producție certificată" · fără cifre de
@@ -273,15 +288,19 @@ coduri în cadru). Dacă timpul total măsurat depășește 240 s: comprimă lim
 - **0:40 Решение (Владимир):** веб-приложение на румынском: детский режим с маскотом, приватная панель
   родителя, PIN между ними. **Денис:** ребёнок сохраняет 35/120 — только этот шаг.
 - **1:25 Валидация (Денис → A):** переключение на окно родителя A, refresh → те же 35/120. Владимир:
-  579 тестов зелёные, реальный хост; пользователей нет — это и есть запрос на пилот.
-- **1:55 Сустейнабилити:** сейчас бесплатно (Render free), потом платный тариф — «оценка, не оффер»;
-  модерация дешёвая по конструкции; бесплатность навсегда не обещаем.
-- **2:25 Возможность:** локальный клуб, ~70 семей (со слов партнёра), пилот — 10 семей; TAM не называем.
+  579 тестов зелёные, реальный хост; «подтверждённых пользователей нет и измеримой тракции нет» —
+  так и говорим; пилот — наше **предложение** (PROPOSAL).
+- **1:55 Сустейнабилити:** сейчас бесплатно (Render free) — текущий ограниченный факт; потом **стоимость
+  хостинга и БД бюджетируется по текущим тарифам, трафику и maintenance** — без готовых цифр; модерация
+  дешёвая по конструкции, но не бесплатная (время людей); бесплатность навсегда не обещаем.
+- **2:25 Возможность:** локальный клуб, ~70 семей (со слов партнёра; **семьи клуба — не пользователи
+  нашей платформы**), пилот — 10 семей (**наше предложение**, PROPOSAL); TAM не называем.
 - **2:40 Ресурсы:** время пяти человек + бесплатная инфраструктура; для пилота деньги не нужны.
 - **2:55 Команда:** Владимир — взрослый UI и PWA; Алиса — домен чтения; Арсений — фундамент и PIN;
   Денис — детский UX; Игорь — клуб и аудит безопасности.
 - **3:25 Альтернативы:** не критикуем конкурентов; наш фокус — родительский контроль в продукте и права клуба.
-- **3:40 Финансирование:** не деньги, а пилот: 10 семей, месяц, правила безопасности, замер чтения.
+- **3:40 Финансирование:** не деньги, а пилот — **наше предложение** (PROPOSAL, не принятые условия):
+  10 семей, месяц, правила безопасности, замер чтения.
 - **3:50 Вывод:** «Ребёнок читает — семья видит — клуб рядом. Попробуйте с нами.»
 
 ## Ce NU spunem pe scenă (verifică înainte de prezentare)
