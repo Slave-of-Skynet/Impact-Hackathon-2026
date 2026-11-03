@@ -123,15 +123,16 @@ instalarea PWA + offline pe **telefon Android fizic**; persistența reală după
 fiabilitatea cu 5 dispozitive; repetiția cronometrată a pitch-ului. Criterii și registru:
 [`acceptance-ledger.md`](docs/demo/acceptance-ledger.md).
 
-**De decis** — drepturile celor 12 coperti scanate din `static/img/covers/` (`RIGHTS_UNVERIFIED`,
-decizie de conținut deschisă) și **licența proiectului**; până atunci README-ul nu folosește acele coperti.
+**De decis** — drepturile celor 12 coperți scanate din `static/img/covers/` (`RIGHTS_UNVERIFIED`,
+decizie de conținut deschisă); README-ul nu folosește acele coperți. Licența MIT a codului
+original nu schimbă statutul juridic al acestor imagini.
 
 ## Ce nu e în MVP
 
 Plăți, mesagerie/DM, profiluri publice de copii, verificare de vârstă sau identitate, quizuri AI,
 schimb de cărți între utilizatori, coordonarea întâlnirilor offline — excluse intenționat. Pașii
 următori posibili sunt **doar propuneri**, condiționate de consimțământ, confidențialitate și
-validarea partenerului: un pilot real cu familii, deciziile legale (coperte, licență), exploatarea pe mobil.
+validarea partenerului: un pilot real cu familii, clarificarea drepturilor pentru coperți și exploatarea pe mobil.
 
 ## Echipa
 
@@ -154,5 +155,8 @@ Fiecare livrare a trecut prin review independent și testare automată în CI.
 
 ## Licență
 
-Licența proiectului **nu este încă decisă** — până la decizia echipei, repo-ul nu declară nicio
-licență și proiectul nu trebuie numit „open-source".
+Codul original și documentația create de echipă sunt distribuite sub [licența MIT](LICENSE).
+
+Materialele terțe își păstrează propriile drepturi. În special, cele 12 coperți scanate din
+`static/img/covers/` au statutul `RIGHTS_UNVERIFIED` și **nu sunt oferite sub licența MIT**.
+Nu reutiliza aceste imagini fără clarificarea drepturilor corespunzătoare.
